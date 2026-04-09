@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { 
   Users, 
   LayoutDashboard, 
@@ -112,14 +114,18 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-slate-200/40 dark:border-white/5 bg-background shadow-2xl">
-      <SidebarHeader className="h-20 flex items-center px-6 bg-background/50 backdrop-blur-md">
+      <SidebarHeader className="h-20 flex items-center px-4 bg-background/50 backdrop-blur-md border-b border-slate-100/50 dark:border-white/5">
         <div className="flex items-center gap-3 group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_0_25px_rgba(99,102,241,0.4)] ring-1 ring-white/20 transition-transform group-hover:scale-110">
-              <Sparkles className="h-7 w-7" />
+            {/* Logo mark (collapsed state) */}
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white ring-1 ring-slate-200/60 shadow-sm transition-transform group-hover:scale-105 shrink-0">
+              <Image src="/scalerxlab-logo.png" alt="ScalerX Lab" width={36} height={36} className="object-contain" />
             </div>
-            <div className="flex flex-col gap-0 transition-opacity group-data-[collapsible=icon]:opacity-0">
-              <span className="font-black text-xl tracking-tighter text-gradient lowercase">scaler.x</span>
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/80">Command Center</span>
+            {/* Full logo (expanded state) */}
+            <div className="flex flex-col gap-0 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none min-w-0">
+              <div className="h-7 w-auto relative">
+                <Image src="/scalerxlab-logo.png" alt="ScalerX Lab" width={110} height={28} className="object-contain object-left" />
+              </div>
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/70 mt-0.5">Clinical CRM</span>
             </div>
         </div>
       </SidebarHeader>

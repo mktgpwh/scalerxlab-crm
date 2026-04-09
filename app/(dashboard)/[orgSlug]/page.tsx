@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -43,15 +44,21 @@ export default async function DashboardHome({
   return (
     <div className="space-y-10 pb-20">
       {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">Command Center Active</p>
-          <h2 className="text-4xl font-black tracking-tighter italic lowercase text-slate-900 dark:text-white">
-            /pahlajani.hub
-          </h2>
-          <p className="text-sm font-medium text-slate-500 mt-1">
-            Welcome back to <span className="font-black text-slate-900 dark:text-white">{organization.name}</span> — All systems nominal.
-          </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100 dark:border-white/5">
+        <div className="flex items-center gap-6">
+          <div className="h-20 w-auto">
+            <Image src="/scalerxlab-logo.png" alt="ScalerX Lab" width={180} height={45} className="object-contain" />
+          </div>
+          <div className="h-12 w-px bg-slate-200 dark:bg-white/10 hidden md:block" />
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">ScalerX Lab Hub Active</p>
+            <h2 className="text-4xl font-black tracking-tighter italic lowercase text-slate-900 dark:text-white">
+              /pahlajani.hub
+            </h2>
+            <p className="text-sm font-medium text-slate-500 mt-1">
+              Welcome back to <span className="font-black text-slate-900 dark:text-white">{organization.name}</span> — All systems nominal.
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative flex h-2.5 w-2.5">

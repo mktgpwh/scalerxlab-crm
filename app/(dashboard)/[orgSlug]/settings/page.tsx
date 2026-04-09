@@ -83,7 +83,7 @@ export default async function SettingsPage({
                         <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Primary Domain</Label>
                         <div className="relative">
                             <Globe className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input placeholder="hospital.scaler.x" className="h-12 rounded-2xl pl-12 bg-slate-50 border-none font-bold shadow-inner ring-1 ring-slate-200/50" />
+                            <Input placeholder="hospital.scalerxlab.com" className="h-12 rounded-2xl pl-12 bg-slate-50 border-none font-bold shadow-inner ring-1 ring-slate-200/50" />
                         </div>
                     </div>
                 </div>

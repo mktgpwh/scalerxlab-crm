@@ -185,8 +185,8 @@ export default async function IntegrationsPage({
 
         <div className="space-y-3">
           {[
-            { name: "Lead Created → CRM Core", url: "https://hook.scaler.x/leads/ingest", event: "LEAD_CREATED", status: "ACTIVE", calls: 142 },
-            { name: "HOT Lead → Flash Alert", url: "https://hook.scaler.x/alerts/hot", event: "AI_SCORE_HOT", status: "ACTIVE", calls: 38 },
+            { name: "Lead Created → CRM Core", url: "https://hook.scalerxlab.com/leads/ingest", event: "LEAD_CREATED", status: "ACTIVE", calls: 142 },
+            { name: "HOT Lead → Flash Alert", url: "https://hook.scalerxlab.com/alerts/hot", event: "AI_SCORE_HOT", status: "ACTIVE", calls: 38 },
             { name: "WON → Patient Record", url: "https://hospital.pahlajani.in/api/patients", event: "STATUS_WON", status: "PENDING", calls: 0 },
           ].map((hook, i) => (
             <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white dark:bg-white/5 rounded-2xl ring-1 ring-slate-200/50 dark:ring-white/5 shadow-sm">

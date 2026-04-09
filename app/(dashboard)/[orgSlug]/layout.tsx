@@ -38,7 +38,7 @@ export default async function DashboardLayout({
                 <Separator orientation="vertical" className="mr-2 h-5 bg-slate-200 dark:bg-white/10" />
                 <div className="flex flex-col">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">Active Node</span>
-                    <h1 className="text-sm font-black text-slate-900 dark:text-white lowercase tracking-tighter italic">system.scaler / {orgSlug}</h1>
+                    <h1 className="text-sm font-black text-slate-900 dark:text-white lowercase tracking-tighter italic">scalerxlab hub / {orgSlug}</h1>
                 </div>
               </div>
 

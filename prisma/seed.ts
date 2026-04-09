@@ -13,7 +13,7 @@ async function main() {
     .from('organizations')
     .upsert({
       id: 'org_scalerx_01',
-      name: 'ScalerX Academy',
+      name: 'ScalerX Lab',
       slug: 'scalerx',
       industry: 'EDUCATION',
       updatedAt: new Date().toISOString()
