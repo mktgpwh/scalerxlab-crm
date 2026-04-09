@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ScalerX CRM v1.0
 
-## Getting Started
+A high-performance, multi-tenant SaaS CRM designed specifically for high-conversion industries like Healthcare and Education.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Frontend:** Next.js 15 (App Router), React, Tailwind CSS
+- **Backend:** Next.js API Routes / Server Actions
+- **Database:** PostgreSQL mapping via Prisma ORM
+- **AI Analytics Engine:** Groq SDK natively running `llama3-70b-8192` for lightning-fast lead scoring metrics mapping.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## The Multi-Tenant RLS Strategy
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+We implement multi-tenancy at the core using a **Shared Database with Application-Level Scoping**.
+Every data model natively maps back to `organizationId`. 
+Moving into Phase 2, this will lock into strictly enforced Row-Level Security (RLS) constraints within PostgreSQL to mathematically guarantee that cross-tenant data bleed simply cannot occur at the software level.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Indian DPDPA (Digital Personal Data Protection Act) Compliance
 
-## Learn More
+The CRM is natively compliant with the DPDPA right from the scaffold:
 
-To learn more about Next.js, take a look at the following resources:
+1. **Explicit Consent Capture:** The schema tracks the `consentFlag`, the explicit `consentTimestamp`, and the exact `consentMethod` directly.
+2. **Data Minimization Rule Compliance:** The system automatically establishes `dataRetentionExpiry`. By default, leads are aggressively set to expire 3 years from initial capture to avoid non-compliant indefinite storage.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Setup Instructions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Check the `.env` parameters map to your exact connection URL and Groq API keys.
+2. Run Prisma `npx prisma generate` followed by `npx prisma db push`.
+3. Launch with `npm run dev`.
