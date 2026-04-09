@@ -262,7 +262,7 @@ export function LeadDetailSheet({
                      >
                         <div className="flex flex-col items-center gap-1">
                            <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                           <span className="text-[10px] font-black uppercase tracking-widest">Send Signal</span>
+                           <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
                         </div>
                      </Button>
                   </div>

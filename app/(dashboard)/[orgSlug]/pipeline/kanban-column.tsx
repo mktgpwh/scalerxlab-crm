@@ -29,7 +29,7 @@ export function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      className="bg-slate-100/50 flex flex-col w-80 rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+      className="bg-slate-100/50 flex flex-col w-[85vw] max-w-80 shrink-0 snap-center rounded-xl border border-slate-200 shadow-sm overflow-hidden"
     >
       <div className="flex items-center justify-between p-4 bg-white/50 border-b border-slate-200">
         <h3 className="font-semibold text-sm tracking-tight text-slate-900">{title}</h3>
