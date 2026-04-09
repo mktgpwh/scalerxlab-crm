@@ -13,9 +13,14 @@ import {
   TrendingUp, 
   Activity, 
   MapPin, 
-  Loader2 
+  Loader2,
+  Settings 
 } from "lucide-react";
 import { Lead } from "@/lib/types";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FacebookIcon } from "@/components/icons";
 
 const COLORS = ["#6366f1", "#10b981", "#ec4899", "#f59e0b"];
 
@@ -34,8 +39,13 @@ export function ExecutiveDashboard({
   const hotLeads = initialLeads.filter(l => l.intent === 'HOT').length;
   const hotRatio = totalLeads > 0 ? ((hotLeads / totalLeads) * 100).toFixed(1) : 0;
   
-  // Synthetic Ad Spend (Assuming ~₹200 CPA on average organically)
-  const syntheticAdSpend = totalLeads * 200;
+  // Synthetic Ad Spend State
+  const [adSpendMode, setAdSpendMode] = useState<'AUTO' | 'MANUAL' | 'META'>('AUTO');
+  const [customAdSpend, setCustomAdSpend] = useState<number>(0);
+  
+  const displayAdSpend = adSpendMode === 'MANUAL' 
+     ? customAdSpend 
+     : (totalLeads * 200); // AUTO/META default ₹200 CPA
 
   // IVF Target (50 Leads)
   const ivfLeads = initialLeads.filter(l => l.category === 'INFERTILITY').length;
@@ -114,14 +124,70 @@ export function ExecutiveDashboard({
 
       {/* KPI Grid Glassmorphism */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <Card className="surface-layered border-none rounded-[2rem] p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10">
+         <Card className="relative surface-layered border-none rounded-[2rem] p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10 overflow-visible">
             <div className="flex justify-between items-start mb-4">
                <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
                   <TrendingUp className="h-5 w-5" />
                </div>
-               <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">ESTIMATED</span>
+               
+               <Popover>
+                  <PopoverTrigger className="relative flex items-center justify-center rounded-md h-6 w-6 text-slate-400 hover:text-slate-900 absolute top-4 right-4 focus-visible:ring-0 focus:outline-none hover:bg-slate-100 transition-colors">
+                     <Settings className="h-4 w-4" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 rounded-2xl border border-slate-200/60 shadow-2xl p-4 bg-white/90 backdrop-blur-xl" align="end">
+                     <div className="space-y-4">
+                        <div className="space-y-1">
+                           <h4 className="text-sm font-black italic tracking-tighter">Budget Origin</h4>
+                           <p className="text-[10px] font-bold text-slate-500 uppercase">Select Data Source</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                           <Button 
+                              variant={adSpendMode === 'MANUAL' ? "default" : "outline"}
+                              className={`text-[10px] font-bold rounded-xl ${adSpendMode === 'MANUAL' && "bg-blue-500 hover:bg-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.3)]"}`}
+                              onClick={() => setAdSpendMode('MANUAL')}
+                           >
+                              Manual Entry
+                           </Button>
+                           <Button 
+                              variant={adSpendMode === 'META' ? "default" : "outline"}
+                              className={`text-[10px] font-bold rounded-xl flex items-center gap-2 ${adSpendMode === 'META' && "bg-[#1877F2] hover:bg-[#1877F2]/90 shadow-[0_0_15px_rgba(24,119,242,0.3)]"}`}
+                              onClick={() => setAdSpendMode('META')}
+                           >
+                              <FacebookIcon className="h-3 w-3" />
+                              Meta CAPI
+                           </Button>
+                        </div>
+
+                        {adSpendMode === 'MANUAL' && (
+                           <div className="pt-2 animate-in fade-in slide-in-from-top-2">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Set Value (₹)</label>
+                              <Input 
+                                 type="number" 
+                                 className="mt-1 font-black text-right rounded-xl h-9 bg-slate-50 border-slate-200/60 focus-visible:ring-blue-500"
+                                 value={customAdSpend}
+                                 onChange={(e) => setCustomAdSpend(Number(e.target.value))}
+                                 placeholder="e.g. 50000"
+                              />
+                           </div>
+                        )}
+
+                        {adSpendMode === 'META' && (
+                           <div className="pt-2 animate-in fade-in slide-in-from-top-2 flex flex-col items-center justify-center p-3 text-center bg-blue-50 dark:bg-white/5 rounded-xl border border-blue-100 dark:border-white/10">
+                              <Loader2 className="h-4 w-4 text-blue-500 animate-spin mb-2" />
+                              <span className="text-[10px] font-bold text-slate-600 block leading-tight">Connecting to Business Manager...<br/><span className="text-blue-500 opacity-60">OAUTH Pending</span></span>
+                           </div>
+                        )}
+
+                     </div>
+                  </PopoverContent>
+               </Popover>
+               
+               <span className="text-[10px] font-black text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full mr-8">
+                  {adSpendMode === 'AUTO' ? 'ESTIMATED' : adSpendMode}
+               </span>
             </div>
-            <h3 className="text-3xl font-black tracking-tighter italic">₹{(syntheticAdSpend / 1000).toFixed(1)}k</h3>
+            <h3 className="text-3xl font-black tracking-tighter italic">₹{(displayAdSpend / 1000).toFixed(1)}k</h3>
             <div className="flex items-center justify-between mt-1">
                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Ad Spend</p>
                <p className="text-[10px] font-black text-slate-600">{totalLeads} Leads</p>
