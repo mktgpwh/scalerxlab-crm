@@ -50,7 +50,7 @@ export default async function LeadsDashboardPage({
                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                  Hot Intent
               </span>
-              <span className="text-xl font-black text-rose-500">{leads.filter(l => l.intent === 'HOT').length}</span>
+              <span className="text-xl font-black text-rose-500">{leads.filter((l: any) => l.intent === 'HOT').length}</span>
            </div>
         </div>
       </div>
