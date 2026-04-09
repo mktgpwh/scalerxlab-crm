@@ -10,10 +10,10 @@ import {
   ChevronRight,
   Sparkles,
   Command,
-  MessageSquare,
   BarChart3,
   Home
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons";
 import {
   Sidebar,
   SidebarContent,
@@ -55,7 +55,7 @@ const items = [
   {
     title: "Shared Inbox",
     url: "/inbox",
-    icon: MessageSquare,
+    icon: WhatsAppIcon,
     label: "WhatsApp",
     moduleId: "engagement"
   },
@@ -117,8 +117,8 @@ export function AppSidebar() {
       <SidebarHeader className="h-20 flex items-center px-4 bg-background/50 backdrop-blur-md border-b border-slate-100/50 dark:border-white/5">
         <div className="flex items-center gap-3 group">
             {/* Logo mark (collapsed state) */}
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white ring-1 ring-slate-200/60 shadow-sm transition-transform group-hover:scale-105 shrink-0">
-              <Image src="/scalerxlab-logo.png" alt="ScalerX Lab" width={36} height={36} className="object-contain" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-slate-900 ring-1 ring-slate-800 shadow-xl transition-transform group-hover:scale-105 shrink-0">
+              <Image src="/scalerxlab-logo.png" alt="ScalerX Lab" width={32} height={32} className="object-contain" />
             </div>
             {/* Full logo (expanded state) */}
             <div className="flex flex-col gap-0 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none min-w-0">

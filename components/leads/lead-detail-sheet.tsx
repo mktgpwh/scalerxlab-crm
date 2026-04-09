@@ -310,8 +310,8 @@ export function LeadDetailSheet({
                         }}
                      >
                         <div className="flex flex-col items-center gap-1">
-                           <WhatsAppIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                           <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
+                           <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                           <span className="text-[10px] font-black uppercase tracking-widest">Execute Email</span>
                         </div>
                      </Button>
                   </div>
@@ -351,14 +351,14 @@ export function LeadDetailSheet({
                                     window.open(`https://wa.me/${lead.phone || lead.whatsappNumber}?text=${encodeURIComponent(draft)}`);
                                  }}
                               >
-                                 <MessageSquare className="h-4 w-4 mr-2" />
+                                 <WhatsAppIcon className="h-4 w-4 mr-2" />
                                  Transmit via WhatsApp
                               </Button>
                            </motion.div>
                         ) : (
                            <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 dark:border-white/5 rounded-[3rem] bg-slate-50/50 dark:bg-white/5">
                               <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center mb-4">
-                                 <MessageSquare className="h-6 w-6 text-slate-300" />
+                                 <WhatsAppIcon className="h-6 w-6 text-slate-300" />
                               </div>
                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center max-w-[200px]">
                                  Connect AI to generate high-conversion engagement signals.

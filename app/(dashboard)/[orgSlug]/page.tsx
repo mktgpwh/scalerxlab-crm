@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { 
-  Users, LayoutDashboard, MessageSquare, Command, 
+  Users, LayoutDashboard, Command, 
   BarChart3, Activity, ArrowRight, Zap, TrendingUp, Target
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons";
 
 export default async function DashboardHome({
   params,
@@ -35,7 +36,7 @@ export default async function DashboardHome({
   const quickLinks = [
     { title: "Intelligence Hub", desc: "Executive Analytics Matrix", url: `/${orgSlug}/leads`, icon: Users, color: "text-indigo-500", bg: "bg-indigo-500/10", badge: `${totalLeads} Leads` },
     { title: "Capture Pipeline", desc: "Medical Funnel Kanban Board", url: `/${orgSlug}/pipeline`, icon: LayoutDashboard, color: "text-emerald-500", bg: "bg-emerald-500/10", badge: `${hotLeads} Hot` },
-    { title: "Shared Inbox", desc: "WhatsApp · FB · Instagram", url: `/${orgSlug}/inbox`, icon: MessageSquare, color: "text-[#25D366]", bg: "bg-[#25D366]/10", badge: "Live" },
+    { title: "Shared Inbox", desc: "WhatsApp · FB · Instagram", url: `/${orgSlug}/inbox`, icon: WhatsAppIcon, color: "text-[#25D366]", bg: "bg-[#25D366]/10", badge: "Live" },
     { title: "Analytics Hub", desc: "Regional & Performance Data", url: `/${orgSlug}/analytics`, icon: BarChart3, color: "text-blue-500", bg: "bg-blue-500/10", badge: null },
     { title: "Integrations", desc: "Ad Channels & Webhooks", url: `/${orgSlug}/integrations`, icon: Command, color: "text-slate-500", bg: "bg-slate-100", badge: null },
     { title: "Activity Logs", desc: "DPDPA Sovereign Ledger", url: `/${orgSlug}/activity`, icon: Activity, color: "text-purple-500", bg: "bg-purple-500/10", badge: null },

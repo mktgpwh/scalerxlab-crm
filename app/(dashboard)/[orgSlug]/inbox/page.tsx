@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { 
-  MessageSquare, 
   Search,
   MoreVertical,
   Paperclip,
@@ -34,7 +33,7 @@ export default function SharedInboxPage() {
       case "whatsapp": return <WhatsAppIcon className="h-3.5 w-3.5 text-[#25D366]" />;
       case "instagram": return <InstagramIcon className="h-3.5 w-3.5 text-[#E1306C]" />;
       case "facebook": return <FacebookIcon className="h-3.5 w-3.5 text-[#1877F2]" />;
-      default: return <MessageSquare className="h-3.5 w-3.5 text-slate-400" />;
+      default: return <WhatsAppIcon className="h-3.5 w-3.5 text-slate-400" />;
     }
   };
 
@@ -44,7 +43,7 @@ export default function SharedInboxPage() {
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col min-w-0">
       <div className="flex items-center gap-2 mb-6 shrink-0">
-        <MessageSquare className="h-5 w-5 text-primary" />
+        <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
         <h2 className="text-2xl font-black tracking-tighter text-slate-900 dark:text-white lowercase italic">
           /shared.inbox
         </h2>

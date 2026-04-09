@@ -4,12 +4,12 @@ import { formatDistanceToNow } from "date-fns";
 import { 
   Activity, 
   User, 
-  MessageCircle, 
   PhoneCall, 
   Zap, 
   ShieldCheck,
   FileText
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons";
 
 export default async function ActivityLogPage({
   params,
@@ -36,7 +36,8 @@ export default async function ActivityLogPage({
   });
 
   const getActionIcon = (action: string) => {
-    if (action.includes("WHATSAPP") || action.includes("MESSAGE")) return <MessageCircle className="h-4 w-4 text-emerald-500" />;
+    if (action.includes("WHATSAPP")) return <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />;
+    if (action.includes("MESSAGE")) return <WhatsAppIcon className="h-4 w-4 text-emerald-500" />;
     if (action.includes("CALL")) return <PhoneCall className="h-4 w-4 text-blue-500" />;
     if (action.includes("AI") || action.includes("SCORE")) return <Zap className="h-4 w-4 text-amber-500" />;
     if (action.includes("DPDPA") || action.includes("CONSENT")) return <ShieldCheck className="h-4 w-4 text-purple-500" />;
