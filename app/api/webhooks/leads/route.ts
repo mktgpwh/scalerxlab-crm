@@ -86,11 +86,16 @@ export async function POST(req: Request) {
         else if (scoringEngineResult.intent === 'LOW') mappedIntent = 'COLD';
         else mappedIntent = scoringEngineResult.intent as "HOT"|"WARM"|"COLD";
 
+        const mappedCategory = ["MATERNITY", "GYNECOLOGY", "INFERTILITY", "OTHER"].includes(scoringEngineResult.category) 
+          ? scoringEngineResult.category 
+          : "OTHER";
+
         await prisma.lead.update({
           where: { id: lead.id },
           data: {
             aiScore: scoringEngineResult.score,
             intent: mappedIntent,
+            category: mappedCategory,
             aiNotes: scoringEngineResult.reasoning,
             aiScoredAt: new Date(),
           }
@@ -105,6 +110,17 @@ export async function POST(req: Request) {
                 event: 'HOT_LEAD',
                 payload: { name: lead.name, score: scoringEngineResult.score, orgId: organizationId },
               });
+        }
+
+        // Auto Nurture Queue if WARM lead
+        if (mappedIntent === 'WARM') {
+            await prisma.autoNurtureQueue.create({
+               data: {
+                 leadId: lead.id,
+                 organizationId: organizationId,
+                 scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24), // Add to queue for next day
+               }
+            });
         }
       }
     } catch (scoringError) {

@@ -26,11 +26,12 @@ import { Lead } from "@/lib/types";
 import { LeadStatus } from "@prisma/client";
 
 const COLUMNS = [
-  { id: "NEW", title: "New" },
+  { id: "RAW", title: "Raw Intake" },
+  { id: "QUALIFIED", title: "Qualified / Triage" },
   { id: "CONTACTED", title: "Contacted" },
-  { id: "APPOINTMENT_FIXED", title: "Appointment" },
-  { id: "VISITED", title: "Visited" },
-  { id: "CONVERTED", title: "Converted" },
+  { id: "APPOINTMENT_FIXED", title: "Appointment Set" },
+  { id: "VISITED", title: "Visited Clinic" },
+  { id: "WON", title: "Enrolled" },
   { id: "LOST", title: "Lost" },
 ];
 

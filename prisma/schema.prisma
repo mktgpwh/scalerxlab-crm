@@ -50,13 +50,13 @@ enum LeadSource {
 }
 
 enum LeadStatus {
-  NEW
+  RAW
+  QUALIFIED
   CONTACTED
   APPOINTMENT_FIXED
   VISITED
-  CONVERTED
+  WON
   LOST
-  ARCHIVED
 }
 
 enum LeadIntent {
@@ -64,6 +64,13 @@ enum LeadIntent {
   WARM
   COLD
   UNSCORED
+}
+
+enum TreatmentCategory {
+  MATERNITY
+  GYNECOLOGY
+  INFERTILITY
+  OTHER
 }
 
 // ─────────────────────────────────────────────
@@ -160,9 +167,10 @@ model Lead {
   phone          String?
   whatsappNumber String?
 
-  source         LeadSource   @default(WEBSITE_FORM)
-  status         LeadStatus   @default(NEW)
-  intent         LeadIntent   @default(UNSCORED)
+  source         LeadSource          @default(WEBSITE_FORM)
+  status         LeadStatus          @default(RAW)
+  intent         LeadIntent          @default(UNSCORED)
+  category       TreatmentCategory   @default(OTHER)
 
   metadata       Json?        
 
@@ -187,12 +195,32 @@ model Lead {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   branch         Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
   assignedTo     User?        @relation("AssignedAgent", fields: [assignedToId], references: [id])
-  activityLogs   ActivityLog[]
+  activityLogs     ActivityLog[]
+  autoNurtureQueue AutoNurtureQueue?
 
   @@index([organizationId])
   @@index([branchId])
   @@index([assignedToId])
+  @@index([category])
   @@map("leads")
+}
+
+model AutoNurtureQueue {
+  id            String   @id @default(cuid())
+  leadId        String   @unique
+  organizationId String
+  scheduledAt   DateTime @default(now())
+  nextFollowUp  DateTime?
+  attempt       Int      @default(0)
+  isResolved    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([isResolved])
+  @@map("auto_nurture_queue")
 }
 
 model ActivityLog {

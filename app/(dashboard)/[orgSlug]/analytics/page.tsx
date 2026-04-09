@@ -119,6 +119,22 @@ export default function AnalyticsDashboard() {
                 </SelectContent>
               </Select>
            </div>
+           
+           <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-2xl ring-1 ring-slate-200/50 dark:ring-white/10">
+              <Users className="h-4 w-4 text-emerald-500" />
+              <Select defaultValue="all">
+                <SelectTrigger className="w-[160px] bg-transparent border-none p-0 h-auto focus:ring-0 text-xs font-black uppercase tracking-widest text-emerald-600">
+                  <SelectValue placeholder="All Departments" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-slate-200/50 dark:border-white/10 shadow-2xl">
+                  <SelectItem value="all" className="text-xs font-bold uppercase">All Departments</SelectItem>
+                  <SelectItem value="INFERTILITY" className="text-xs font-bold uppercase">Infertility (IVF)</SelectItem>
+                  <SelectItem value="MATERNITY" className="text-xs font-bold uppercase">Maternity</SelectItem>
+                  <SelectItem value="GYNECOLOGY" className="text-xs font-bold uppercase">Gynecology</SelectItem>
+                  <SelectItem value="OTHER" className="text-xs font-bold uppercase">Other</SelectItem>
+                </SelectContent>
+              </Select>
+           </div>
            <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-2xl ring-1 ring-slate-200/50 dark:ring-white/10">
               <CalendarDays className="h-4 w-4 text-slate-400" />
               <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">Last 30 Days</span>
