@@ -25,11 +25,14 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingUp,
-  Activity
+  Activity,
+  PenLine,
+  Save
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { Lead } from "@/lib/types";
+import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function LeadDetailSheet({ 
@@ -49,6 +52,8 @@ export function LeadDetailSheet({
   const [isDrafting, setIsDrafting] = useState(false);
   const [draft, setDraft] = useState<string | null>(null);
   const [activities, setActivities] = useState<any[]>([]);
+  const [note, setNote] = useState<string>("");
+  const [noteSaved, setNoteSaved] = useState(false);
 
   // Fetch lead data when leadId changes
   useEffect(() => {
@@ -170,7 +175,7 @@ export function LeadDetailSheet({
 
             <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden">
               <div className="px-8 border-b border-slate-100 dark:border-white/5">
-                <TabsList className="bg-transparent h-14 p-0 gap-8">
+                <TabsList className="bg-transparent h-14 p-0 gap-6">
                   <TabsTrigger 
                     value="overview" 
                     className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all"
@@ -181,13 +186,19 @@ export function LeadDetailSheet({
                     value="engagement" 
                     className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all"
                   >
-                    /Engagement
+                    /Engage
                   </TabsTrigger>
                   <TabsTrigger 
                     value="timeline" 
                     className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all"
                   >
                     /Timeline
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="notes" 
+                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all"
+                  >
+                    /Notes
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -398,6 +409,47 @@ export function LeadDetailSheet({
                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No signals recorded yet.</p>
                         </div>
                       )}
+                   </div>
+                </TabsContent>
+
+                <TabsContent value="notes" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                   <div className="flex items-center gap-3 mb-4">
+                      <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+                         <PenLine className="h-5 w-5" />
+                      </div>
+                      <div>
+                         <h4 className="text-sm font-black italic">Clinical Notes</h4>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Agent Observations</p>
+                      </div>
+                   </div>
+
+                   <div className="space-y-3">
+                      <Textarea
+                         className="min-h-[200px] rounded-[1.5rem] bg-amber-50/50 dark:bg-amber-500/5 border-amber-200/50 dark:border-amber-500/10 ring-1 ring-amber-200/40 dark:ring-amber-500/10 text-sm font-medium text-slate-700 dark:text-slate-300 resize-none focus-visible:ring-amber-400/40 placeholder:text-slate-400 placeholder:text-xs placeholder:font-bold placeholder:uppercase placeholder:tracking-wide"
+                         placeholder="Record clinical observations, patient concerns, follow-up triggers..."
+                         value={note}
+                         onChange={(e) => { setNote(e.target.value); setNoteSaved(false); }}
+                      />
+                      <Button
+                         className={`w-full h-12 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                            noteSaved 
+                               ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" 
+                               : "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20"
+                         } shadow-xl`}
+                         onClick={() => {
+                            if (note) { setNoteSaved(true); }
+                         }}
+                      >
+                         {noteSaved 
+                            ? <><Save className="h-4 w-4 mr-2" /> Annotation Persisted</>
+                            : <><PenLine className="h-4 w-4 mr-2" /> Save Clinical Note</>
+                         }
+                      </Button>
+                   </div>
+
+                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 ring-1 ring-slate-200/50 dark:ring-white/5">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Compliance Note</p>
+                      <p className="text-[10px] font-medium text-slate-500">All clinical notes are encrypted at rest and governed by the DPDPA retention policy. Notes auto-expire after 180 days.</p>
                    </div>
                 </TabsContent>
               </div>

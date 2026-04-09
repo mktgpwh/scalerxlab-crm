@@ -170,6 +170,50 @@ export default async function IntegrationsPage({
             </div>
          </div>
       </div>
+
+      {/* Outgoing Webhooks Registry */}
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-black italic tracking-tight">Outgoing Webhooks</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Autonomous event dispatchers</p>
+          </div>
+          <Button size="sm" className="rounded-full text-[10px] font-black uppercase tracking-wider h-9 px-5 bg-primary shadow-lg shadow-primary/20">
+            + Register Hook
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          {[
+            { name: "Lead Created → CRM Core", url: "https://hook.scaler.x/leads/ingest", event: "LEAD_CREATED", status: "ACTIVE", calls: 142 },
+            { name: "HOT Lead → Flash Alert", url: "https://hook.scaler.x/alerts/hot", event: "AI_SCORE_HOT", status: "ACTIVE", calls: 38 },
+            { name: "WON → Patient Record", url: "https://hospital.pahlajani.in/api/patients", event: "STATUS_WON", status: "PENDING", calls: 0 },
+          ].map((hook, i) => (
+            <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white dark:bg-white/5 rounded-2xl ring-1 ring-slate-200/50 dark:ring-white/5 shadow-sm">
+              <div className="space-y-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${hook.status === 'ACTIVE' ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)] animate-pulse' : 'bg-amber-400'}`} />
+                  <span className="text-xs font-black">{hook.name}</span>
+                </div>
+                <p className="text-[10px] font-mono text-slate-400 truncate">{hook.url}</p>
+              </div>
+              <div className="flex items-center gap-6 shrink-0">
+                <div className="text-center">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase">Event</p>
+                  <p className="text-[10px] font-black text-slate-700 dark:text-slate-200">{hook.event}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase">Calls</p>
+                  <p className="text-[10px] font-black text-slate-700 dark:text-slate-200">{hook.calls}</p>
+                </div>
+                <Badge className={`text-[9px] font-black border-none uppercase ${hook.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`}>
+                  {hook.status}
+                </Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

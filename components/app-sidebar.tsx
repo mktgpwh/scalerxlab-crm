@@ -9,7 +9,8 @@ import {
   Sparkles,
   Command,
   MessageSquare,
-  BarChart3
+  BarChart3,
+  Home
 } from "lucide-react";
 import {
   Sidebar,
@@ -28,6 +29,13 @@ import { useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const items = [
+  {
+    title: "Command Center",
+    url: "",
+    icon: Home,
+    label: "Overview",
+    moduleId: "core"
+  },
   {
     title: "Intelligence Hub",
     url: "/leads",
