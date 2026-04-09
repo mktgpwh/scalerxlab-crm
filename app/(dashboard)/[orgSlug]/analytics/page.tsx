@@ -99,9 +99,15 @@ export default function AnalyticsDashboard() {
     <div className="space-y-10 pb-20">
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h2 className="text-4xl font-black tracking-tighter italic lowercase">/Executive intelligence</h2>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Real-time performance metrics</p>
+        <div className="flex items-center gap-4">
+          <div className="relative flex h-3 w-3 mt-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </div>
+          <div>
+            <h2 className="text-4xl font-black tracking-tighter italic lowercase">/Executive intelligence</h2>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Real-time performance metrics</p>
+          </div>
         </div>
         
         <div className="flex items-center gap-3">

@@ -29,7 +29,7 @@ export async function GET(
     const [totalLeads, hotLeads, convertedLeads] = await Promise.all([
       prisma.lead.count({ where: baseWhere }),
       prisma.lead.count({ where: { ...baseWhere, intent: "HOT" } }),
-      prisma.lead.count({ where: { ...baseWhere, status: "CONVERTED" } }),
+      prisma.lead.count({ where: { ...baseWhere, status: "WON" } }),
     ]);
 
     const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
@@ -85,7 +85,7 @@ export async function GET(
 
     const staffLeaderboard = staffStats.map(user => {
        const total = user.assignedLeads.length;
-       const converted = user.assignedLeads.filter(l => l.status === "CONVERTED").length;
+       const converted = user.assignedLeads.filter(l => l.status === "WON").length;
        return {
           name: user.name || "Anonymous",
           role: "Sales Agent",

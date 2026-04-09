@@ -1,4 +1,4 @@
-import { LeadStatus, LeadIntent, LeadSource } from "@prisma/client";
+import { LeadStatus, LeadIntent, LeadSource, TreatmentCategory } from "@prisma/client";
 
 export interface Lead {
   id: string;
@@ -10,6 +10,7 @@ export interface Lead {
   source: LeadSource;
   status: LeadStatus;
   intent: LeadIntent;
+  category: TreatmentCategory;
   metadata: Record<string, unknown> | null; 
   aiScore: number | null;
   aiScoredAt: Date | null;

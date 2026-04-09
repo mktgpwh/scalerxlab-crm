@@ -5,14 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { 
-  MessageCircle, 
-  Globe, 
   ArrowRight, 
   ShieldCheck, 
   Zap,
   Activity,
   Workflow
 } from "lucide-react";
+import { WhatsAppIcon, FacebookIcon, GoogleIcon } from "@/components/icons";
 
 export default async function IntegrationsPage({
   params,
@@ -32,30 +31,30 @@ export default async function IntegrationsPage({
       id: "whatsapp",
       name: "WhatsApp Business API",
       description: "Send automated alerts and AI-drafted replies directly to lead numbers.",
-      icon: MessageCircle,
+      icon: WhatsAppIcon,
       status: "Active",
-      color: "text-emerald-500",
-      bgColor: "bg-emerald-500/10",
+      color: "text-[#25D366]",
+      bgColor: "bg-[#25D366]/10",
       lastSync: "2 mins ago"
     },
     {
       id: "facebook",
       name: "Facebook Lead Ads",
       description: "Direct sync with FB Graph API to capture leads in real-time.",
-      icon: Globe,
+      icon: FacebookIcon,
       status: "Connected",
-      color: "text-blue-600",
-      bgColor: "bg-blue-600/10",
+      color: "text-[#1877F2]",
+      bgColor: "bg-[#1877F2]/10",
       lastSync: "Today, 10:45 AM"
     },
     {
       id: "google",
       name: "Google Ads (GCLID)",
       description: "Track offline conversions by syncing CRM events back to Google Ads.",
-      icon: Globe,
+      icon: GoogleIcon,
       status: "Configuring",
-      color: "text-orange-500",
-      bgColor: "bg-orange-500/10",
+      color: "text-[#EA4335]",
+      bgColor: "bg-[#EA4335]/10",
       lastSync: "Pending"
     }
   ];

@@ -23,8 +23,12 @@ import {
   Zap, 
   ShieldAlert,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  TrendingUp,
+  Activity
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { Lead } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -119,7 +123,7 @@ export function LeadDetailSheet({
 
   if (!leadId) return null;
 
-  const isArchived = lead?.status === 'ARCHIVED';
+  const isArchived = lead?.status === 'LOST';
   const mask = (val: string | null | undefined) => isArchived ? "[REDACTED]" : (val || "N/A");
 
   return (
@@ -225,6 +229,40 @@ export function LeadDetailSheet({
                      </Card>
                   </div>
 
+                  {/* Treatment Probability Chart (Exclusive to Pahlajani's) */}
+                  <Card className="surface-layered border-none rounded-[2rem] p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10 relative overflow-hidden">
+                     <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                           <Activity className="h-4 w-4 text-emerald-500" />
+                           <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Category Conversion Matrix</span>
+                        </div>
+                     </div>
+                     <div className="h-[200px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                           <BarChart 
+                              data={[
+                                 { name: 'IVF', probability: lead.category === 'INFERTILITY' ? 88 : 12, fill: lead.category === 'INFERTILITY' ? '#10b981' : '#f1f5f9' },
+                                 { name: 'MDT', probability: lead.category === 'MATERNITY' ? 95 : 20, fill: lead.category === 'MATERNITY' ? '#6366f1' : '#f1f5f9' },
+                                 { name: 'GYN', probability: lead.category === 'GYNECOLOGY' ? 70 : 15, fill: lead.category === 'GYNECOLOGY' ? '#ec4899' : '#f1f5f9' },
+                              ]}
+                              layout="vertical"
+                              margin={{ top: 0, right: 30, left: -20, bottom: 0 }}
+                           >
+                              <XAxis type="number" hide />
+                              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#94a3b8' }} />
+                              <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+                              <Bar dataKey="probability" radius={[0, 10, 10, 0]} barSize={20}>
+                                 {
+                                    [0, 1, 2].map((entry, index) => (
+                                       <Cell key={`cell-${index}`} />
+                                    ))
+                                 }
+                              </Bar>
+                           </BarChart>
+                        </ResponsiveContainer>
+                     </div>
+                  </Card>
+
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">AI Rationale</h4>
@@ -261,7 +299,7 @@ export function LeadDetailSheet({
                         }}
                      >
                         <div className="flex flex-col items-center gap-1">
-                           <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                           <WhatsAppIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
                            <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
                         </div>
                      </Button>

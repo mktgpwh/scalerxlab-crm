@@ -3,9 +3,6 @@
 import React, { useState } from "react";
 import { 
   MessageSquare, 
-  MessageCircle, 
-  Camera, 
-  Globe, 
   Search,
   MoreVertical,
   Paperclip,
@@ -13,6 +10,7 @@ import {
   Send,
   CheckCheck
 } from "lucide-react";
+import { WhatsAppIcon, InstagramIcon, FacebookIcon } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -33,9 +31,9 @@ export default function SharedInboxPage() {
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
-      case "whatsapp": return <MessageCircle className="h-3.5 w-3.5 text-emerald-500" />;
-      case "instagram": return <Camera className="h-3.5 w-3.5 text-pink-500" />;
-      case "facebook": return <Globe className="h-3.5 w-3.5 text-blue-500" />;
+      case "whatsapp": return <WhatsAppIcon className="h-3.5 w-3.5 text-[#25D366]" />;
+      case "instagram": return <InstagramIcon className="h-3.5 w-3.5 text-[#E1306C]" />;
+      case "facebook": return <FacebookIcon className="h-3.5 w-3.5 text-[#1877F2]" />;
       default: return <MessageSquare className="h-3.5 w-3.5 text-slate-400" />;
     }
   };

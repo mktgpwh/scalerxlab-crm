@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     const leadsToArchive = await prisma.lead.findMany({
       where: {
         createdAt: { lt: retentionLimit },
-        status: { not: "ARCHIVED" }
+        status: { not: "LOST" }
       },
       select: { id: true }
     });
@@ -42,7 +42,7 @@ export async function GET(req: Request) {
             email: "[REDACTED]",
             phone: "[REDACTED]",
             whatsappNumber: "[REDACTED]",
-            status: "ARCHIVED",
+            status: "LOST", // Was ARCHIVED, but enum shifted to clinical FUNNEL
             metadata: {
               mask_reason: "DPDPA_180_DAYS_RETENTION",
               masked_at: new Date().toISOString()
