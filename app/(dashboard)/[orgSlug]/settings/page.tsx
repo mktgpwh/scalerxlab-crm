@@ -123,11 +123,65 @@ export default async function SettingsPage({
             </Card>
         </TabsContent>
         
-        <TabsContent value="security" className="mt-8">
-            <div className="py-20 text-center space-y-4">
-                <Key className="h-12 w-12 mx-auto text-slate-300 animate-bounce" />
-                <h3 className="text-xl font-black italic text-slate-400">Encryption Management Coming Soon</h3>
-            </div>
+        <TabsContent value="security" className="mt-8 space-y-6">
+            <Card className="surface-layered rounded-[3rem] overflow-hidden border-none">
+                <CardHeader className="p-12 pb-6">
+                    <CardTitle className="text-2xl font-black tracking-tight italic">API Access Keys</CardTitle>
+                    <CardDescription className="text-sm font-medium">Manage internal webhook tokens and API credentials.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-12 pt-0 space-y-6">
+                    {[
+                       { name: "Webhook Secret", value: "sk_live_••••••••••••••••", status: "ACTIVE", color: "text-emerald-500 bg-emerald-500/10" },
+                       { name: "Groq AI Token", value: "gsk_••••••••••••••••", status: "ACTIVE", color: "text-emerald-500 bg-emerald-500/10" },
+                       { name: "Meta CAPI Token", value: "Not Connected", status: "PENDING", color: "text-amber-500 bg-amber-500/10" },
+                    ].map((key, i) => (
+                       <div key={i} className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-white/5 ring-1 ring-slate-200/50 dark:ring-white/5">
+                          <div className="space-y-1">
+                             <p className="text-xs font-black uppercase tracking-widest">{key.name}</p>
+                             <p className="text-sm font-mono text-slate-500">{key.value}</p>
+                          </div>
+                          <span className={`text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${key.color}`}>{key.status}</span>
+                       </div>
+                    ))}
+                </CardContent>
+            </Card>
+        </TabsContent>
+
+        <TabsContent value="team" className="mt-8 space-y-6">
+            <Card className="surface-layered rounded-[3rem] overflow-hidden border-none">
+                <CardHeader className="p-12 pb-6">
+                    <CardTitle className="text-2xl font-black tracking-tight italic">Team Roster</CardTitle>
+                    <CardDescription className="text-sm font-medium">Active members assigned to this Command Node.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-12 pt-0 space-y-4">
+                    {[
+                       { name: "Dr. Pahlajani", role: "Executive Director", access: "FULL ACCESS", avatar: "DP" },
+                       { name: "HOD Infertility", role: "Department Head", access: "DEPT. VIEW", avatar: "HI" },
+                       { name: "Receptionist 1", role: "Lead Agent", access: "BASIC", avatar: "R1" },
+                    ].map((member, i) => (
+                       <div key={i} className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-white/5 ring-1 ring-slate-200/50 dark:ring-white/5">
+                          <div className="flex items-center gap-4">
+                             <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
+                                {member.avatar}
+                             </div>
+                             <div>
+                                <p className="text-sm font-black">{member.name}</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{member.role}</p>
+                             </div>
+                          </div>
+                          <Badge className="text-[9px] font-black bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-200 border-none uppercase">
+                             {member.access}
+                          </Badge>
+                       </div>
+                    ))}
+                    <div className="flex items-center justify-center pt-4">
+                       <Button variant="outline" className="rounded-full border-dashed border-slate-300 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-primary hover:border-primary">
+                          <Users className="h-4 w-4 mr-2" />
+                          Invite Team Member
+                       </Button>
+                    </div>
+                </CardContent>
+            </Card>
         </TabsContent>
       </Tabs>
     </div>

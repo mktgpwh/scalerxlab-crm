@@ -11,9 +11,17 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Lead } from "@/lib/types";
 
 import { motion } from "framer-motion";
-import { Sparkles, Phone, MessageCircle, Mail, MoreHorizontal } from "lucide-react";
+import { Sparkles, Phone, Mail, MoreHorizontal } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import { WhatsAppIcon } from "@/components/icons";
+
+const CATEGORY_COLORS: Record<string, string> = {
+  INFERTILITY: "bg-purple-500/10 text-purple-600",
+  MATERNITY:   "bg-pink-500/10 text-pink-600",
+  GYNECOLOGY:  "bg-rose-500/10 text-rose-600",
+  OTHER:       "bg-slate-100 text-slate-500",
+};
 
 export function KanbanCard({ 
   lead, 
@@ -133,13 +141,18 @@ export function KanbanCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Badge className={cn("text-[8px] font-black uppercase tracking-[0.2em] px-2 h-5 ring-1", getIntentBadgeContext(lead.intent))}>
               {lead.intent}
             </Badge>
             <Badge variant="outline" className="text-[9px] font-bold py-0 h-5 border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 text-slate-500">
                {lead.source?.replace('_', ' ')}
             </Badge>
+            {lead.category && lead.category !== 'OTHER' && (
+              <Badge className={cn("text-[8px] font-black uppercase px-2 h-5 border-none", CATEGORY_COLORS[lead.category])}>
+                {lead.category.slice(0, 3)}
+              </Badge>
+            )}
           </div>
 
           <div className="flex items-center justify-between gap-2 pt-1">
@@ -165,17 +178,17 @@ export function KanbanCard({
                     <TooltipTrigger>
                         <Button 
                             size="icon" 
-                            className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-emerald-400 hover:text-white transition-all text-slate-500 border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10"
+                            className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-[#25D366] hover:text-white transition-all text-[#25D366] border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10"
                             onClick={(e) => { 
                                 e.stopPropagation(); 
                                 logEngagement("WHATSAPP");
                                 window.open(`https://wa.me/${lead.phone}`);
                             }}
                         >
-                            <MessageCircle className="h-3.5 w-3.5" />
+                            <WhatsAppIcon className="h-3.5 w-3.5" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent className="text-[10px] font-black uppercase">WA Quick</TooltipContent>
+                    <TooltipContent className="text-[10px] font-black uppercase">WhatsApp</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
