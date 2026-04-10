@@ -19,7 +19,7 @@ import {
   ArrowUpDown, ExternalLink
 } from "lucide-react";
 import { Popover as PopoverRoot } from "@/components/ui/popover";
-import { FacebookIcon } from "@/components/icons";
+import { FacebookIcon, WhatsAppIcon } from "@/components/icons";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -378,6 +378,8 @@ function LeadsDataView({ leads }: { leads: Record<string, any>[] }) {
                     { label: "Heat Score", field: "intent" },
                     { label: "AI Score", field: "aiScore" },
                     { label: "AI Remarks", field: null },
+                    { label: "Engagement", field: null },
+                    { label: "Compliance", field: "consentFlag" },
                     { label: "Captured", field: "createdAt" },
                   ].map(col => (
                     <th
@@ -474,6 +476,45 @@ function LeadsDataView({ leads }: { leads: Record<string, any>[] }) {
                           ? `"${lead.aiNotes.slice(0, 80)}${lead.aiNotes.length > 80 ? '…' : ''}"`
                           : <span className="text-slate-300 not-italic">Pending analysis</span>}
                       </p>
+                    </td>
+
+                    {/* Engagement */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          disabled={!lead.consentFlag}
+                          className={cn("h-8 w-8 p-0 rounded-xl hover:bg-emerald-500 hover:text-white transition-all", !lead.consentFlag && "opacity-20")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(`https://wa.me/${lead.phone || lead.whatsappNumber}`);
+                          }}
+                        >
+                          <WhatsAppIcon className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          disabled={!lead.consentFlag}
+                          className={cn("h-8 w-8 p-0 rounded-xl hover:bg-blue-500 hover:text-white transition-all", !lead.consentFlag && "opacity-20")}
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+
+                    {/* Compliance */}
+                    <td className="px-5 py-4">
+                      {lead.consentFlag ? (
+                        <Badge variant="outline" className="text-[7px] font-black uppercase text-emerald-500 border-emerald-500/20 bg-emerald-500/5">
+                          Opt-In
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[7px] font-black uppercase text-rose-500 border-rose-500/20 bg-rose-500/5">
+                          Silent
+                        </Badge>
+                      )}
                     </td>
 
                     {/* Captured */}

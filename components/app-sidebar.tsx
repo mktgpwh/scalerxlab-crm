@@ -11,7 +11,8 @@ import {
   Sparkles,
   Command,
   BarChart3,
-  Home
+  Home,
+  Phone
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons";
 import {
@@ -57,6 +58,13 @@ const items = [
     url: "/inbox",
     icon: WhatsAppIcon,
     label: "WhatsApp",
+    moduleId: "engagement"
+  },
+  {
+    title: "Call Management",
+    url: "/calls",
+    icon: Phone,
+    label: "Telephony",
     moduleId: "engagement"
   },
   {

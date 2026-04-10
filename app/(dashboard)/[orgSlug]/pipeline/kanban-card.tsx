@@ -11,10 +11,11 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Lead } from "@/lib/types";
 
 import { motion } from "framer-motion";
-import { Sparkles, Phone, Mail, MoreHorizontal } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Sparkles, Phone, Mail, MoreHorizontal, ShieldAlert } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/icons";
+import { toast } from "sonner";
 
 const CATEGORY_COLORS: Record<string, string> = {
   INFERTILITY: "bg-purple-500/10 text-purple-600",
@@ -54,10 +55,36 @@ export function KanbanCard({
     transform: CSS.Translate.toString(transform),
   };
 
-  const openLead = () => {
+  const openLead = (tab?: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("leadId", lead.id);
+    if (tab) params.set("tab", tab);
     router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleCall = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!lead.consentFlag) {
+        toast.error("COMMUNICATION BLOCKED", {
+            description: "DPDPA consent not verified for this patient node.",
+        });
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/telephony/tata/make-call`, {
+            method: "POST",
+            body: JSON.stringify({ leadId: lead.id, organizationId: lead.organizationId })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            toast.success("Calling via Tata Smartflo...");
+        } else {
+            toast.error(data.error || "Call setup failed");
+        }
+    } catch (err) {
+        toast.error("Telephony engine offline");
+    }
   };
 
   const logEngagement = async (type: string) => {
@@ -113,7 +140,6 @@ export function KanbanCard({
         {...attributes}
         {...listeners}
         onClick={(e) => {
-            // Prevent Card click if a nested action button was clicked
             if ((e.target as HTMLElement).closest('button')) return;
             openLead();
         }}
@@ -155,44 +181,57 @@ export function KanbanCard({
             )}
           </div>
 
+          <TooltipProvider>
           <div className="flex items-center justify-between gap-2 pt-1">
              <div className="flex items-center gap-1.5">
                 <Tooltip>
-                    <TooltipTrigger>
+                    <TooltipTrigger asChild>
                         <Button 
                             size="icon" 
-                            className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-emerald-500 hover:text-white transition-all text-slate-500 border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10"
-                            onClick={(e) => { 
-                                e.stopPropagation(); 
-                                logEngagement("CALL");
-                                window.open(`tel:${lead.phone}`); 
-                            }}
+                            disabled={!lead.consentFlag}
+                            className={cn(
+                                "h-8 w-8 rounded-xl transition-all border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10",
+                                lead.consentFlag 
+                                ? "bg-slate-100 dark:bg-white/5 hover:bg-emerald-500 hover:text-white text-slate-500" 
+                                : "bg-slate-50 dark:bg-white/5 text-slate-300 cursor-not-allowed opacity-50"
+                            )}
+                            onClick={handleCall}
                         >
-                            <Phone className="h-3.5 w-3.5" />
+                            {lead.consentFlag ? <Phone className="h-3.5 w-3.5" /> : <ShieldAlert className="h-3.5 w-3.5" />}
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent className="text-[10px] font-black uppercase">Voice Call</TooltipContent>
+                    <TooltipContent className="text-[10px] font-black uppercase">
+                        {lead.consentFlag ? "Tata Smartflo Call" : "DPDPA Consent Missing"}
+                    </TooltipContent>
                 </Tooltip>
                 
                 <Tooltip>
-                    <TooltipTrigger>
+                    <TooltipTrigger asChild>
                         <Button 
                             size="icon" 
-                            className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-[#25D366] hover:text-white transition-all text-[#25D366] border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10"
+                            disabled={!lead.consentFlag}
+                            className={cn(
+                                "h-8 w-8 rounded-xl transition-all border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10",
+                                lead.consentFlag 
+                                ? "bg-slate-100 dark:bg-white/5 hover:bg-[#25D366] hover:text-white text-[#25D366]" 
+                                : "bg-slate-50 dark:bg-white/5 text-slate-300 cursor-not-allowed opacity-50"
+                            )}
                             onClick={(e) => { 
                                 e.stopPropagation(); 
                                 logEngagement("WHATSAPP");
-                                window.open(`https://wa.me/${lead.phone}`);
+                                openLead("engagement");
                             }}
                         >
                             <WhatsAppIcon className="h-3.5 w-3.5" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent className="text-[10px] font-black uppercase">WhatsApp</TooltipContent>
+                    <TooltipContent className="text-[10px] font-black uppercase">
+                        {lead.consentFlag ? "AI Smart Drafts" : "DPDPA Consent Missing"}
+                    </TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
-                    <TooltipTrigger>
+                    <TooltipTrigger asChild>
                         <Button 
                             size="icon" 
                             className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-primary hover:text-white transition-all text-slate-500 border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10"
@@ -216,6 +255,7 @@ export function KanbanCard({
                 </span>
              </div>
           </div>
+          </TooltipProvider>
 
           <div className="flex items-center justify-between pt-3 border-t border-slate-50 dark:border-white/5">
             {lead.consentFlag ? (
@@ -239,4 +279,3 @@ export function KanbanCard({
     </motion.div>
   );
 }
-

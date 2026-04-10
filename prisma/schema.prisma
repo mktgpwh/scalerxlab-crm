@@ -1,18 +1,181 @@
-// ScalerX CRM v1.0 - Multi-Tenant Prisma Schema via Supabase
-// Multi-tenancy: Supabase RLS compatible (via external Auth) + Shared Database
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  // Direct connection for migrations will be handled outside schema url property in v7
 }
 
-// ─────────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────────
+model Organization {
+  id                String               @id @default(cuid())
+  name              String
+  slug              String               @unique
+  industry          Industry             @default(OTHER)
+  plan              OrgPlan              @default(STARTER)
+  isActive          Boolean              @default(true)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  modulesConfig     Json                 @default("{\"ai\": true, \"engagement\": true, \"operations\": true, \"intelligence\": true}")
+  activityLogs      ActivityLog[]
+  branches          Branch[]
+  callLogs          CallLog[]
+  leads             Lead[]
+  members           OrganizationMember[]
+  telephonySettings TelephonySettings?
+
+  @@map("organizations")
+}
+
+model Branch {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  city           String
+  isHQ           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leads          Lead[]
+
+  @@index([organizationId])
+  @@map("branches")
+}
+
+model User {
+  id                       String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                    String               @unique
+  name                     String?
+  avatarUrl                String?
+  isActive                 Boolean              @default(true)
+  platformConsentGiven     Boolean              @default(false)
+  platformConsentTimestamp DateTime?
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+  activityLogs             ActivityLog[]
+  assignedLeads            Lead[]               @relation("AssignedAgent")
+  memberships              OrganizationMember[]
+
+  @@map("users")
+}
+
+model OrganizationMember {
+  id             String       @id @default(cuid())
+  userId         String       @db.Uuid
+  organizationId String
+  role           UserRole     @default(AGENT)
+  isActive       Boolean      @default(true)
+  joinedAt       DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@map("organization_members")
+}
+
+model Lead {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  name                String
+  email               String?
+  phone               String?
+  whatsappNumber      String?
+  source              LeadSource        @default(WEBSITE_FORM)
+  status              LeadStatus        @default(RAW)
+  intent              LeadIntent        @default(UNSCORED)
+  metadata            Json?
+  aiScore             Int?
+  aiScoredAt          DateTime?
+  aiNotes             String?
+  assignedToId        String?           @db.Uuid
+  assignedAt          DateTime?
+  consentFlag         Boolean           @default(false)
+  consentTimestamp    DateTime?
+  consentMethod       String?
+  dataRetentionExpiry DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  branchId            String?
+  isAutoAssigned      Boolean           @default(false)
+  category            TreatmentCategory @default(OTHER)
+  activityLogs        ActivityLog[]
+  autoNurtureQueue    AutoNurtureQueue?
+  callLogs            CallLog[]
+  assignedTo          User?             @relation("AssignedAgent", fields: [assignedToId], references: [id])
+  branch              Branch?           @relation(fields: [branchId], references: [id])
+  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([branchId])
+  @@index([assignedToId])
+  @@index([category])
+  @@map("leads")
+}
+
+model AutoNurtureQueue {
+  id             String    @id @default(cuid())
+  leadId         String    @unique
+  organizationId String
+  scheduledAt    DateTime  @default(now())
+  nextFollowUp   DateTime?
+  attempt        Int       @default(0)
+  isResolved     Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lead           Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([isResolved])
+  @@map("auto_nurture_queue")
+}
+
+model ActivityLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  leadId         String?
+  userId         String?      @db.Uuid
+  action         String
+  description    String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  lead           Lead?        @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model CallLog {
+  id             String        @id @default(cuid())
+  organizationId String
+  leadId         String?
+  direction      CallDirection
+  status         CallStatus    @default(CONNECTED)
+  duration       Int           @default(0)
+  recordingUrl   String?
+  isQualified    Boolean       @default(false)
+  isAiHandled    Boolean       @default(false)
+  callerId       String
+  receiverId     String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  lead           Lead?         @relation(fields: [leadId], references: [id])
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([leadId])
+  @@map("call_logs")
+}
+
+model TelephonySettings {
+  id                String       @id @default(cuid())
+  organizationId    String       @unique
+  aiRoutingEnabled  Boolean      @default(false)
+  tataVirtualNumber String?
+  updatedAt         DateTime     @updatedAt
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("telephony_settings")
+}
 
 enum Industry {
   HEALTHCARE
@@ -39,14 +202,14 @@ enum UserRole {
 enum LeadSource {
   META_ADS
   GOOGLE_ADS
-  INSTAGRAM_ADS
-  TIKTOK_ADS
-  LINKEDIN_ADS
   WEBSITE_FORM
   WHATSAPP
   WALK_IN
   REFERRAL
   OTHER
+  INSTAGRAM_ADS
+  TIKTOK_ADS
+  LINKEDIN_ADS
 }
 
 enum LeadStatus {
@@ -73,169 +236,15 @@ enum TreatmentCategory {
   OTHER
 }
 
-// ─────────────────────────────────────────────
-// CORE MODELS
-// ─────────────────────────────────────────────
-
-model Organization {
-  id            String   @id @default(cuid())
-  name          String
-  slug          String   @unique
-  industry    Industry @default(OTHER)
-  plan        OrgPlan  @default(STARTER)
-  isActive    Boolean  @default(true)
-
-  // Tesla Architecture: Feature-on-Tap
-  modulesConfig Json     @default("{\"ai\": true, \"engagement\": true, \"operations\": true, \"intelligence\": true}")
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  members       OrganizationMember[]
-  leads         Lead[]
-  branches      Branch[]
-  activityLogs  ActivityLog[]
-
-  @@map("organizations")
+enum CallDirection {
+  INBOUND
+  OUTBOUND
 }
 
-model Branch {
-  id             String       @id @default(cuid())
-  organizationId String
-  name           String
-  city           String
-  isHQ           Boolean      @default(false)
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  leads          Lead[]
-
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-
-  @@index([organizationId])
-  @@map("branches")
-}
-
-model User {
-  // Supabase Auth explicitly maps their UUID here. When Users sign up, we sync to public.users
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email         String    @unique
-  name          String?
-  avatarUrl     String?
-  isActive      Boolean   @default(true)
-
-  // Platform-level consent
-  platformConsentGiven     Boolean   @default(false)
-  platformConsentTimestamp DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  memberships  OrganizationMember[]
-  assignedLeads Lead[]              @relation("AssignedAgent")
-  activityLogs ActivityLog[]
-
-  @@map("users")
-}
-
-model OrganizationMember {
-  id             String       @id @default(cuid())
-  userId         String       @db.Uuid
-  organizationId String
-  role           UserRole     @default(AGENT)
-  isActive       Boolean      @default(true)
-  joinedAt       DateTime     @default(now())
-
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, organizationId])
-  @@map("organization_members")
-}
-
-// ─────────────────────────────────────────────
-// LEAD MANAGEMENT
-// ─────────────────────────────────────────────
-
-model Lead {
-  id             String       @id @default(cuid())
-  organizationId String
-  branchId       String?
-
-  name           String
-  email          String?
-  phone          String?
-  whatsappNumber String?
-
-  source         LeadSource          @default(WEBSITE_FORM)
-  status         LeadStatus          @default(RAW)
-  intent         LeadIntent          @default(UNSCORED)
-  category       TreatmentCategory   @default(OTHER)
-
-  metadata       Json?        
-
-  aiScore        Int?         
-  aiScoredAt     DateTime?
-  aiNotes        String?      
-
-  assignedToId   String?      @db.Uuid
-  assignedAt     DateTime?
-
-  // ─── DPDPA Compliance & Attribution ───────────────
-  isAutoAssigned       Boolean   @default(false)
-  consentFlag          Boolean   @default(false)
-  consentTimestamp     DateTime?                   
-  consentMethod        String?                     
-  dataRetentionExpiry  DateTime?                   
-  // ────────────────────────────────────────────
-
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  branch         Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
-  assignedTo     User?        @relation("AssignedAgent", fields: [assignedToId], references: [id])
-  activityLogs     ActivityLog[]
-  autoNurtureQueue AutoNurtureQueue?
-
-  @@index([organizationId])
-  @@index([branchId])
-  @@index([assignedToId])
-  @@index([category])
-  @@map("leads")
-}
-
-model AutoNurtureQueue {
-  id            String   @id @default(cuid())
-  leadId        String   @unique
-  organizationId String
-  scheduledAt   DateTime @default(now())
-  nextFollowUp  DateTime?
-  attempt       Int      @default(0)
-  isResolved    Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId])
-  @@index([isResolved])
-  @@map("auto_nurture_queue")
-}
-
-model ActivityLog {
-  id              String   @id @default(cuid())
-  organizationId  String
-  leadId          String?
-  userId          String?  @db.Uuid
-  action          String   // e.g., "STATUS_CHANGE", "AI_SCORED", "CONSENT_UPDATED"
-  description     String?
-  metadata        Json?    // Store old/new values, etc.
-  createdAt       DateTime @default(now())
-
-  lead            Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@map("activity_logs")
+enum CallStatus {
+  CONNECTED
+  MISSED
+  BUSY
+  VOICEMAIL
+  AI_HANDLED
 }

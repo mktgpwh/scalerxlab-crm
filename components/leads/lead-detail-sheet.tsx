@@ -27,13 +27,16 @@ import {
   TrendingUp,
   Activity,
   PenLine,
-  Save
+  Save,
+  Lock
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { Lead } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function LeadDetailSheet({ 
   organizationName,
@@ -47,6 +50,7 @@ export function LeadDetailSheet({
   const pathname = usePathname();
   
   const leadId = searchParams.get("leadId");
+  const tabParam = searchParams.get("tab") || "overview";
   const [lead, setLead] = useState<Lead | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDrafting, setIsDrafting] = useState(false);
@@ -74,6 +78,11 @@ export function LeadDetailSheet({
       const actRes = await fetch(`/api/leads/${id}/activities`);
       const actData = await actRes.json();
       setActivities(actData);
+      
+      // Load draft if exists in metadata
+      if (data.metadata?.latestDraft) {
+          setDraft(data.metadata.latestDraft);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -84,7 +93,32 @@ export function LeadDetailSheet({
   const closeSheet = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("leadId");
+    params.delete("tab");
     router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleCall = async () => {
+    if (!lead) return;
+    if (!lead.consentFlag) {
+        toast.error("CONSENT REQUIRED", { description: "DPDPA compliance prevents outreach to this record." });
+        return;
+    }
+
+    try {
+      const res = await fetch(`/api/telephony/tata/make-call`, {
+        method: "POST",
+        body: JSON.stringify({ leadId: lead.id, organizationId: lead.organizationId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Dialing...", { description: "Connecting via Tata Smartflo." });
+        logEngagement("CALL");
+      } else {
+        toast.error(data.error || "Bridge failed");
+      }
+    } catch (err) {
+      toast.error("Telephony server unreachable");
+    }
   };
 
   const generateDraft = async () => {
@@ -94,7 +128,7 @@ export function LeadDetailSheet({
       const response = await fetch("/api/ai/draft-reply", {
         method: "POST",
         body: JSON.stringify({
-          leadName: isArchived ? "[REDACTED]" : lead.name,
+          leadName: lead.status === 'LOST' ? "[REDACTED]" : lead.name,
           intent: lead.intent,
           score: lead.aiScore,
           notes: lead.aiNotes,
@@ -151,6 +185,11 @@ export function LeadDetailSheet({
                         <ShieldAlert className="h-3 w-3 mr-1" /> Archived
                       </Badge>
                     )}
+                    {!lead.consentFlag && (
+                      <Badge className="bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase border-none ring-1 ring-rose-500/20">
+                        <Lock className="h-3 w-3 mr-1" /> Blocked
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">AI Confidence Index</span>
@@ -173,7 +212,7 @@ export function LeadDetailSheet({
                </div>
             </div>
 
-            <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden">
+            <Tabs defaultValue={tabParam} className="flex-1 flex flex-col overflow-hidden">
               <div className="px-8 border-b border-slate-100 dark:border-white/5">
                 <TabsList className="bg-transparent h-14 p-0 gap-6">
                   <TabsTrigger 
@@ -290,20 +329,25 @@ export function LeadDetailSheet({
                   <div className="grid grid-cols-2 gap-4">
                      <Button 
                         variant="outline" 
-                        className="h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 hover:bg-emerald-500 hover:text-white transition-all shadow-sm group"
-                        onClick={() => {
-                           logEngagement("CALL");
-                           window.open(`tel:${lead.phone}`);
-                        }}
+                        disabled={!lead.consentFlag}
+                        className={cn(
+                            "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group",
+                            lead.consentFlag ? "hover:bg-emerald-500 hover:text-white" : "opacity-50 cursor-not-allowed"
+                        )}
+                        onClick={handleCall}
                      >
                         <div className="flex flex-col items-center gap-1">
                            <Phone className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                           <span className="text-[10px] font-black uppercase tracking-widest">Execute Call</span>
+                           <span className="text-[10px] font-black uppercase tracking-widest">{lead.consentFlag ? "Execute Call" : "Blocked"}</span>
                         </div>
                      </Button>
                      <Button 
                         variant="outline" 
-                        className="h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 hover:bg-primary hover:text-white transition-all shadow-sm group"
+                        disabled={!lead.consentFlag}
+                        className={cn(
+                            "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group",
+                            lead.consentFlag ? "hover:bg-primary hover:text-white" : "opacity-50 cursor-not-allowed"
+                        )}
                         onClick={() => {
                            logEngagement("EMAIL");
                            window.open(`mailto:${lead.email}`);
@@ -311,7 +355,7 @@ export function LeadDetailSheet({
                      >
                         <div className="flex flex-col items-center gap-1">
                            <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                           <span className="text-[10px] font-black uppercase tracking-widest">Execute Email</span>
+                           <span className="text-[10px] font-black uppercase tracking-widest">{lead.consentFlag ? "Execute Email" : "Blocked"}</span>
                         </div>
                      </Button>
                   </div>
@@ -326,7 +370,7 @@ export function LeadDetailSheet({
                             size="sm" 
                             className="bg-emerald-500 hover:bg-emerald-600 rounded-full h-8 px-4 text-[10px] font-black uppercase tracking-widest"
                             onClick={generateDraft}
-                            disabled={isDrafting}
+                            disabled={isDrafting || !lead.consentFlag}
                         >
                             {isDrafting ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Sparkles className="h-3 w-3 mr-2" />}
                             {draft ? "Refine" : "Analyze & Draft"}
@@ -346,6 +390,7 @@ export function LeadDetailSheet({
                               </div>
                               <Button 
                                  className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/10 text-xs font-black uppercase tracking-widest"
+                                 disabled={!lead.consentFlag}
                                  onClick={() => {
                                     logEngagement("WHATSAPP");
                                     window.open(`https://wa.me/${lead.phone || lead.whatsappNumber}?text=${encodeURIComponent(draft)}`);

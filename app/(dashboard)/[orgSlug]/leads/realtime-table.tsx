@@ -16,6 +16,17 @@ import { formatDistanceToNow } from "date-fns";
 import { LeadIntent } from "@prisma/client";
 import { Lead } from "@/lib/types";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { Phone, ShieldAlert, Zap } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export function RealtimeLeadsTable({ 
   initialLeads, 
@@ -30,52 +41,91 @@ export function RealtimeLeadsTable({
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const openLead = (leadId: string) => {
+  const openLead = (leadId: string, tab?: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("leadId", leadId);
+    if (tab) params.set("tab", tab);
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  useEffect(() => {
-    // 1. Establish the Realtime Web-Socket
-    const channel = supabase
-      .channel('realtime_leads')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT', // Could track UPDATE too for dynamic re-scoring
-          schema: 'public',
-          table: 'leads',
-          filter: `organizationId=eq.${organizationId}`,
-        },
-        (payload) => {
-          console.log('Realtime Lead Captured:', payload);
-          // Push new lead dynamically to the top of the UI
-          setLeads((currentLeads) => [payload.new as Lead, ...currentLeads]);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE', 
-          schema: 'public',
-          table: 'leads',
-          filter: `organizationId=eq.${organizationId}`,
-        },
-        (payload) => {
-          // Used when AI Score finishes calculating asynchronously and triggers an UPDATE
-          setLeads((currentLeads) => 
-            currentLeads.map((lead) => 
-              lead.id === (payload.new as Lead).id ? (payload.new as Lead) : lead
-            )
-          );
-        }
-      )
-      .subscribe();
+  const handleCall = async (e: React.MouseEvent, lead: Lead) => {
+    e.stopPropagation();
+    if (!lead.consentFlag) {
+      toast.error("COMMUNICATION BLOCKED", {
+        description: "DPDPA consent not verified for this patient node.",
+        icon: <ShieldAlert className="w-5 h-5 text-rose-500" />
+      });
+      return;
+    }
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    try {
+      const res = await fetch(`/api/telephony/tata/make-call`, {
+        method: "POST",
+        body: JSON.stringify({ leadId: lead.id, organizationId: lead.organizationId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Call Initiated", { description: "Connecting your extension via Tata Smartflo..." });
+      } else {
+        toast.error(data.error || "Telephony failure");
+      }
+    } catch (err) {
+      toast.error("Connection failed");
+    }
+  };
+
+  useEffect(() => {
+    if (!supabase || !organizationId) return;
+
+    try {
+      const channel = supabase.channel('realtime_leads');
+      
+      if (!channel) {
+        console.error("Failed to create realtime leads channel");
+        return;
+      }
+
+      channel
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'leads',
+            filter: `organizationId=eq.${organizationId}`,
+          },
+          (payload) => {
+            setLeads((currentLeads) => [payload.new as Lead, ...currentLeads]);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE', 
+            schema: 'public',
+            table: 'leads',
+            filter: `organizationId=eq.${organizationId}`,
+          },
+          (payload) => {
+            setLeads((currentLeads) => 
+              currentLeads.map((lead) => 
+                lead.id === (payload.new as Lead).id ? (payload.new as Lead) : lead
+              )
+            );
+          }
+        )
+        .subscribe((status) => {
+           if (status !== 'SUBSCRIBED') {
+             console.warn("Realtime leads channel status:", status);
+           }
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.error("Supabase realtime leads error:", err);
+    }
   }, [supabase, organizationId]);
 
   const getIntentBadgeContext = (intent: LeadIntent) => {
@@ -88,6 +138,7 @@ export function RealtimeLeadsTable({
   };
 
   return (
+    <TooltipProvider>
     <Card className="rounded-md border p-0 overflow-hidden shadow-sm">
       <Table>
         <TableHeader className="bg-gray-50/50">
@@ -96,14 +147,15 @@ export function RealtimeLeadsTable({
             <TableHead>Source</TableHead>
             <TableHead className="text-center">AI Intent Status</TableHead>
             <TableHead className="text-center">AI Score</TableHead>
-            <TableHead className="text-center">DPDPA Compliance</TableHead>
+            <TableHead className="text-center">Engagement</TableHead>
+            <TableHead className="text-center">Compliance</TableHead>
             <TableHead className="text-right">Time Captured</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {leads.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center text-gray-500">
+              <TableCell colSpan={7} className="h-24 text-center text-gray-500">
                 No leads present for this organization yet. Awaiting webhooks...
               </TableCell>
             </TableRow>
@@ -126,12 +178,6 @@ export function RealtimeLeadsTable({
                   <Badge variant="outline" className="text-[10px] tracking-wider uppercase bg-gray-100">
                     {lead.source?.replace('_', ' ')}
                   </Badge>
-                  {/* Extract UTM mapping if it dynamically captured from the URL Webhook */}
-                  {(lead.metadata?.utm as Record<string, string> | undefined)?.source && (
-                    <span className="block mt-1 text-[10px] text-gray-400">
-                      UTM: {(lead.metadata?.utm as Record<string, string>).source}
-                    </span>
-                  )}
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge className={`${getIntentBadgeContext(lead.intent)} shadow-sm border-0 font-semibold px-3 py-1`}>
@@ -148,14 +194,62 @@ export function RealtimeLeadsTable({
                   )}
                 </TableCell>
                 <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          disabled={!lead.consentFlag}
+                          className={cn(
+                            "h-8 w-8 rounded-lg",
+                            lead.consentFlag ? "text-emerald-500 hover:bg-emerald-50 hover:text-emerald-600" : "text-gray-300 pointer-events-none"
+                          )}
+                          onClick={(e) => handleCall(e, lead)}
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-[10px] uppercase font-black">
+                        {lead.consentFlag ? "One-Click Call" : "Blocked"}
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          disabled={!lead.consentFlag}
+                          className={cn(
+                            "h-8 w-8 rounded-lg",
+                            lead.consentFlag ? "text-[#25D366] hover:bg-green-50" : "text-gray-300 pointer-events-none"
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openLead(lead.id, "engagement");
+                          }}
+                        >
+                          <WhatsAppIcon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-[10px] uppercase font-black">
+                        {lead.consentFlag ? "AI Smart Drafts" : "Blocked"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
                   {lead.consentFlag ? (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      Verified
-                    </Badge>
+                    <div className="flex items-center justify-center gap-1.5 text-emerald-600">
+                      <Zap className="h-3 w-3 fill-emerald-600" />
+                      <span className="text-[10px] font-bold uppercase">Safe</span>
+                    </div>
                   ) : (
-                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                      Missing Consent
-                    </Badge>
+                    <div className="flex items-center justify-center gap-1.5 text-rose-500 animate-pulse">
+                      <ShieldAlert className="h-3 w-3" />
+                      <span className="text-[10px] font-black uppercase">Blocked</span>
+                    </div>
                   )}
                 </TableCell>
                 <TableCell className="text-right text-sm text-gray-500 whitespace-nowrap">
@@ -167,5 +261,6 @@ export function RealtimeLeadsTable({
         </TableBody>
       </Table>
     </Card>
+    </TooltipProvider>
   );
 }
