@@ -121,8 +121,8 @@ export function AppSidebar() {
   const filteredItems = items.filter(item => modules[item.moduleId]);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-slate-200/40 dark:border-white/5 bg-background shadow-2xl">
-      <SidebarHeader className="h-20 flex items-center px-4 bg-background/50 backdrop-blur-md border-b border-slate-100/50 dark:border-white/5">
+    <Sidebar collapsible="icon" className="border-r border-white/10 bg-slate-950/90 backdrop-blur-xl shadow-2xl">
+      <SidebarHeader className="h-20 flex items-center px-4 bg-transparent border-b border-white/5">
         <div className="flex items-center gap-3 group">
             {/* Logo mark (collapsed state) */}
             <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-slate-900 ring-1 ring-slate-800 shadow-xl transition-transform group-hover:scale-105 shrink-0">
@@ -140,7 +140,7 @@ export function AppSidebar() {
 
       <SidebarContent className="px-4 mt-6">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500 mb-4 px-2">Core Operations</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-300 mb-4 px-2">Core Operations</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
               {filteredItems.map((item) => {
@@ -153,14 +153,14 @@ export function AppSidebar() {
                         render={<Link href={fullUrl} />}
                         tooltip={item.title}
                         isActive={isActive}
-                        className={`h-12 transition-all duration-300 rounded-2xl group relative overflow-hidden ${
+                        className={`h-12 transition-all duration-300 rounded-none group relative overflow-hidden ${
                             isActive 
-                            ? "bg-primary/10 text-primary shadow-[0_0_20px_rgba(99,102,241,0.1)] ring-1 ring-primary/20" 
-                            : "text-slate-500 hover:bg-slate-100/50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                            ? "bg-primary/10 text-white font-medium border-l-4 border-primary shadow-[0_0_15px_rgba(var(--primary-glow),0.4)]" 
+                            : "text-slate-200 hover:bg-white/5 hover:text-white"
                         }`}
                     >
-                      <div className="flex items-center gap-3 w-full">
-                        <item.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${isActive ? "text-primary" : ""}`} />
+                      <div className="flex items-center gap-3 w-full px-2">
+                        <item.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${isActive ? "text-white" : ""}`} />
                         <div className="flex flex-col">
                             <span className="font-bold text-sm tracking-tight">{item.title}</span>
                             {item.label && <span className="text-[9px] font-medium opacity-60 group-data-[collapsible=icon]:hidden">{item.label}</span>}
@@ -175,11 +175,11 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-8">
-          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 mb-4 px-2">System Health</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-300 mb-4 px-2">System Health</SidebarGroupLabel>
           <div className="px-2 space-y-4 group-data-[collapsible=icon]:hidden">
              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-500">AgentX Stream</span>
+                    <span className="text-[11px] font-bold text-slate-300">AgentX Stream</span>
                     <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-500 uppercase tracking-tighter">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                         Active
@@ -199,7 +199,7 @@ export function AppSidebar() {
                       <Sparkles className="h-3 w-3 text-primary" />
                       <span className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white leading-none">AI Priority</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-medium leading-[1.4] mb-3">
+                  <p className="text-[10px] text-slate-300 font-medium leading-[1.4] mb-3">
                       Your AI is currently scoring high-intent leads from Facebook.
                   </p>
                   <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">

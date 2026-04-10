@@ -70,6 +70,7 @@
   --border: 216 34% 17%;
   --input: 216 34% 17%;
   --ring: 263 70% 50%;
+  --primary-glow: 99, 102, 241;
   --radius: 1rem;
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
@@ -140,6 +141,7 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --primary-glow: 99, 102, 241;
 }
 
 @layer base {
