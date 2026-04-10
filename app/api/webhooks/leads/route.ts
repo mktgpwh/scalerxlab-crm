@@ -3,22 +3,23 @@ import { prisma } from "@/lib/prisma";
 import { scoreLead } from "@/lib/ai/intent-scorer";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   try {
     const payload = await req.json();
 
-    const { 
-      organizationId,
-      name, 
-      email, 
-      phone, 
+    const {
+      name,
+      email,
+      phone,
       whatsappNumber,
-      source = "WEBSITE_FORM", 
+      source = "WEBSITE_FORM",
       metadata = {},
       consentFlag = false,
       consentMethod = "Webhook",
@@ -32,14 +33,13 @@ export async function POST(req: Request) {
     const validSources = ["META_ADS", "GOOGLE_ADS", "INSTAGRAM_ADS", "TIKTOK_ADS", "LINKEDIN_ADS", "WEBSITE_FORM", "WHATSAPP", "WALK_IN", "REFERRAL", "OTHER"];
     const safeSource = validSources.includes(source) ? source : "OTHER";
 
-    if (!organizationId || !name || (!email && !phone && !whatsappNumber)) {
+    if (!name || (!email && !phone && !whatsappNumber)) {
       return NextResponse.json(
-        { error: "Missing required fields (organizationId, name, and at least one contact method)" },
+        { error: "Missing required fields: name and at least one contact method" },
         { status: 400 }
       );
     }
 
-    // Embed UTM parameters securely into metadata alongside any existing metadata
     const enrichedMetadata = {
       ...(typeof metadata === 'object' ? metadata : {}),
       utm: {
@@ -51,10 +51,9 @@ export async function POST(req: Request) {
       }
     };
 
-    // 1. Create Lead in the Database immediately to return a fast 200 OK
+    // Create lead directly — no tenant lookup needed
     const lead = await prisma.lead.create({
       data: {
-        organizationId,
         name,
         email,
         phone,
@@ -64,70 +63,60 @@ export async function POST(req: Request) {
         consentFlag: Boolean(consentFlag),
         consentTimestamp: consentFlag ? new Date() : null,
         consentMethod: consentFlag ? consentMethod : null,
-        dataRetentionExpiry: new Date(new Date().setFullYear(new Date().getFullYear() + 3)), 
+        dataRetentionExpiry: new Date(new Date().setFullYear(new Date().getFullYear() + 3)),
       },
     });
 
-    // 2. We resolve the AI trigger natively returning the payload instantly but 
-    // technically if vercel deployments suspend after response we must await it.
-    // For scaffolding robust integrations, we await mapping to keep data consistent initially.
+    // AI Scoring
     try {
-      const scoringEngineResult = await scoreLead({
+      const scoringResult = await scoreLead({
         name: lead.name,
         source: lead.source,
         metadata: lead.metadata,
       });
 
-      if (scoringEngineResult && scoringEngineResult.score !== undefined) {
-        
+      if (scoringResult?.score !== undefined) {
         let mappedIntent: "HOT" | "WARM" | "COLD" | "UNSCORED" = "UNSCORED";
-        if (scoringEngineResult.intent === 'HIGH') mappedIntent = 'HOT';
-        else if (scoringEngineResult.intent === 'MEDIUM') mappedIntent = 'WARM';
-        else if (scoringEngineResult.intent === 'LOW') mappedIntent = 'COLD';
-        else mappedIntent = scoringEngineResult.intent as "HOT"|"WARM"|"COLD";
+        if (scoringResult.intent === 'HIGH') mappedIntent = 'HOT';
+        else if (scoringResult.intent === 'MEDIUM') mappedIntent = 'WARM';
+        else if (scoringResult.intent === 'LOW') mappedIntent = 'COLD';
+        else mappedIntent = scoringResult.intent as "HOT" | "WARM" | "COLD";
 
-        const mappedCategory = ["MATERNITY", "GYNECOLOGY", "INFERTILITY", "OTHER"].includes(scoringEngineResult.category) 
-          ? scoringEngineResult.category 
-          : "OTHER";
+        const mappedCategory = ["MATERNITY", "GYNECOLOGY", "INFERTILITY", "OTHER"].includes(scoringResult.category)
+          ? scoringResult.category : "OTHER";
 
         await prisma.lead.update({
           where: { id: lead.id },
           data: {
-            aiScore: scoringEngineResult.score,
+            aiScore: scoringResult.score,
             intent: mappedIntent,
             category: mappedCategory,
-            aiNotes: scoringEngineResult.reasoning,
+            aiNotes: scoringResult.reasoning,
             aiScoredAt: new Date(),
           }
         });
 
-        // Broadcast if HOT lead
         if (mappedIntent === 'HOT') {
-            await supabase
-              .channel('global_notifications')
-              .send({
-                type: 'broadcast',
-                event: 'HOT_LEAD',
-                payload: { name: lead.name, score: scoringEngineResult.score, orgId: organizationId },
-              });
+          await supabase.channel('global_notifications').send({
+            type: 'broadcast',
+            event: 'HOT_LEAD',
+            payload: { name: lead.name, score: scoringResult.score },
+          });
         }
 
-        // Auto Nurture Queue if WARM lead
         if (mappedIntent === 'WARM') {
-            await prisma.autoNurtureQueue.create({
-               data: {
-                 leadId: lead.id,
-                 organizationId: organizationId,
-                 scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24), // Add to queue for next day
-               }
-            });
+          await prisma.autoNurtureQueue.create({
+            data: {
+              leadId: lead.id,
+              scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+            }
+          });
         }
       }
     } catch (scoringError) {
-      console.error("[GROQ_SCORING_ERROR] Failed to score lead:", scoringError);
+      console.error("[GROQ_SCORING_ERROR]", scoringError);
     }
 
-    // Return the response
     return NextResponse.json({ success: true, leadId: lead.id }, { status: 201 });
 
   } catch (error) {

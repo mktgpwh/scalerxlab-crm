@@ -1,48 +1,46 @@
 import { NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { prisma } from "@/lib/prisma";
 import { tataClient } from "@/lib/telephony/tata-client";
 
 /**
- * Click-to-Call API
- * Initiates an outbound call via Tata Smartflo and logs the event.
+ * Click-to-Call API — Single-Tenant
+ * Reads virtual number from env, no org lookup needed.
  */
 export async function POST(req: Request) {
   try {
-    const { leadId, organizationId } = await req.json();
+    const { leadId } = await req.json();
 
-    if (!leadId || !organizationId) {
-      return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+    if (!leadId) {
+      return NextResponse.json({ error: "Missing leadId" }, { status: 400 });
     }
 
-    // 1. Fetch lead and organization settings
-    const [lead, settings] = await Promise.all([
-      prisma.lead.findUnique({ where: { id: leadId } }),
-      prisma.telephonySettings.findUnique({ where: { organizationId } })
-    ]);
+    const lead = await prisma.lead.findUnique({ where: { id: leadId } });
 
     if (!lead || !lead.phone) {
       return NextResponse.json({ error: "Lead not found or has no phone" }, { status: 404 });
     }
 
-    // 2. DPDPA Consent Check (Enforced at API Level)
+    // DPDPA Consent Check
     if (!lead.consentFlag) {
       return NextResponse.json({ error: "DPDPA Consent Required" }, { status: 403 });
     }
 
-    // 3. Trigger Tata Smartflo
+    const virtualNumber = process.env.TATA_SMARTFLO_VIRTUAL_NUMBER || "DEFAULT_VNS";
+
+    // Trigger Tata Smartflo
     const callResponse = await tataClient.makeCall({
       to: lead.phone,
-      from: settings?.tataVirtualNumber || "DEFAULT_VNS",
-      organizationId: organizationId,
-      agentId: "AGENT_001" // In production, get from session
+      from: virtualNumber,
+      organizationId: "singleton",
+      agentId: "AGENT_001"
     });
 
-    // 4. Log Outgoing Call
+    // Log Outgoing Call
     await prisma.callLog.create({
       data: {
-        organizationId: organizationId,
         leadId: lead.id,
-        callerId: settings?.tataVirtualNumber || "DEFAULT_VNS",
+        callerId: virtualNumber,
         receiverId: lead.phone,
         direction: "OUTBOUND",
         status: "CONNECTED",

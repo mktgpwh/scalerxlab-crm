@@ -1,7 +1,6 @@
 import { prisma } from "./prisma";
 
 interface LogActivityOptions {
-  organizationId: string;
   leadId?: string;
   userId?: string;
   action: string;
@@ -13,7 +12,6 @@ interface LogActivityOptions {
  * Logs an activity to the database for auditing and DPDPA compliance.
  */
 export async function logActivity({
-  organizationId,
   leadId,
   userId,
   action,
@@ -23,7 +21,6 @@ export async function logActivity({
   try {
     return await prisma.activityLog.create({
       data: {
-        organizationId,
         leadId,
         userId,
         action,

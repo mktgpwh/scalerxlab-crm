@@ -38,13 +38,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-export function LeadDetailSheet({ 
-  organizationName,
-  organizationId
-}: { 
-  organizationName?: string;
-  organizationId: string;
-}) {
+export function LeadDetailSheet() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -107,7 +101,7 @@ export function LeadDetailSheet({
     try {
       const res = await fetch(`/api/telephony/tata/make-call`, {
         method: "POST",
-        body: JSON.stringify({ leadId: lead.id, organizationId: lead.organizationId })
+        body: JSON.stringify({ leadId: lead.id })
       });
       const data = await res.json();
       if (res.ok) {
@@ -131,8 +125,7 @@ export function LeadDetailSheet({
           leadName: lead.status === 'LOST' ? "[REDACTED]" : lead.name,
           intent: lead.intent,
           score: lead.aiScore,
-          notes: lead.aiNotes,
-          organizationName
+          notes: lead.aiNotes
         }),
       });
       const data = await response.json();

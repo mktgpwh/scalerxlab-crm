@@ -1,80 +1,54 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
 }
 
-model Organization {
-  id                String               @id @default(cuid())
-  name              String
-  slug              String               @unique
-  industry          Industry             @default(OTHER)
-  plan              OrgPlan              @default(STARTER)
-  isActive          Boolean              @default(true)
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  modulesConfig     Json                 @default("{\"ai\": true, \"engagement\": true, \"operations\": true, \"intelligence\": true}")
-  activityLogs      ActivityLog[]
-  branches          Branch[]
-  callLogs          CallLog[]
-  leads             Lead[]
-  members           OrganizationMember[]
-  telephonySettings TelephonySettings?
+model SystemSettings {
+  id                String   @id @default("singleton")
+  clinicName        String   @default("Pahlajani's Women's Hospital")
+  brandColor        String   @default("#0f172a")
+  aiRoutingEnabled  Boolean  @default(false)
+  tataVirtualNumber String?
+  updatedAt         DateTime @updatedAt
 
-  @@map("organizations")
+  @@map("system_settings")
 }
 
 model Branch {
-  id             String       @id @default(cuid())
-  organizationId String
-  name           String
-  city           String
-  isHQ           Boolean      @default(false)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  leads          Lead[]
+  id        String   @id @default(cuid())
+  name      String
+  city      String
+  isHQ      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  leads     Lead[]
 
-  @@index([organizationId])
   @@map("branches")
 }
 
 model User {
-  id                       String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email                    String               @unique
+  id                       String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                    String        @unique
   name                     String?
   avatarUrl                String?
-  isActive                 Boolean              @default(true)
-  platformConsentGiven     Boolean              @default(false)
+  role                     UserRole      @default(AGENT)
+  isActive                 Boolean       @default(true)
+  platformConsentGiven     Boolean       @default(false)
   platformConsentTimestamp DateTime?
-  createdAt                DateTime             @default(now())
-  updatedAt                DateTime             @updatedAt
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
   activityLogs             ActivityLog[]
-  assignedLeads            Lead[]               @relation("AssignedAgent")
-  memberships              OrganizationMember[]
+  assignedLeads            Lead[]        @relation("AssignedAgent")
 
   @@map("users")
 }
 
-model OrganizationMember {
-  id             String       @id @default(cuid())
-  userId         String       @db.Uuid
-  organizationId String
-  role           UserRole     @default(AGENT)
-  isActive       Boolean      @default(true)
-  joinedAt       DateTime     @default(now())
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, organizationId])
-  @@map("organization_members")
-}
-
 model Lead {
   id                  String            @id @default(cuid())
-  organizationId      String
   name                String
   email               String?
   phone               String?
@@ -102,9 +76,7 @@ model Lead {
   callLogs            CallLog[]
   assignedTo          User?             @relation("AssignedAgent", fields: [assignedToId], references: [id])
   branch              Branch?           @relation(fields: [branchId], references: [id])
-  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId])
   @@index([branchId])
   @@index([assignedToId])
   @@index([category])
@@ -112,69 +84,51 @@ model Lead {
 }
 
 model AutoNurtureQueue {
-  id             String    @id @default(cuid())
-  leadId         String    @unique
-  organizationId String
-  scheduledAt    DateTime  @default(now())
-  nextFollowUp   DateTime?
-  attempt        Int       @default(0)
-  isResolved     Boolean   @default(false)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  lead           Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  id           String    @id @default(cuid())
+  leadId       String    @unique
+  scheduledAt  DateTime  @default(now())
+  nextFollowUp DateTime?
+  attempt      Int       @default(0)
+  isResolved   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lead         Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId])
   @@index([isResolved])
   @@map("auto_nurture_queue")
 }
 
 model ActivityLog {
-  id             String       @id @default(cuid())
-  organizationId String
-  leadId         String?
-  userId         String?      @db.Uuid
-  action         String
-  description    String?
-  metadata       Json?
-  createdAt      DateTime     @default(now())
-  lead           Lead?        @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User?        @relation(fields: [userId], references: [id])
+  id          String   @id @default(cuid())
+  leadId      String?
+  userId      String?  @db.Uuid
+  action      String
+  description String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id])
 
   @@map("activity_logs")
 }
 
 model CallLog {
-  id             String        @id @default(cuid())
-  organizationId String
-  leadId         String?
-  direction      CallDirection
-  status         CallStatus    @default(CONNECTED)
-  duration       Int           @default(0)
-  recordingUrl   String?
-  isQualified    Boolean       @default(false)
-  isAiHandled    Boolean       @default(false)
-  callerId       String
-  receiverId     String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  lead           Lead?         @relation(fields: [leadId], references: [id])
-  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  leadId       String?
+  direction    CallDirection
+  status       CallStatus    @default(CONNECTED)
+  duration     Int           @default(0)
+  recordingUrl String?
+  isQualified  Boolean       @default(false)
+  isAiHandled  Boolean       @default(false)
+  callerId     String
+  receiverId   String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  lead         Lead?         @relation(fields: [leadId], references: [id])
 
-  @@index([organizationId])
   @@index([leadId])
   @@map("call_logs")
-}
-
-model TelephonySettings {
-  id                String       @id @default(cuid())
-  organizationId    String       @unique
-  aiRoutingEnabled  Boolean      @default(false)
-  tataVirtualNumber String?
-  updatedAt         DateTime     @updatedAt
-  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@map("telephony_settings")
 }
 
 enum Industry {

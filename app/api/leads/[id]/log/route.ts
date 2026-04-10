@@ -11,10 +11,10 @@ export async function POST(
     const body = await req.json();
     const { action, description, metadata } = body;
     
-    // Fetch lead to get organizationId
+    // Check if lead exists
     const lead = await prisma.lead.findUnique({
       where: { id },
-      select: { organizationId: true }
+      select: { id: true }
     });
 
     if (!lead) {
@@ -22,7 +22,6 @@ export async function POST(
     }
 
     const log = await logActivity({
-      organizationId: lead.organizationId,
       leadId: id,
       action,
       description,

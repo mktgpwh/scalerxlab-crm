@@ -53,7 +53,6 @@ export async function GET(req: Request) {
         prisma.activityLog.create({
           data: {
              leadId: lead.id,
-             organizationId: (await prisma.lead.findUnique({ where: { id: lead.id }, select: { organizationId: true } }))?.organizationId || "",
              action: "DPDPA_COMPLIANCE_ARCHIVED",
              description: "PII data masked due to 180-day retention policy.",
              metadata: { retention_days: 180 }
