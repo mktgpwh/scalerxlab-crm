@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { NotificationsListener } from "@/components/notifications-listener";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -57,7 +57,9 @@ export default async function DashboardLayout({
               {children}
             </div>
 
-            <LeadDetailSheet />
+            <Suspense fallback={null}>
+              <LeadDetailSheet />
+            </Suspense>
           </main>
         </div>
       </SidebarProvider>
