@@ -196,7 +196,7 @@ export function RealtimeLeadsTable({
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Tooltip>
-                      <TooltipTrigger asChild>
+                      <TooltipTrigger>
                         <Button
                           size="icon"
                           variant="ghost"
@@ -216,7 +216,7 @@ export function RealtimeLeadsTable({
                     </Tooltip>
 
                     <Tooltip>
-                      <TooltipTrigger asChild>
+                      <TooltipTrigger>
                         <Button
                           size="icon"
                           variant="ghost"

@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { prisma } from "@/lib/prisma";
 import Groq from "groq-sdk";
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 /**
  * Meta WhatsApp Webhook Receiver
@@ -26,6 +25,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   try {
     const body = await req.json();
     console.log("[WHATSAPP_WEBHOOK] Received Payload:", JSON.stringify(body, null, 2));

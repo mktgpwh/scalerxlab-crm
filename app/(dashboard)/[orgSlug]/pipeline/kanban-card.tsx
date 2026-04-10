@@ -185,7 +185,7 @@ export function KanbanCard({
           <div className="flex items-center justify-between gap-2 pt-1">
              <div className="flex items-center gap-1.5">
                 <Tooltip>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger>
                         <Button 
                             size="icon" 
                             disabled={!lead.consentFlag}
@@ -206,7 +206,7 @@ export function KanbanCard({
                 </Tooltip>
                 
                 <Tooltip>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger>
                         <Button 
                             size="icon" 
                             disabled={!lead.consentFlag}
@@ -231,7 +231,7 @@ export function KanbanCard({
                 </Tooltip>
 
                 <Tooltip>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger>
                         <Button 
                             size="icon" 
                             className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-primary hover:text-white transition-all text-slate-500 border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10"

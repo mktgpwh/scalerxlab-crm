@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@supabase/supabase-js";
-
-// Initialize Subabase Direct for Real-time Broadcasting
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 /**
  * Tata Smartflo Telephony Webhook
  * Handles incoming call events, logs them, and broadcasts for the live UI.
  */
 export async function POST(req: Request) {
+  // Initialize Supabase inside handler to avoid build-time env errors
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
   try {
     const body = await req.json();
     console.log("[TATA_WEBHOOK] Incoming Payload:", JSON.stringify(body, null, 2));
