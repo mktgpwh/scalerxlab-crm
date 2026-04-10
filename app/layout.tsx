@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ScalerX Lab — Clinical CRM",
-  description: "AI-powered lead intelligence platform for Pahlajani's Women's Hospital. Real-time clinical pipeline management.",
+  title: "ScalerX Hub — Clinical CRM",
+  description: "AI-powered lead intelligence platform. Real-time clinical pipeline management.",
 };
 
 export default function RootLayout({

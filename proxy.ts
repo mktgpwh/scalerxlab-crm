@@ -27,27 +27,35 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with cross-site request forgery.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
+  const url = request.nextUrl.clone();
+  const path = url.pathname;
+
+  // --- AUTOMATIC SLUG SANITIZATION (The 404 Fix) ---
+  // If the path starts with /pahlajanis, strip it and redirect
+  if (path.startsWith("/pahlajanis")) {
+    const newPath = path.replace("/pahlajanis", "");
+    url.pathname = newPath || "/";
+    console.log(`Middleware: Redirecting legacy path ${path} -> ${url.pathname}`);
+    return NextResponse.redirect(url, { status: 301 });
+  }
+
+  // --- AUTH PROTECTIONS ---
   const isAuthPath = path.startsWith("/login") || path.startsWith("/register");
-
-  // Protect Dashboard Routes locally disabled explicitly for dev phase
-  // if (isDashboardPath && !user) {
-  //   const url = request.nextUrl.clone();
-  //   url.pathname = "/login";
-  //   return NextResponse.redirect(url);
-  // }
-
-  // Redirect authenticated users away from auth pages
+  
+  // If authenticated user hits /login, send them to the root dashboard
   if (isAuthPath && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/app/default-org"; // Placeholder for organization redirect
+    url.pathname = "/leads";
+    return NextResponse.redirect(url);
+  }
+
+  // If unauthenticated user hits dashboard, send them to login
+  const isDashboardPath = !isAuthPath && !path.startsWith("/api") && path !== "/";
+  if (isDashboardPath && !user) {
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
