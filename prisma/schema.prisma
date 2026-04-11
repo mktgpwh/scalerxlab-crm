@@ -173,6 +173,8 @@ enum LeadSource {
   INSTAGRAM_ADS
   TIKTOK_ADS
   LINKEDIN_ADS
+  MANUAL_ENTRY
+  BULK_IMPORT
 }
 
 enum LeadStatus {

@@ -26,6 +26,8 @@ import { useDashboardStore } from "@/lib/store/use-dashboard-store";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
+import { NewLeadDialog } from "@/components/leads/new-lead-dialog";
+import { BulkImportDialog } from "@/components/leads/bulk-import-dialog";
 
 const COLORS = ["#6366f1", "#10b981", "#ec4899", "#f59e0b"];
 
@@ -678,6 +680,11 @@ export function ExecutiveDashboard({
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Sovereign Analytics Matrix</p>
             </div>
           </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+            <BulkImportDialog userRole={userRole} />
+            <NewLeadDialog userRole={userRole} team={team} />
         </div>
       </div>
 
