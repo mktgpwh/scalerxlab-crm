@@ -7,6 +7,7 @@ export const FIELD_ALIASES: Record<string, string[]> = {
     phone: ["phone", "mobile", "contact", "number", "mobile number", "contact number", "phone number", "cell", "signal"],
     email: ["email", "email address", "mail", "identifier"],
     category: ["category", "treatment", "department", "type", "category name"],
+    branchId: ["center", "branch", "location", "clinic", "city", "center name", "branch name"],
 };
 
 export function detectHeaders(csvHeaders: string[]) {
@@ -15,6 +16,7 @@ export function detectHeaders(csvHeaders: string[]) {
         phone: "",
         email: "",
         category: "",
+        branchId: "",
     };
 
     const normalizedHeaders = csvHeaders.map(h => h.toLowerCase().trim());
@@ -32,10 +34,10 @@ export function detectHeaders(csvHeaders: string[]) {
 }
 
 export function generateCsvTemplate() {
-    const headers = ["Name", "Phone", "Email", "Category"];
+    const headers = ["Name", "Phone", "Email", "Category", "Center"];
     const rows = [
-        ["John Doe", "9876543210", "john@example.com", "INFERTILITY"],
-        ["Alice Smith", "+91 00000 00000", "alice@example.com", "MATERNITY"],
+        ["John Doe", "9876543210", "john@example.com", "INFERTILITY", "Raipur"],
+        ["Alice Smith", "+91 00000 00000", "alice@example.com", "MATERNITY", "Bhilai"],
     ];
 
     const csvContent = [

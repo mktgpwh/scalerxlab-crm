@@ -11,11 +11,16 @@ import {
   Users, 
   Key,
   Globe,
-  Save
+  Save,
+  MapPin
 } from "lucide-react";
+import { ManageCenters } from "./manage-centers";
 
 export default async function SettingsPage() {
   const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
+  const branches = await prisma.branch.findMany({
+    orderBy: { createdAt: "desc" }
+  });
 
   return (
     <div className="space-y-10 max-w-5xl mx-auto">
@@ -49,6 +54,10 @@ export default async function SettingsPage() {
           <TabsTrigger value="team" className="rounded-2xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
             <Users className="w-4 h-4 mr-2" />
             Team
+          </TabsTrigger>
+          <TabsTrigger value="locations" className="rounded-2xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">
+            <MapPin className="w-4 h-4 mr-2" />
+            Locations
           </TabsTrigger>
         </TabsList>
 
@@ -171,6 +180,9 @@ export default async function SettingsPage() {
                     </div>
                 </CardContent>
             </Card>
+        </TabsContent>
+        <TabsContent value="locations" className="mt-8">
+            <ManageCenters initialBranches={branches as any[]} />
         </TabsContent>
       </Tabs>
     </div>

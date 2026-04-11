@@ -11,6 +11,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { 
   Upload, 
   FileType, 
@@ -39,9 +40,10 @@ import { detectHeaders, generateCsvTemplate } from "@/lib/utils/import-utils";
 
 interface BulkImportDialogProps {
   userRole: string;
+  branches: any[];
 }
 
-export function BulkImportDialog({ userRole }: BulkImportDialogProps) {
+export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -52,7 +54,9 @@ export function BulkImportDialog({ userRole }: BulkImportDialogProps) {
     phone: "",
     email: "",
     category: "",
+    branchId: "",
   });
+  const [defaultBranchId, setDefaultBranchId] = useState<string>("");
   const [step, setStep] = useState<"UPLOAD" | "MAP" | "PREVIEW">("UPLOAD");
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,23 +134,30 @@ export function BulkImportDialog({ userRole }: BulkImportDialogProps) {
             phone: String(row[mapping.phone] || "").replace(/[^0-9]/g, ""),
             email: row[mapping.email] || "",
             category: (row[mapping.category] || "OTHER").toUpperCase(),
+            branchId: row[mapping.branchId] || "",
             source: "BULK_IMPORT"
         })).filter(l => l.phone.length >= 10);
 
         setFinalData(mapped);
+        
+        // Strict Validation: Every lead MUST have a center (via mapping or global fallback)
+        const missingCenterCount = mapped.filter(l => !l.branchId && !defaultBranchId).length;
+
         if (mapped.length === 0 && csvData.length > 0 && mapping.phone) {
             setError("No valid lead signals detected with current mapping.");
+        } else if (missingCenterCount > 0) {
+            setError(`${missingCenterCount} leads are missing center attribution. Please map a 'Center' column or select a 'Default Center' below.`);
         } else {
             setError(null);
         }
     }
-  }, [mapping, csvData, step]);
+  }, [mapping, csvData, step, defaultBranchId]);
 
   const handleImport = async () => {
-    if (finalData.length === 0) return;
+    if (finalData.length === 0 || error) return;
     setLoading(true);
     try {
-      const result = await bulkImportLeadsAction(finalData);
+      const result = await bulkImportLeadsAction(finalData, defaultBranchId);
       if (result.error) {
         toast.error("Cluster Ingestion Failed", { description: result.error });
       } else {
@@ -168,7 +179,8 @@ export function BulkImportDialog({ userRole }: BulkImportDialogProps) {
     setFile(null);
     setCsvData([]);
     setHeaders([]);
-    setMapping({ name: "", phone: "", email: "", category: "" });
+    setMapping({ name: "", phone: "", email: "", category: "", branchId: "" });
+    setDefaultBranchId("");
     setStep("UPLOAD");
     setFinalData([]);
     setError(null);
@@ -242,6 +254,7 @@ export function BulkImportDialog({ userRole }: BulkImportDialogProps) {
                         { id: "phone", label: "Phone Node / Mobile", required: true },
                         { id: "email", label: "Email Identifier", required: false },
                         { id: "category", label: "Treatment Category", required: false },
+                        { id: "branchId", label: "Center / Branch Mapping", required: false },
                     ].map((field) => (
                         <div key={field.id} className="space-y-2">
                             <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">
@@ -249,9 +262,9 @@ export function BulkImportDialog({ userRole }: BulkImportDialogProps) {
                             </label>
                                 <Select 
                                     value={mapping[field.id] || ""} 
-                                    onValueChange={(val) => setMapping(prev => ({ ...prev, [field.id]: val as string }))}
+                                    onValueChange={(val) => setMapping(prev => ({ ...prev, [field.id]: val === "__none__" ? "" : val as string }))}
                                 >
-                                <SelectTrigger className="h-12 rounded-2xl bg-slate-50 border-none ring-1 ring-slate-100 font-bold text-xs">
+                                <SelectTrigger className="h-12 rounded-2xl bg-slate-50 border-none ring-1 ring-slate-100 font-bold text-xs ring-offset-0 focus:ring-indigo-500/20 transition-all">
                                     <SelectValue placeholder={`Select ${field.id} column`} />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-none shadow-xl">
@@ -267,6 +280,23 @@ export function BulkImportDialog({ userRole }: BulkImportDialogProps) {
                             </Select>
                         </div>
                     ))}
+
+                    <div className="pt-4 border-t border-slate-100 border-dashed space-y-3">
+                        <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Default Center for this File</Label>
+                        <Select value={defaultBranchId} onValueChange={(val) => setDefaultBranchId(val || "")}>
+                            <SelectTrigger className="h-12 rounded-2xl bg-indigo-50/50 border-none ring-1 ring-indigo-100 font-bold text-xs text-indigo-700">
+                                <SelectValue placeholder="Assign entire file to Center..." />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl border-none shadow-xl">
+                                {branches.map((branch) => (
+                                    <SelectItem key={branch.id} value={branch.id} className="text-[10px] font-bold uppercase py-2.5">
+                                        {branch.name} Node
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-[9px] text-slate-400 font-medium italic">Used if a row is missing a 'Center' value.</p>
+                    </div>
                 </div>
 
                 <div className="pt-4">
@@ -319,17 +349,24 @@ export function BulkImportDialog({ userRole }: BulkImportDialogProps) {
                                     <tr className="border-b border-slate-100">
                                         <th className="px-4 py-2 text-[9px] font-black uppercase text-slate-400">Name</th>
                                         <th className="px-4 py-2 text-[9px] font-black uppercase text-slate-400">Phone</th>
+                                        <th className="px-4 py-2 text-[9px] font-black uppercase text-slate-400">Center Attribution</th>
                                         <th className="px-4 py-2 text-[9px] font-black uppercase text-slate-400">Category</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {finalData.slice(0, 10).map((row, i) => (
-                                        <tr key={i} className="border-b border-white/50">
-                                            <td className="px-4 py-2 text-[10px] font-bold text-slate-700 truncate">{row.name || "—"}</td>
-                                            <td className="px-4 py-2 text-[10px] font-bold text-slate-500">{row.phone || "—"}</td>
-                                            <td className="px-4 py-2 text-[10px] font-bold text-slate-400">{row.category || "OTHER"}</td>
-                                        </tr>
-                                    ))}
+                                    {finalData.slice(0, 10).map((row, i) => {
+                                        const branch = branches.find(b => b.id === (row.branchId || defaultBranchId));
+                                        return (
+                                            <tr key={i} className="border-b border-white/50">
+                                                <td className="px-4 py-2 text-[10px] font-bold text-slate-700 truncate">{row.name || "—"}</td>
+                                                <td className="px-4 py-2 text-[10px] font-bold text-slate-500">{row.phone || "—"}</td>
+                                                <td className="px-4 py-2 text-[10px] font-black uppercase text-indigo-500 italic">
+                                                    {branch?.name || "MISSING"}
+                                                </td>
+                                                <td className="px-4 py-2 text-[10px] font-bold text-slate-400">{row.category || "OTHER"}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

@@ -24,6 +24,7 @@ model Branch {
   name      String
   city      String
   isHQ      Boolean  @default(false)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   leads     Lead[]

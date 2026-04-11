@@ -29,9 +29,10 @@ import { cn } from "@/lib/utils";
 interface NewLeadDialogProps {
   userRole: string;
   team: any[];
+  branches: any[];
 }
 
-export function NewLeadDialog({ userRole, team }: NewLeadDialogProps) {
+export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,6 +41,7 @@ export function NewLeadDialog({ userRole, team }: NewLeadDialogProps) {
     email: "",
     category: "OTHER" as any,
     ownerId: "" as string | null,
+    branchId: "",
   });
 
   const router = useRouter();
@@ -67,7 +69,7 @@ export function NewLeadDialog({ userRole, team }: NewLeadDialogProps) {
           description: `${formData.name} has been successfully added to the matrix.` 
         });
         setOpen(false);
-        setFormData({ name: "", phone: "", email: "", category: "OTHER", ownerId: "" });
+        setFormData({ name: "", phone: "", email: "", category: "OTHER", ownerId: "", branchId: "" });
         router.refresh();
       }
     } catch (error) {
@@ -181,6 +183,22 @@ export function NewLeadDialog({ userRole, team }: NewLeadDialogProps) {
                   </Select>
                 </div>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Clinical Center <span className="text-rose-500">*</span></Label>
+              <Select required value={formData.branchId} onValueChange={(val) => setFormData({ ...formData, branchId: val || "" })}>
+                <SelectTrigger className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:ring-primary/20 font-bold text-xs ring-1 ring-slate-100/50">
+                  <SelectValue placeholder="Select Deployment Center" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
+                  {branches.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id} className="text-[10px] font-bold uppercase py-2.5">
+                      {branch.name} Node
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <DialogFooter className="pt-6">

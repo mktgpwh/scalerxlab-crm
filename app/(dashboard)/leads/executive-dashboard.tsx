@@ -636,12 +636,14 @@ export function ExecutiveDashboard({
   initialLeads,
   userRole,
   currentUserId,
-  team
+  team,
+  branches
 }: { 
   initialLeads: Record<string, any>[]; 
   userRole: string;
   currentUserId: string;
   team: any[];
+  branches: any[];
 }) {
   const { dateRange, category } = useDashboardStore();
 
@@ -683,8 +685,8 @@ export function ExecutiveDashboard({
         </div>
 
         <div className="flex items-center gap-3">
-            <BulkImportDialog userRole={userRole} />
-            <NewLeadDialog userRole={userRole} team={team} />
+            <BulkImportDialog userRole={userRole} branches={branches} />
+            <NewLeadDialog userRole={userRole} team={team} branches={branches} />
         </div>
       </div>
 

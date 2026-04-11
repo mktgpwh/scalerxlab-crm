@@ -23,6 +23,12 @@ export default async function LeadsDashboardPage() {
 
   const isAdmin = profile.role === "ORG_ADMIN" || profile.role === "SUPER_ADMIN";
 
+  // Get Active Branches for Attribution
+  const branches = await prisma.branch.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true }
+  });
+
   // Get Team for Reassignment (Admin Only)
   const team = isAdmin ? await prisma.user.findMany({
     where: { isActive: true },
@@ -52,6 +58,7 @@ export default async function LeadsDashboardPage() {
       userRole={profile.role} 
       currentUserId={profile.id}
       team={team as any[]}
+      branches={branches as any[]}
     />
   );
 }

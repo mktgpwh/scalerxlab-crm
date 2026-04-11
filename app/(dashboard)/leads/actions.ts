@@ -17,6 +17,7 @@ const leadSchema = z.object({
     "MANUAL_ENTRY", "BULK_IMPORT"
   ]).default("MANUAL_ENTRY"),
   ownerId: z.string().optional().nullable(),
+  branchId: z.string().min(1, "Clinical Center is required"),
 });
 
 export async function createLeadAction(data: z.infer<typeof leadSchema>) {
@@ -52,6 +53,7 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
         category: data.category as TreatmentCategory,
         source: data.source as LeadSource,
         ownerId: finalOwnerId,
+        branchId: data.branchId,
         status: "RAW" as LeadStatus,
         intent: "UNSCORED" as LeadIntent,
       },
@@ -65,7 +67,7 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
   }
 }
 
-export async function bulkImportLeadsAction(leads: any[]) {
+export async function bulkImportLeadsAction(leads: any[], globalBranchId?: string) {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -76,8 +78,7 @@ export async function bulkImportLeadsAction(leads: any[]) {
             select: { id: true, role: true }
         });
 
-        // Filter out existing phone numbers to prevent primary key issues in bulk mode
-        // Though lead ID is cuid, phone number is our business unique key
+        // Filter out existing phone numbers
         const phoneNumbers = leads.map(l => l.phone).filter(Boolean);
         const existingLeads = await prisma.lead.findMany({
             where: { phone: { in: phoneNumbers } },
@@ -91,16 +92,24 @@ export async function bulkImportLeadsAction(leads: any[]) {
             return { error: "All leads in this batch already exist in the system." };
         }
 
-        const data = uniqueLeads.map(l => ({
-            name: l.name || "Unknown Lead",
-            phone: l.phone,
-            email: l.email || null,
-            category: (l.category as TreatmentCategory) || "OTHER",
-            source: (l.source as LeadSource) || "BULK_IMPORT",
-            ownerId: (profile?.role === "ORG_ADMIN" || profile?.role === "SUPER_ADMIN") ? (l.ownerId || null) : profile?.id,
-            status: "RAW" as LeadStatus,
-            intent: "UNSCORED" as LeadIntent,
-        }));
+        const data = uniqueLeads.map(l => {
+            const finalBranchId = l.branchId || globalBranchId;
+            if (!finalBranchId) {
+                throw new Error("Missing center attribution for lead signal.");
+            }
+
+            return {
+                name: l.name || "Unknown Lead",
+                phone: l.phone,
+                email: l.email || null,
+                category: (l.category as TreatmentCategory) || "OTHER",
+                source: (l.source as LeadSource) || "BULK_IMPORT",
+                branchId: finalBranchId,
+                ownerId: (profile?.role === "ORG_ADMIN" || profile?.role === "SUPER_ADMIN") ? (l.ownerId || null) : profile?.id,
+                status: "RAW" as LeadStatus,
+                intent: "UNSCORED" as LeadIntent,
+            };
+        });
 
         const result = await prisma.lead.createMany({
             data,
