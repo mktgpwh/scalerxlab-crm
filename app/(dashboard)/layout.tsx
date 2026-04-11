@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
+import { HeaderTitle } from "@/components/dashboard/header-title";
 import { CommandCenter } from "@/components/command-center";
 import { LeadDetailSheet } from "@/components/leads/lead-detail-sheet";
 
@@ -27,12 +28,7 @@ export default async function DashboardLayout({
               <div className="flex items-center gap-5">
                 <SidebarTrigger className="-ml-1 text-slate-400 hover:text-primary transition-all hover:scale-110" />
                 <Separator orientation="vertical" className="mr-2 h-5 bg-slate-200 dark:bg-white/10" />
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">Active Node</span>
-                  <h1 className="text-sm font-black text-slate-900 dark:text-white lowercase tracking-tighter italic">
-                    {clinicName.toLowerCase()} hub
-                  </h1>
-                </div>
+                <HeaderTitle clinicName={clinicName} />
               </div>
 
               <div className="flex items-center gap-6">

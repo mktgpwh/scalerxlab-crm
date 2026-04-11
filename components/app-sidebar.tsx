@@ -39,14 +39,12 @@ const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
 const items = [
   { title: "Command Center", url: "/", icon: Home, label: "Overview" },
   { title: "Intelligence Hub", url: "/intelligence", icon: Sparkles, label: "AI Hub" },
-  { title: "Lead Matrix", url: "/leads", icon: Users, label: "All Leads" },
   { title: "Capture Pipeline", url: "/pipeline", icon: LayoutDashboard, label: "Sales" },
   { title: "Shared Inbox", url: "/inbox", icon: WhatsAppIcon, label: "WhatsApp" },
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
   { title: "Integrations", url: "/integrations", icon: Command, label: "Ads & WA" },
   { title: "Analytics Hub", url: "/analytics", icon: BarChart3, label: "Insights" },
   { title: "Activity Logs", url: "/activity", icon: History },
-  { title: "System Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -81,9 +79,9 @@ export function AppSidebar() {
 
   // Filter items based on role
   const filteredItems = items.filter((item) => {
-    // Hide administrative items for clinical roles
-    if (role !== "ORG_ADMIN" && role !== "SUPER_ADMIN") {
-      if (["System Settings", "Integrations", "Analytics Hub"].includes(item.title)) {
+    // Only hide if role is EXPLICITLY a non-admin role
+    if (role === "USER" || role === "AGENT") {
+      if (["Integrations", "Analytics Hub"].includes(item.title)) {
         return false;
       }
     }
@@ -177,8 +175,26 @@ export function AppSidebar() {
           </div>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t border-slate-100 gap-4">
+      <SidebarFooter className="p-4 border-t border-slate-100 gap-2">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              render={<Link href="/settings" />}
+              isActive={pathname === "/settings"}
+              className={cn(
+                "h-10 rounded-xl px-3 transition-colors",
+                pathname === "/settings" 
+                  ? "bg-primary/10 text-primary font-bold" 
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              )}
+            >
+              <Settings className="h-4 w-4" />
+              <span className="font-bold text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">
+                System Settings
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleLogout}
