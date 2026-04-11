@@ -36,7 +36,7 @@ export function DashboardFilterBar() {
   ];
 
   return (
-    <div className="flex flex-col md:flex-row items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-[2rem] border border-slate-200/60 dark:border-white/5 shadow-sm">
+    <div className="flex flex-col md:flex-row items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-[2rem] border border-slate-200/60 dark:border-white/5 shadow-sm relative z-30">
       <div className="flex items-center gap-2 w-full md:w-auto">
         <Popover>
           <PopoverTrigger>
@@ -63,7 +63,7 @@ export function DashboardFilterBar() {
               <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 rounded-3xl border-slate-200/60 shadow-2xl" align="start">
+          <PopoverContent className="w-auto p-0 rounded-3xl border-slate-200/60 shadow-2xl z-[100]" align="start">
             <div className="flex flex-col md:flex-row">
               <div className="p-4 border-r border-slate-100 dark:border-white/5 flex flex-col gap-2 bg-slate-50/50 dark:bg-slate-900/50">
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-2">Presets</span>
