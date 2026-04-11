@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { 
   Phone, 
   PhoneIncoming, 
@@ -25,8 +26,6 @@ import { createClient } from "@/lib/supabase/client";
 import { useParams } from "next/navigation";
 
 export default function CallManagementPage() {
-  const params = useParams();
-  const orgSlug = params.orgSlug as string;
   const [isAiRouting, setIsAiRouting] = useState(false);
   const [liveCalls, setLiveCalls] = useState(0);
   const [stats, setStats] = useState({
@@ -46,21 +45,21 @@ export default function CallManagementPage() {
       try {
         setLoading(true);
         // Fetch Settings
-        const settingsRes = await fetch(`/api/organizations/${orgSlug}/telephony/settings`);
+        const settingsRes = await fetch(`/api/telephony/settings`);
         const settingsData = await settingsRes.json();
         if (settingsData && !settingsData.error) {
             setIsAiRouting(settingsData.aiRoutingEnabled);
         }
 
         // Fetch Stats
-        const statsRes = await fetch(`/api/organizations/${orgSlug}/telephony/stats`);
+        const statsRes = await fetch(`/api/telephony/stats`);
         const statsData = await statsRes.json();
         if (statsData && !statsData.error) {
             setStats(statsData);
         }
 
         // Fetch Logs
-        const logsRes = await fetch(`/api/organizations/${orgSlug}/telephony/logs`);
+        const logsRes = await fetch(`/api/telephony/logs`);
         const logsData = await logsRes.json();
         if (logsData && !logsData.error) {
             setRecords(logsData);
@@ -73,7 +72,7 @@ export default function CallManagementPage() {
     };
 
     fetchData();
-  }, [orgSlug]);
+  }, []);
 
   // 2. Real-time Subscriptions
   useEffect(() => {
@@ -101,7 +100,7 @@ export default function CallManagementPage() {
   const toggleAiRouting = async (checked: boolean) => {
     setIsAiRouting(checked);
     try {
-        const res = await fetch(`/api/organizations/${orgSlug}/telephony/settings`, {
+        const res = await fetch(`/api/telephony/settings`, {
             method: "POST",
             body: JSON.stringify({ aiRoutingEnabled: checked })
         });
@@ -124,18 +123,21 @@ export default function CallManagementPage() {
       
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-2">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-3">
-             <div className="p-3 bg-primary/10 rounded-2xl ring-1 ring-primary/20">
-                <Phone className="w-6 h-6 text-primary" />
-             </div>
-             <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-               Telephony <span className="text-primary/70">Omnichannel Hub</span>
-             </h1>
-          </div>
-          <p className="text-slate-500 text-sm font-medium pl-1">
-             Managing Tata Smartflo communications for <span className="font-bold text-slate-900 dark:text-slate-300">Pahlajani's Hospital</span>
-          </p>
+        <div className="flex items-center gap-6">
+           <div className="h-10 w-auto">
+              <Image src="/scalerxlab-logo.png" alt="ScalerX" width={140} height={35} className="object-contain" />
+           </div>
+           <div className="h-8 w-px bg-slate-200 dark:bg-white/10 hidden md:block" />
+           <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                 <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white lowercase italic">
+                   /telephony.hub
+                 </h1>
+              </div>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest pl-1">
+                 Managing टाटा स्मार्टफ्लो for <span className="text-slate-900 dark:text-slate-300">Pahlajani's Hub</span>
+              </p>
+           </div>
         </div>
 
         {/* AI Toggle Card */}
@@ -299,12 +301,17 @@ export default function CallManagementPage() {
                                  <Activity className="w-8 h-8 text-primary animate-spin mx-auto opacity-20" />
                               </td>
                            </tr>
-                        ) : records.length === 0 ? (
-                           <tr>
-                              <td colSpan={6} className="px-8 py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">
-                                 No Call Data Syncing...
-                              </td>
-                           </tr>
+                        ) : (records.length === 0 || !records) ? (
+                            <tr>
+                               <td colSpan={6} className="px-8 py-24 text-center">
+                                  <div className="flex flex-col items-center justify-center opacity-20 grayscale scale-75">
+                                      <Image src="/scalerxlab-logo.png" alt="ScalerX" width={120} height={30} className="object-contain mb-4" />
+                                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                                         Awaiting Voice Signals...
+                                      </p>
+                                  </div>
+                               </td>
+                            </tr>
                         ) : records.map((log) => (
                            <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
                                 <td className="px-8 py-5">

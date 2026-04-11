@@ -25,6 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -47,17 +48,17 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-white/10 bg-slate-950/90 backdrop-blur-xl shadow-2xl">
+    <Sidebar collapsible="icon" className="border-r border-white/10 bg-slate-950/90 backdrop-blur-xl shadow-2xl max-md:bg-slate-950/98 max-md:backdrop-blur-none">
       <SidebarHeader className="h-20 flex items-center px-4 bg-transparent border-b border-white/5">
         <div className="flex items-center gap-3 group">
           {/* Logo mark (collapsed state) */}
           <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-slate-900 ring-1 ring-slate-800 shadow-xl transition-transform group-hover:scale-105 shrink-0">
-            <Image src="/branding/logo.png" alt={clinicName} width={32} height={32} className="object-contain" />
+            <Image src="/scalerxlab-logo.png" alt={clinicName} width={32} height={32} className="object-contain" />
           </div>
           {/* Full logo (expanded state) */}
           <div className="flex flex-col gap-0 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none min-w-0">
             <div className="h-7 w-auto relative">
-              <Image src="/branding/logo.png" alt={clinicName} width={110} height={28} className="object-contain object-left" />
+              <Image src="/scalerxlab-logo.png" alt={clinicName} width={110} height={28} className="object-contain object-left" />
             </div>
             <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/70 mt-0.5">Clinical CRM</span>
           </div>
@@ -133,6 +134,16 @@ export function AppSidebar() {
           </div>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="p-4 border-t border-white/5">
+        <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden">
+          <div className="h-5 w-5 relative opacity-50">
+            <Image src="/scalerxlab-logo.png" alt="ScalerX" fill className="object-contain grayscale brightness-200" />
+          </div>
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+            Powered by <span className="text-slate-400">ScalerX Lab</span>
+          </span>
+        </div>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

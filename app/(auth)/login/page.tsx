@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, Lock, Mail, Eye, EyeOff, Sparkles, ShieldCheck, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,9 +24,23 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
+  // Remember Me functionality
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("scalerx_remembered_email");
+    if (savedEmail) {
+      setEmail(savedEmail);
+    }
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (rememberMe) {
+      localStorage.setItem("scalerx_remembered_email", email);
+    } else {
+      localStorage.removeItem("scalerx_remembered_email");
+    }
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -168,7 +183,7 @@ export default function LoginPage() {
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <span className="flex items-center justify-center">
-                    Initialize Connection
+                    Sign in
                     <ChevronRight className="h-4 w-4 ml-3 group-hover:translate-x-1 transition-transform" />
                   </span>
                 )}
@@ -177,9 +192,17 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="pb-12 pt-0 flex flex-col space-y-4">
              <div className="h-px w-20 bg-slate-100 mx-auto" />
-             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-16 leading-relaxed">
-                Protected by ScalerX Sovereign Security.
-             </p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-16 leading-relaxed flex items-center justify-center gap-2">
+                 Protected by ScalerX Sovereign Security.
+              </p>
+              <div className="flex items-center justify-center gap-2 opacity-40 hover:opacity-100 transition-opacity pb-4">
+                <div className="h-4 w-4 relative">
+                  <Image src="/scalerxlab-logo.png" alt="ScalerX" fill className="object-contain grayscale" />
+                </div>
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">
+                  Powered by <span className="text-slate-400">ScalerX Lab</span>
+                </span>
+              </div>
           </CardFooter>
         </Card>
       </div>

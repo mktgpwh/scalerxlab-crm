@@ -36,7 +36,7 @@ export default async function DashboardHome() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100 dark:border-white/5">
         <div className="flex items-center gap-6">
           <div className="h-20 w-auto">
-            <Image src="/branding/logo.png" alt={clinicName} width={180} height={45} className="object-contain" />
+            <Image src="/scalerxlab-logo.png" alt={clinicName} width={180} height={45} className="object-contain" />
           </div>
           <div className="h-12 w-px bg-slate-200 dark:bg-white/10 hidden md:block" />
           <div>

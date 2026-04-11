@@ -361,9 +361,14 @@ function LeadsDataView({ leads }: { leads: Record<string, any>[] }) {
       {/* Leads Table */}
       <div className="bg-white dark:bg-black/20 rounded-[2rem] ring-1 ring-slate-200/60 dark:ring-white/5 overflow-hidden shadow-sm">
         {filtered.length === 0 ? (
-          <div className="py-20 text-center">
-            <Users className="h-10 w-10 mx-auto text-slate-200 mb-3" />
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No leads match your filters.</p>
+          <div className="py-24 text-center flex flex-col items-center justify-center">
+            <div className="relative h-16 w-16 mb-6 opacity-20 grayscale">
+              <Image src="/scalerxlab-logo.png" alt="ScalerX" fill className="object-contain" />
+            </div>
+            <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">
+              Zero Nodes Detected in Matrix
+            </p>
+            <p className="text-[10px] text-slate-300 font-medium mt-2">Adjust filters or await incoming lead signals.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -587,8 +592,8 @@ export function ExecutiveDashboard({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100 dark:border-white/5">
         <div className="flex items-center gap-6">
-          <div className="h-10 w-auto">
-            <Image src="/branding/logo.png" alt={process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab"} width={140} height={35} className="object-contain" />
+          <div className="h-10 w-auto text-slate-900 dark:text-white">
+            <Image src="/scalerxlab-logo.png" alt={process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab"} width={140} height={35} className="object-contain" />
           </div>
           <div className="h-8 w-px bg-slate-200 dark:bg-white/10 hidden md:block" />
           <div className="flex items-center gap-4">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
+import Image from "next/image";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -39,7 +40,12 @@ export function KanbanColumn({
       </div>
 
       <ScrollArea className="flex-1 p-3">
-        <div className="flex flex-col gap-3 min-h-[150px]">
+        <div className="flex flex-col gap-3 min-h-[150px] relative">
+          {leads.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] grayscale pointer-events-none">
+                <Image src="/scalerxlab-logo.png" alt="ScalerX" width={100} height={25} className="object-contain" />
+            </div>
+          )}
           <SortableContext
             id={id}
             items={leads.map((l) => l.id)}

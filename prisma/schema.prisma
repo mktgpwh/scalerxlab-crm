@@ -148,6 +148,8 @@ enum OrgPlan {
 enum UserRole {
   SUPER_ADMIN
   ORG_ADMIN
+  DOCTOR
+  COUNSELOR
   MANAGER
   AGENT
   VIEWER
