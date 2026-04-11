@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { KanbanBoard } from "./kanban-board";
 import { Lead } from "@/lib/types";
@@ -34,9 +35,15 @@ export default async function PipelinePage() {
       </div>
 
       <div className="flex-1 min-h-0 bg-transparent rounded-[2rem] overflow-hidden">
-        <KanbanBoard 
-            initialLeads={leads as unknown as Lead[]} 
-        />
+        <Suspense fallback={
+            <div className="w-full h-full flex items-center justify-center bg-slate-50/50 rounded-[2rem] animate-pulse">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading Pipeline Matrix...</p>
+            </div>
+        }>
+            <KanbanBoard 
+                initialLeads={leads as unknown as Lead[]} 
+            />
+        </Suspense>
       </div>
     </div>
   );
