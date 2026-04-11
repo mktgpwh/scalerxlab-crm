@@ -15,9 +15,18 @@ export interface Lead {
   aiScore: number | null;
   aiScoredAt: Date | null;
   aiNotes: string | null;
-  assignedToId: string | null;
+  ownerId: string | null;
   assignedAt: Date | null;
   branchId: string | null;
+  owner?: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+  branch?: {
+    id: string;
+    name: string;
+  };
   isAutoAssigned: boolean;
   consentFlag: boolean;
   consentTimestamp: Date | null;

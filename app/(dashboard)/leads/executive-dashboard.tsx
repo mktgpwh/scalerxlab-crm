@@ -22,6 +22,10 @@ import { Popover as PopoverRoot } from "@/components/ui/popover";
 import { FacebookIcon, WhatsAppIcon } from "@/components/icons";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useDashboardStore } from "@/lib/store/use-dashboard-store";
+import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
+import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { toast } from "sonner";
 
 const COLORS = ["#6366f1", "#10b981", "#ec4899", "#f59e0b"];
 
@@ -32,26 +36,9 @@ const INTENT_STYLES: Record<string, string> = {
   UNSCORED: "bg-slate-100 text-slate-500 ring-slate-200/50",
 };
 
-const CATEGORY_STYLES: Record<string, string> = {
-  INFERTILITY: "bg-purple-500/10 text-purple-600",
-  MATERNITY:   "bg-pink-500/10 text-pink-600",
-  GYNECOLOGY:  "bg-rose-500/10 text-rose-700",
-  OTHER:       "bg-slate-100 text-slate-500",
-};
-
-const STATUS_STYLES: Record<string, string> = {
-  RAW:               "bg-slate-100 text-slate-600",
-  QUALIFIED:         "bg-blue-500/10 text-blue-600",
-  CONTACTED:         "bg-indigo-500/10 text-indigo-600",
-  APPOINTMENT_FIXED: "bg-violet-500/10 text-violet-600",
-  VISITED:           "bg-emerald-500/10 text-emerald-600",
-  WON:               "bg-emerald-600/20 text-emerald-700",
-  LOST:              "bg-slate-200 text-slate-500 line-through",
-};
-
 // ─── Analytics Sub-Component ────────────────────────────────────────────────
 
-function AnalyticsView({ leads }: { leads: Record<string, any>[] }) {
+function AnalyticsView({ leads, userRole }: { leads: Record<string, any>[], userRole: string }) {
   const [insight, setInsight] = useState<string | null>(null);
   const [insightLoading, setInsightLoading] = useState(true);
   const [adSpendMode, setAdSpendMode] = useState<'AUTO' | 'MANUAL' | 'META'>('AUTO');
@@ -115,133 +102,121 @@ function AnalyticsView({ leads }: { leads: Record<string, any>[] }) {
         </div>
       </Card>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Ad Spend */}
-        <Card className="relative surface-layered border-none rounded-[2rem] p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10 overflow-visible">
-          <div className="flex justify-between items-start mb-4">
-            <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-            <Popover>
-              <PopoverTrigger className="flex items-center justify-center rounded-md h-6 w-6 text-slate-400 hover:text-slate-900 absolute top-4 right-4 focus:outline-none hover:bg-slate-100 transition-colors">
-                <Settings className="h-4 w-4" />
-              </PopoverTrigger>
-              <PopoverContent className="w-80 rounded-2xl border border-slate-200/60 shadow-2xl p-4 bg-white/90 backdrop-blur-xl" align="end">
-                <div className="space-y-4">
-                  <div><h4 className="text-sm font-black italic tracking-tighter">Budget Origin</h4><p className="text-[10px] font-bold text-slate-500 uppercase">Select Data Source</p></div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button variant={adSpendMode === 'MANUAL' ? "default" : "outline"} className={`text-[10px] font-bold rounded-xl ${adSpendMode === 'MANUAL' && "bg-blue-500 hover:bg-blue-600"}`} onClick={() => setAdSpendMode('MANUAL')}>Manual Entry</Button>
-                    <Button variant={adSpendMode === 'META' ? "default" : "outline"} className={`text-[10px] font-bold rounded-xl flex items-center gap-2 ${adSpendMode === 'META' && "bg-[#1877F2] hover:bg-[#1877F2]/90"}`} onClick={() => setAdSpendMode('META')}><FacebookIcon className="h-3 w-3" />Meta CAPI</Button>
-                  </div>
-                  {adSpendMode === 'MANUAL' && (
-                    <div className="pt-2"><label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Set Value (₹)</label><Input type="number" className="mt-1 font-black text-right rounded-xl h-9 bg-slate-50" value={customAdSpend} onChange={(e) => setCustomAdSpend(Number(e.target.value))} placeholder="e.g. 50000" /></div>
-                  )}
-                  {adSpendMode === 'META' && (
-                    <div className="pt-2 flex flex-col items-center p-3 text-center bg-blue-50 rounded-xl"><Loader2 className="h-4 w-4 text-blue-500 animate-spin mb-2"/><span className="text-[10px] font-bold text-slate-600">Connecting to Business Manager...</span></div>
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
-            <span className="text-[10px] font-black text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full mr-8">{adSpendMode === 'AUTO' ? 'ESTIMATED' : adSpendMode}</span>
-          </div>
-          <h3 className="text-3xl font-black tracking-tighter italic">₹{(displayAdSpend / 1000).toFixed(1)}k</h3>
-          <div className="flex items-center justify-between mt-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Ad Spend</p>
-            <p className="text-[10px] font-black text-slate-600">{totalLeads} Leads</p>
-          </div>
-        </Card>
-
-        {/* Hot Ratio */}
-        <Card className="surface-layered border-none rounded-[2rem] p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10">
-          <div className="flex justify-between items-start mb-4">
-            <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500"><Flame className="h-5 w-5 animate-pulse" /></div>
-          </div>
-          <h3 className="text-3xl font-black tracking-tighter italic text-rose-500">{hotRatio}%</h3>
-          <div className="flex items-center justify-between mt-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global Hot Ratio</p>
-            <p className="text-[10px] font-black text-slate-600">{hotLeads} Hot Leads</p>
-          </div>
-        </Card>
-
-        {/* IVF Target */}
-        <Card className="surface-layered border-none rounded-[2rem] p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10">
-          <div className="flex justify-between items-start mb-4">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500"><Target className="h-5 w-5" /></div>
-            <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">ACTIVE</span>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-end">
-              <h3 className="text-3xl font-black tracking-tighter italic text-emerald-500">{ivfLeads}</h3>
-              <span className="text-xs font-black text-slate-400 mb-1">/ 50 IVF Cycles</span>
-            </div>
-            <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000" style={{ width: `${targetProgress}%` }} />
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <KpiCard 
+          title="Total Ad Spend" 
+          value={`₹${(displayAdSpend / 1000).toFixed(1)}k`} 
+          subValue={`${totalLeads} Leads`} 
+          icon={<TrendingUp className="h-5 w-5" />} 
+          color="blue" 
+          estimated={adSpendMode === 'AUTO'}
+          onSettings={() => {}}
+        />
+        <KpiCard 
+          title="Global Hot Ratio" 
+          value={`${hotRatio}%`} 
+          subValue={`${hotLeads} Hot Leads`} 
+          icon={<Flame className="h-5 w-5" />} 
+          color="rose" 
+        />
+        <KpiCard 
+          title="IVF Target" 
+          value={ivfLeads.toString()} 
+          subValue="/ 50 Cycles" 
+          icon={<Target className="h-5 w-5" />} 
+          color="emerald" 
+          progress={targetProgress}
+        />
+        <KpiCard 
+          title="Presence" 
+          value="8 NODE" 
+          subValue="Active Agents" 
+          icon={<Users className="h-5 w-5" />} 
+          color="indigo" 
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* IVF Funnel */}
-        <Card className="lg:col-span-2 surface-layered border-none rounded-[2rem] p-8 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10">
-          <div className="flex items-center gap-2 mb-8"><Activity className="h-5 w-5 text-primary" /><h4 className="text-lg font-black italic tracking-tight">The IVF Flow (Infertility Matrix)</h4></div>
-          <div className="h-[250px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 30, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" opacity={0.5} />
-                <XAxis type="number" hide />
-                <YAxis dataKey="stage" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#94a3b8' }} width={110} />
-                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '1rem', border: 'none', fontSize: '10px', fontWeight: 'bold' }} />
-                <Bar dataKey="count" radius={[0, 10, 10, 0]} barSize={24}>
-                  {funnelData.map((_, index) => <Cell key={index} fill={index === 3 ? '#10b981' : '#6366f1'} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+         {/* Conversion Pipeline Chart (Funnel) */}
+         <Card className="lg:col-span-2 surface-layered border-none rounded-[3rem] p-10 shadow-sm ring-1 ring-slate-200/50">
+            <div className="flex items-center gap-2 mb-8">
+              <Activity className="h-5 w-5 text-primary" />
+              <h4 className="text-lg font-black italic tracking-tight">Conversion Pipeline Chart</h4>
+            </div>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" opacity={0.5} />
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="stage" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} width={120} />
+                  <Tooltip cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }} contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+                  <Bar dataKey="count" radius={[0, 10, 10, 0]} barSize={32}>
+                    {funnelData.map((_, index) => (
+                      <Cell key={index} fill={[`#6366f1`, `#818cf8`, `#a5b4fc`, `#10b981`][index % 4]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+         </Card>
 
-        {/* Pie Chart */}
-        <Card className="surface-layered border-none rounded-[2rem] p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10 flex flex-col">
-          <div className="mb-4"><h4 className="text-sm font-black italic tracking-tight">Department Vector</h4><p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Lead Classification</p></div>
-          <div className="flex-1 flex items-center justify-center min-h-[150px]">
-            <ResponsiveContainer width="100%" height={150}>
-              <PieChart>
-                <Pie data={treatmentData} innerRadius={40} outerRadius={65} paddingAngle={5} dataKey="value">
-                  {treatmentData.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', fontSize: '10px', fontWeight: 'bold' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {treatmentData.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 bg-slate-50 dark:bg-white/5 p-1.5 rounded-lg">
-                <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
-                <span className="text-[9px] font-black uppercase truncate">{item.name} <span className="opacity-50">({item.value})</span></span>
-              </div>
-            ))}
-          </div>
-        </Card>
+         {/* Treatment Split Chart (Donut) */}
+         <Card className="surface-layered border-none rounded-[3rem] p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col">
+            <div className="mb-6">
+              <h4 className="text-sm font-black italic tracking-tight uppercase">Treatment Split Chart</h4>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Donut: Maternity vs Infertility</p>
+            </div>
+            <div className="flex-1 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={treatmentData}
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={8}
+                    dataKey="value"
+                    strokeWidth={0}
+                  >
+                    {treatmentData.map((_, index) => (
+                      <Cell key={index} fill={[COLORS[0], COLORS[2], COLORS[1], COLORS[3]][index % 4]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-2 mt-6">
+              {treatmentData.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-white/5">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: [COLORS[0], COLORS[2], COLORS[1], COLORS[3]][idx % 4] }} />
+                    <span className="text-[10px] font-black uppercase tracking-tight">{item.name}</span>
+                  </div>
+                  <span className="text-[10px] font-black text-slate-400">{item.value}</span>
+                </div>
+              ))}
+            </div>
+         </Card>
       </div>
 
-      {/* Regional Attribution */}
-      <Card className="surface-layered border-none rounded-[2rem] p-8 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10">
-        <div className="flex items-center gap-2 mb-6"><MapPin className="h-5 w-5 text-indigo-500" /><h4 className="text-lg font-black italic tracking-tight">Geospatial Momentum</h4></div>
-        <div className="h-[200px] w-full">
+      {/* Center Performance Chart (Bar) */}
+      <Card className="surface-layered border-none rounded-[3rem] p-10 shadow-sm ring-1 ring-slate-200/50">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-indigo-500" />
+            <h4 className="text-lg font-black italic tracking-tight">Center Performance Chart</h4>
+          </div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Leads mapped to specific branches</p>
+        </div>
+        <div className="h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={regionalData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorRegion" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#94a3b8' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#94a3b8' }} />
-              <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', fontSize: '10px', fontWeight: 'bold' }} />
-              <Area type="monotone" dataKey="count" stroke="#6366f1" fillOpacity={1} fill="url(#colorRegion)" strokeWidth={3} />
-            </AreaChart>
+            <BarChart data={regionalData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
+              <Tooltip cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }} contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+              <Bar dataKey="count" fill="#6366f1" radius={[8, 8, 0, 0]} barSize={60} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </Card>
@@ -251,7 +226,15 @@ function AnalyticsView({ leads }: { leads: Record<string, any>[] }) {
 
 // ─── Leads Data Table Sub-Component ─────────────────────────────────────────
 
-function LeadsDataView({ leads }: { leads: Record<string, any>[] }) {
+function LeadsDataView({ 
+  leads, 
+  userRole, 
+  team 
+}: { 
+  leads: Record<string, any>[], 
+  userRole: string,
+  team: any[]
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -280,8 +263,34 @@ function LeadsDataView({ leads }: { leads: Record<string, any>[] }) {
     else { setSortField(field); setSortDir("desc"); }
   };
 
+  const { ownerId, setOwnerId } = useDashboardStore();
+
+  const handleReassign = async (leadId: string, newOwnerId: string | null) => {
+    try {
+      const res = await fetch(`/api/leads/${leadId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ ownerId: newOwnerId === "unassigned" ? null : newOwnerId })
+      });
+      if (res.ok) {
+        toast.success("Ownership Transferred", {
+            description: "Lead visibility has been updated successfully."
+        });
+        // We might want to refresh here or use a lighter update
+        router.refresh();
+      }
+    } catch (err) {
+      toast.error("Transfer Failed", { description: "Matrix connectivity error." });
+    }
+  };
+
   const filtered = useMemo(() => {
     let result = leads.filter(l => {
+      // 1. Ownership / Unassigned logic for Admins
+      if (userRole === "ORG_ADMIN" || userRole === "SUPER_ADMIN") {
+        if (ownerId === "unassigned" && l.ownerId !== null) return false;
+        if (ownerId !== "unassigned" && ownerId !== null && l.ownerId !== ownerId) return false;
+      }
+
       const q = search.toLowerCase();
       const matchSearch = !q || 
         (l.name || "").toLowerCase().includes(q) || 
@@ -336,6 +345,22 @@ function LeadsDataView({ leads }: { leads: Record<string, any>[] }) {
           {/* Heat Score */}
           <FilterChip label="Heat" value={filterIntent} options={intents} onChange={setFilterIntent} />
 
+          {(userRole === "ORG_ADMIN" || userRole === "SUPER_ADMIN") && (
+            <FilterChip 
+               label="Node Access" 
+               value={ownerId === "unassigned" ? "UNASSIGNED" : (team.find(t => t.id === ownerId)?.name || "ALL OWNERS")} 
+               options={["ALL", "UNASSIGNED", ...team.map(t => t.name)]} 
+               onChange={(val) => {
+                   if (val === "ALL") setOwnerId(null);
+                   else if (val === "UNASSIGNED") setOwnerId("unassigned");
+                   else {
+                       const t = team.find(tm => tm.name === val);
+                       if (t) setOwnerId(t.id);
+                   }
+               }} 
+            />
+          )}
+
           {activeFilters > 0 && (
             <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-full h-8 px-3"
               onClick={() => { setFilterSource("ALL"); setFilterStatus("ALL"); setFilterCategory("ALL"); setFilterIntent("ALL"); }}>
@@ -380,6 +405,7 @@ function LeadsDataView({ leads }: { leads: Record<string, any>[] }) {
                     { label: "Source / Origin", field: "source" },
                     { label: "Status", field: "status" },
                     { label: "Treatment", field: "category" },
+                    { label: "Owner", field: "ownerId" },
                     { label: "Heat Score", field: "intent" },
                     { label: "AI Score", field: "aiScore" },
                     { label: "AI Remarks", field: null },
@@ -449,6 +475,28 @@ function LeadsDataView({ leads }: { leads: Record<string, any>[] }) {
                           : lead.category === 'GYNECOLOGY' ? 'GYN'
                           : 'OTH'}
                       </Badge>
+                    </td>
+
+                    {/* Owner / Reassignment */}
+                    <td className="px-5 py-4">
+                      {userRole === "ORG_ADMIN" || userRole === "SUPER_ADMIN" ? (
+                        <div onClick={(e) => e.stopPropagation()}>
+                           <select 
+                            value={lead.ownerId || "unassigned"} 
+                            onChange={(e) => handleReassign(lead.id, e.target.value)}
+                            className="bg-slate-50 border-none text-[10px] font-black uppercase tracking-tight rounded-lg px-2 h-7 focus:ring-1 focus:ring-primary/20 cursor-pointer"
+                           >
+                              <option value="unassigned">Unassigned</option>
+                              {team.map(member => (
+                                <option key={member.id} value={member.id}>{member.name}</option>
+                              ))}
+                           </select>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-black uppercase text-slate-400">
+                          {lead.owner?.name || "Unassigned"}
+                        </span>
+                      )}
                     </td>
 
                     {/* Heat Score */}
@@ -583,10 +631,34 @@ function FilterChip({ label, value, options, onChange }: { label: string; value:
 // ─── Main Export ─────────────────────────────────────────────────────────────
 
 export function ExecutiveDashboard({ 
-  initialLeads 
+  initialLeads,
+  userRole,
+  currentUserId,
+  team
 }: { 
   initialLeads: Record<string, any>[]; 
+  userRole: string;
+  currentUserId: string;
+  team: any[];
 }) {
+  const { dateRange, category } = useDashboardStore();
+
+  const globalFilteredLeads = useMemo(() => {
+    return initialLeads.filter(l => {
+      // 1. Date Filter
+      if (dateRange?.from) {
+        const leadDate = new Date(l.createdAt);
+        const from = startOfDay(dateRange.from);
+        const to = endOfDay(dateRange.to || dateRange.from);
+        if (!isWithinInterval(leadDate, { start: from, end: to })) return false;
+      }
+      // 2. Category Filter
+      if (category && l.category !== category) return false;
+      
+      return true;
+    });
+  }, [initialLeads, dateRange, category]);
+
   return (
     <div className="space-y-8 pb-10">
       {/* Header */}
@@ -609,6 +681,8 @@ export function ExecutiveDashboard({
         </div>
       </div>
 
+      <DashboardFilterBar />
+
       <Tabs defaultValue="analytics" className="w-full">
         <TabsList className="bg-white dark:bg-slate-900 h-12 p-1.5 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm w-auto inline-flex gap-1">
           <TabsTrigger value="analytics" className="rounded-xl text-[10px] font-black uppercase tracking-widest h-9 px-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
@@ -616,17 +690,77 @@ export function ExecutiveDashboard({
           </TabsTrigger>
           <TabsTrigger value="leads" className="rounded-xl text-[10px] font-black uppercase tracking-widest h-9 px-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
             /Leads Data
-            <span className="ml-2 px-1.5 py-0.5 rounded-full bg-current/10 opacity-60 text-[8px]">{initialLeads.length}</span>
+            <span className="ml-2 px-1.5 py-0.5 rounded-full bg-current/10 opacity-60 text-[8px]">{globalFilteredLeads.length}</span>
           </TabsTrigger>
         </TabsList>
-
+ 
         <TabsContent value="analytics" className="mt-8 animate-in fade-in slide-in-from-bottom-2">
-          <AnalyticsView leads={initialLeads} />
+          <AnalyticsView leads={globalFilteredLeads} userRole={userRole} />
         </TabsContent>
         <TabsContent value="leads" className="mt-8 animate-in fade-in slide-in-from-bottom-2">
-          <LeadsDataView leads={initialLeads} />
+          <LeadsDataView leads={globalFilteredLeads} userRole={userRole} team={team} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+function KpiCard({ title, value, subValue, icon, color, progress, estimated }: any) {
+    const colorMap: any = {
+        blue: "text-blue-500 bg-blue-500/10 ring-blue-500/20",
+        rose: "text-rose-500 bg-rose-500/10 ring-rose-500/20",
+        emerald: "text-emerald-500 bg-emerald-500/10 ring-emerald-500/20",
+        indigo: "text-indigo-500 bg-indigo-500/10 ring-indigo-500/20"
+    };
+
+    return (
+        <Card className="surface-layered border-none rounded-[2.5rem] p-8 shadow-sm ring-1 ring-slate-200/50 overflow-hidden relative group transition-all hover:shadow-xl hover:ring-primary/20">
+            <div className="flex justify-between items-start mb-6">
+                <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500", colorMap[color])}>
+                    {icon}
+                </div>
+                {estimated && (
+                    <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-slate-100 text-slate-400">Estimated</span>
+                )}
+            </div>
+            
+            <div className="space-y-1">
+                <h3 className={cn("text-3xl font-black tracking-tighter italic transition-all group-hover:tracking-tight", 
+                    color === 'rose' ? "text-rose-500" : color === 'emerald' ? "text-emerald-500" : "text-slate-900")}>
+                    {value}
+                </h3>
+                <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{title}</p>
+                    <p className="text-[10px] font-black text-slate-500">{subValue}</p>
+                </div>
+            </div>
+
+            {progress !== undefined && (
+                <div className="h-1.5 w-full bg-slate-100 mt-6 rounded-full overflow-hidden">
+                    <div 
+                        className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000" 
+                        style={{ width: `${progress}%` }} 
+                    />
+                </div>
+            )}
+        </Card>
+    );
+}
+
+const STATUS_STYLES: Record<string, string> = {
+  RAW:               "bg-slate-100 text-slate-600 ring-slate-200/50",
+  QUALIFIED:         "bg-indigo-50 text-indigo-600 ring-indigo-500/20",
+  CONTACTED:         "bg-blue-50 text-blue-600 ring-blue-500/20",
+  APPOINTMENT_FIXED: "bg-amber-50 text-amber-600 ring-amber-500/20",
+  VISITED:           "bg-violet-50 text-violet-600 ring-violet-500/20",
+  WON:               "bg-emerald-100 text-emerald-700 ring-emerald-500/30",
+  LOST:              "bg-rose-50 text-rose-600 ring-rose-500/20"
+};
+
+const CATEGORY_STYLES: Record<string, string> = {
+  INFERTILITY: "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20",
+  MATERNITY:   "bg-indigo-500/10 text-indigo-600 ring-indigo-500/20",
+  GYNECOLOGY:  "bg-rose-500/10 text-rose-600 ring-rose-500/20",
+  OTHER:       "bg-slate-500/10 text-slate-600 ring-slate-500/20"
+};
+

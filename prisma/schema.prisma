@@ -12,6 +12,7 @@ model SystemSettings {
   clinicName        String   @default("Pahlajani's Women's Hospital")
   brandColor        String   @default("#0f172a")
   aiRoutingEnabled  Boolean  @default(false)
+  leadDistributionStrategy LeadDistributionStrategy @default(MANUAL)
   tataVirtualNumber String?
   updatedAt         DateTime @updatedAt
 
@@ -37,12 +38,13 @@ model User {
   avatarUrl                String?
   role                     UserRole      @default(AGENT)
   isActive                 Boolean       @default(true)
+  isOnline                 Boolean       @default(false)
   platformConsentGiven     Boolean       @default(false)
   platformConsentTimestamp DateTime?
   createdAt                DateTime      @default(now())
   updatedAt                DateTime      @updatedAt
   activityLogs             ActivityLog[]
-  assignedLeads            Lead[]        @relation("AssignedAgent")
+  ownedLeads               Lead[]        @relation("LeadOwner")
 
   @@map("users")
 }
@@ -60,7 +62,7 @@ model Lead {
   aiScore             Int?
   aiScoredAt          DateTime?
   aiNotes             String?
-  assignedToId        String?           @db.Uuid
+  ownerId             String?           @db.Uuid
   assignedAt          DateTime?
   consentFlag         Boolean           @default(false)
   consentTimestamp    DateTime?
@@ -74,11 +76,11 @@ model Lead {
   activityLogs        ActivityLog[]
   autoNurtureQueue    AutoNurtureQueue?
   callLogs            CallLog[]
-  assignedTo          User?             @relation("AssignedAgent", fields: [assignedToId], references: [id])
+  owner               User?             @relation("LeadOwner", fields: [ownerId], references: [id])
   branch              Branch?           @relation(fields: [branchId], references: [id])
 
   @@index([branchId])
-  @@index([assignedToId])
+  @@index([ownerId])
   @@index([category])
   @@map("leads")
 }
@@ -137,6 +139,11 @@ enum Industry {
   REAL_ESTATE
   FINANCE
   OTHER
+}
+
+enum LeadDistributionStrategy {
+  ROUND_ROBIN
+  MANUAL
 }
 
 enum OrgPlan {

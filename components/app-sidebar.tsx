@@ -11,9 +11,13 @@ import {
   Command,
   BarChart3,
   Home,
-  Phone
+  Phone,
+  LogOut
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -46,6 +50,44 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function getProfile() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        // Fetch role from our 'users' table
+        const { data, error } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+        
+        if (data && !error) {
+          setRole(data.role);
+        }
+      }
+    }
+    getProfile();
+  }, [supabase]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
+  // Filter items based on role
+  const filteredItems = items.filter((item) => {
+    // Hide administrative items for clinical roles
+    if (role !== "ORG_ADMIN" && role !== "SUPER_ADMIN") {
+      if (["System Settings", "Integrations", "Analytics Hub"].includes(item.title)) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <Sidebar collapsible="icon" className="border-r border-slate-200/50 bg-white/80 backdrop-blur-xl shadow-2xl max-md:bg-white/98 max-md:backdrop-blur-none">
@@ -70,7 +112,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 mb-4 px-2">Core Operations</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
-              {items.map((item) => {
+              {filteredItems.map((item) => {
                 const isActive = item.url === "/"
                   ? pathname === "/"
                   : pathname.startsWith(item.url);
@@ -134,7 +176,21 @@ export function AppSidebar() {
           </div>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t border-slate-100">
+      <SidebarFooter className="p-4 border-t border-slate-100 gap-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              onClick={handleLogout}
+              className="h-10 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl px-3 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="font-black text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">
+                Sign Out
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+
         <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden">
           <div className="h-5 w-5 relative opacity-30">
             <Image src="/scalerxlab-logo.png" alt="ScalerX" fill className="object-contain grayscale" />

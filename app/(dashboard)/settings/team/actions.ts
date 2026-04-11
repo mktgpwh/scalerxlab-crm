@@ -85,3 +85,16 @@ export async function deleteUserAction(userId: string) {
     return { error: error.message };
   }
 }
+
+export async function updateDistributionStrategy(strategy: "ROUND_ROBIN" | "MANUAL") {
+  try {
+    await prisma.systemSettings.update({
+      where: { id: "singleton" },
+      data: { leadDistributionStrategy: strategy }
+    });
+    revalidatePath("/settings/team");
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
