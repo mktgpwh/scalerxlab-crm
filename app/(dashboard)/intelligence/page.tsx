@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 
 export default function IntelligenceHubPage() {
     const [narrative, setNarrative] = useState<string | null>(null);
+    const [status, setStatus] = useState<string>("MODERATE");
     const [loadingHealth, setLoadingHealth] = useState(true);
     const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'ai', content: string }>>([
         { role: 'ai', content: "AgentX localized. Ready for statistical matrix intersection. What business intelligence do you seek?" }
@@ -44,6 +45,7 @@ export default function IntelligenceHubPage() {
             const res = await fetch("/api/ai/health");
             const data = await res.json();
             setNarrative(data.narrative);
+            setStatus(data.status || "MODERATE");
         } catch (err) {
             setNarrative("Matrix connection failed. Intelligence stream offline.");
         } finally {
@@ -98,8 +100,13 @@ export default function IntelligenceHubPage() {
                     <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
                     <div className="relative h-full w-full bg-slate-950/90 rounded-[2.9rem] backdrop-blur-3xl p-10 overflow-y-auto custom-scrollbar">
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_#6366f1]" />
-                            <h3 className="text-xs font-black uppercase tracking-[0.4em] text-primary">AgentX Mission Narrative</h3>
+                            <div className={cn(
+                                "h-2 w-2 rounded-full animate-pulse",
+                                status === "GOOD" && "bg-emerald-500 shadow-[0_0_10px_#10b981]",
+                                status === "MODERATE" && "bg-amber-500 shadow-[0_0_10px_#f59e0b]",
+                                status === "CRITICAL" && "bg-rose-500 shadow-[0_0_10px_#f43f5e]"
+                            )} />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400">AgentX Mission Narrative</h3>
                         </div>
 
                         {loadingHealth ? (

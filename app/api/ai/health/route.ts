@@ -20,7 +20,8 @@ export async function GET() {
           2. Compare performance between clinical nodes (centers).
           3. Critique lead quality and conversion velocity.
           4. Format with clean sections: health pulse, center comparison, and urgent alerts.
-          5. DO NOT mention any PII (no names, emails, phones).`
+          5. DO NOT mention any PII (no names, emails, phones).
+          6. FINALLY, add a single word on the last line of your response enclosed in brackets like [GOOD], [MODERATE], or [CRITICAL] representing the overall health of the clinical matrix.`
         },
         {
           role: "user",
@@ -31,8 +32,14 @@ export async function GET() {
       max_tokens: 800
     });
 
+    const rawContent = completion.choices[0]?.message?.content || "";
+    const statusMatch = rawContent.match(/\[(GOOD|MODERATE|CRITICAL)\]/);
+    const status = statusMatch ? statusMatch[1] : "MODERATE";
+    const narrative = rawContent.replace(/\[(GOOD|MODERATE|CRITICAL)\]/, "").trim();
+
     return NextResponse.json({
-      narrative: completion.choices[0]?.message?.content || null,
+      narrative: narrative || null,
+      status,
       data
     });
 
