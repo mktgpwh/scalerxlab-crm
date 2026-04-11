@@ -217,7 +217,7 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
           </DialogHeader>
         </div>
 
-        <div className="p-8 min-h-[400px]">
+        <div className="max-h-[60vh] overflow-y-auto custom-scrollbar p-8">
           {step === "UPLOAD" && (
             <div className="space-y-6">
                 <div 
@@ -379,7 +379,7 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
           )}
         </div>
 
-        <DialogFooter className="p-8 bg-slate-50/50 border-t border-slate-100">
+        <DialogFooter className="p-8 bg-slate-50/50 border-t border-slate-100 flex-shrink-0">
             {step === "PREVIEW" ? (
                 <Button 
                     onClick={handleImport} 

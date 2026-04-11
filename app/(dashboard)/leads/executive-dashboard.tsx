@@ -40,7 +40,7 @@ const INTENT_STYLES: Record<string, string> = {
 
 // ─── Analytics Sub-Component ────────────────────────────────────────────────
 
-function AnalyticsView({ leads, userRole }: { leads: Record<string, any>[], userRole: string }) {
+function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, any>[], userRole: string, branches: any[] }) {
   const [insight, setInsight] = useState<string | null>(null);
   const [insightLoading, setInsightLoading] = useState(true);
   const [adSpendMode, setAdSpendMode] = useState<'AUTO' | 'MANUAL' | 'META'>('AUTO');
@@ -64,11 +64,10 @@ function AnalyticsView({ leads, userRole }: { leads: Record<string, any>[], user
     { name: 'OTH',  value: otherLeads },
   ].filter(d => d.value > 0);
 
-  const regionalData = [
-    { name: 'Raipur',   count: Math.floor(totalLeads * 0.55) },
-    { name: 'Bhilai',   count: Math.floor(totalLeads * 0.30) },
-    { name: 'Bilaspur', count: Math.floor(totalLeads * 0.15) }
-  ];
+  const regionalData = branches.map(branch => ({
+    name: branch.name,
+    count: leads.filter(l => l.branchId === branch.id).length
+  }));
 
   const ivfPipelineLeads = leads.filter(l => l.category === 'INFERTILITY');
   const funnelData = [
@@ -131,8 +130,8 @@ function AnalyticsView({ leads, userRole }: { leads: Record<string, any>[], user
         />
         <KpiCard 
           title="Presence" 
-          value="8 NODE" 
-          subValue="Active Agents" 
+          value={`${branches.length} NODE`} 
+          subValue="Active Clinical Centers" 
           icon={<Users className="h-5 w-5" />} 
           color="indigo" 
         />
@@ -704,7 +703,7 @@ export function ExecutiveDashboard({
         </TabsList>
  
         <TabsContent value="analytics" className="mt-8 animate-in fade-in slide-in-from-bottom-2">
-          <AnalyticsView leads={globalFilteredLeads} userRole={userRole} />
+          <AnalyticsView leads={globalFilteredLeads} userRole={userRole} branches={branches} />
         </TabsContent>
         <TabsContent value="leads" className="mt-8 animate-in fade-in slide-in-from-bottom-2">
           <LeadsDataView leads={globalFilteredLeads} userRole={userRole} team={team} />

@@ -105,7 +105,7 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
             </DialogHeader>
           </div>
 
-          <div className="p-8 space-y-5">
+          <div className="max-h-[60vh] overflow-y-auto custom-scrollbar px-8 py-4 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Full Name</Label>
@@ -188,7 +188,7 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Clinical Center <span className="text-rose-500">*</span></Label>
               <Select required value={formData.branchId} onValueChange={(val) => setFormData({ ...formData, branchId: val || "" })}>
-                <SelectTrigger className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:ring-primary/20 font-bold text-xs ring-1 ring-slate-100/50">
+                <SelectTrigger className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:ring-primary/20 font-bold text-xs ring-1 ring-slate-100/50 hover:bg-slate-100/50 transition-colors">
                   <SelectValue placeholder="Select Deployment Center" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
@@ -200,16 +200,16 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
                 </SelectContent>
               </Select>
             </div>
+          </div>
 
-            <DialogFooter className="pt-6">
-              <Button 
-                  type="submit" 
-                  disabled={loading}
-                  className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 transition-all font-heading"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Capture Signal"}
-              </Button>
-            </DialogFooter>
+          <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex-shrink-0">
+            <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 transition-all font-heading"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Capture Signal"}
+            </Button>
           </div>
         </form>
       </DialogContent>
