@@ -230,11 +230,13 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
 function LeadsDataView({ 
   leads, 
   userRole, 
-  team 
+  team,
+  branches
 }: { 
   leads: Record<string, any>[], 
   userRole: string,
-  team: any[]
+  team: any[],
+  branches: any[]
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -721,7 +723,7 @@ export function ExecutiveDashboard({
           <AnalyticsView leads={globalFilteredLeads} userRole={userRole} branches={branches} />
         </TabsContent>
         <TabsContent value="leads" className="mt-8 animate-in fade-in slide-in-from-bottom-2">
-          <LeadsDataView leads={globalFilteredLeads} userRole={userRole} team={team} />
+          <LeadsDataView leads={globalFilteredLeads} userRole={userRole} team={team} branches={branches} />
         </TabsContent>
       </Tabs>
     </div>

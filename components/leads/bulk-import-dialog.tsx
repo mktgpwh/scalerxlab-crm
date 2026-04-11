@@ -32,6 +32,7 @@ import {
     SelectValue 
 } from "@/components/ui/select";
 import { bulkImportLeadsAction } from "@/app/(dashboard)/leads/actions";
+import { useDashboardStore } from "@/lib/store/use-dashboard-store";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
@@ -255,8 +256,8 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
           )}
 
           {step === "MAP" && (
-            <div className="space-y-8 max-w-md mx-auto">
-                <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-10 max-w-xl mx-auto py-4">
+                <div className="grid grid-cols-1 gap-8">
                     {/* Mapper Fields */}
                     {[
                         { id: "name", label: "Full Identity Name", required: true },
@@ -293,15 +294,22 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
                     <div className="pt-4 border-t border-slate-100 border-dashed space-y-3">
                         <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Default Center for this File</Label>
                         <Select value={defaultBranchId} onValueChange={(val) => setDefaultBranchId(val || "")}>
-                            <SelectTrigger className="h-12 rounded-2xl bg-indigo-50/50 border-none ring-1 ring-indigo-100 font-bold text-xs text-indigo-700">
-                                <SelectValue placeholder="Assign entire file to Center..." />
+                            <SelectTrigger className="h-14 rounded-2xl bg-indigo-50/50 border-none ring-1 ring-indigo-200/50 font-bold text-xs text-indigo-700 hover:bg-indigo-50 transition-colors">
+                                <SelectValue placeholder="Assign entire file to Node..." />
                             </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-none shadow-xl">
-                                {branches.map((branch) => (
-                                    <SelectItem key={branch.id} value={branch.id} className="text-[10px] font-bold uppercase py-2.5">
-                                        {branch.name} Node
-                                    </SelectItem>
-                                ))}
+                            <SelectContent className="rounded-[1.5rem] border-none shadow-2xl z-[100]">
+                                {branches.length > 0 ? (
+                                    branches.map((branch) => (
+                                        <SelectItem key={branch.id} value={branch.id} className="text-[10px] font-black uppercase py-3 px-4 focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                                            {branch.name} Node
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <div className="p-4 text-center">
+                                        <Loader2 className="h-4 w-4 animate-spin mx-auto text-indigo-400" />
+                                        <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">Fetching Node List...</p>
+                                    </div>
+                                )}
                             </SelectContent>
                         </Select>
                         <p className="text-[9px] text-slate-400 font-medium italic">Used if a row is missing a 'Center' value.</p>
@@ -413,12 +421,28 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
                     </div>
                 </div>
 
-                <Button 
-                    onClick={() => { setOpen(false); resetState(); }}
-                    className="w-full h-14 rounded-[1.5rem] bg-slate-900 hover:bg-black text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 text-white"
-                >
-                    Dismiss Report
-                </Button>
+                <div className="flex flex-col gap-3">
+                    <Button 
+                        onClick={() => { 
+                            setOpen(false); 
+                            resetState(); 
+                        }}
+                        className="w-full h-14 rounded-[1.5rem] bg-white border border-slate-100 text-slate-600 hover:bg-slate-50 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm transition-all"
+                    >
+                        Dismiss Report
+                    </Button>
+                    <Button 
+                        variant="default"
+                        onClick={() => { 
+                          useDashboardStore.getState().resetFilters();
+                          setOpen(false); 
+                          resetState(); 
+                        }}
+                        className="w-full h-14 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-100"
+                    >
+                        Reset Matrix View
+                    </Button>
+                </div>
             </div>
           )}
         </div>
