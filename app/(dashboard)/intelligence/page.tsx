@@ -108,7 +108,7 @@ export default function IntelligenceHubPage() {
                                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 animate-pulse">Aggregating Clinical Matrix Data...</p>
                             </div>
                         ) : (
-                            <div className="prose prose-invert max-w-none prose-p:text-slate-300 prose-p:text-lg prose-p:leading-relaxed prose-headings:text-white prose-headings:italic prose-headings:tracking-tight prose-strong:text-primary prose-strong:font-black">
+                            <div className="prose prose-invert max-w-none text-slate-200 prose-p:text-slate-200 prose-p:text-lg prose-p:leading-relaxed prose-headings:text-white prose-headings:italic prose-headings:tracking-tight prose-strong:text-primary prose-strong:font-black">
                                 <ReactMarkdown>
                                     {narrative || "System initialized. No metrics detected in current cycle."}
                                 </ReactMarkdown>

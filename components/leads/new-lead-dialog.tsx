@@ -136,7 +136,7 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Email Identifier</Label>
               <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-300 group-focus-within:text-primary transition-colors" />
@@ -149,8 +149,8 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-3">
                 <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Category</Label>
                 <Select value={formData.category} onValueChange={(val) => setFormData({ ...formData, category: val })}>
                   <SelectTrigger className="h-11 rounded-xl border-slate-100 bg-slate-50/50 focus:ring-primary/20 font-bold text-xs">
@@ -166,7 +166,7 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
               </div>
 
               {isAdmin && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Assign Owner</Label>
                   <Select value={formData.ownerId || "unassigned"} onValueChange={(val) => setFormData({ ...formData, ownerId: val === "unassigned" ? null : val })}>
                     <SelectTrigger className="h-11 rounded-xl border-slate-100 bg-slate-50/50 focus:ring-primary/20 font-bold text-xs">
@@ -185,7 +185,7 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider ml-1">Clinical Center <span className="text-rose-500">*</span></Label>
               <Select required value={formData.branchId} onValueChange={(val) => setFormData({ ...formData, branchId: val || "" })}>
                 <SelectTrigger className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:ring-primary/20 font-bold text-xs ring-1 ring-slate-100/50 hover:bg-slate-100/50 transition-colors">
@@ -202,11 +202,11 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
             </div>
           </div>
 
-          <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex-shrink-0">
+          <div className="p-8 bg-slate-100/50 border-t border-slate-200/60 flex-shrink-0">
             <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 transition-all font-heading"
+                className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-slate-200 transition-all font-heading"
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Lead Profile"}
             </Button>
