@@ -406,6 +406,7 @@ function LeadsDataView({
                     { label: "Source / Origin", field: "source" },
                     { label: "Status", field: "status" },
                     { label: "Treatment", field: "category" },
+                    { label: "Center", field: "branchId" },
                     { label: "Owner", field: "ownerId" },
                     { label: "Heat Score", field: "intent" },
                     { label: "AI Score", field: "aiScore" },
@@ -476,6 +477,20 @@ function LeadsDataView({
                           : lead.category === 'GYNECOLOGY' ? 'GYN'
                           : 'OTH'}
                       </Badge>
+                    </td>
+
+                    {/* Clinical Center */}
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-indigo-600 tracking-tight">
+                          {lead.branch?.name || "Global Node"}
+                        </span>
+                        {lead.branch?.city && (
+                          <span className="text-[9px] font-medium text-slate-400 capitalize">
+                            {lead.branch.city}
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Owner / Reassignment */}

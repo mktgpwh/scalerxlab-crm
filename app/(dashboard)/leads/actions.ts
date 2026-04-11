@@ -78,46 +78,94 @@ export async function bulkImportLeadsAction(leads: any[], globalBranchId?: strin
             select: { id: true, role: true }
         });
 
-        // Filter out existing phone numbers
-        const phoneNumbers = leads.map(l => l.phone).filter(Boolean);
+        const isAdmin = profile?.role === "ORG_ADMIN" || profile?.role === "SUPER_ADMIN";
+
+        // 1. Filter out invalid rows (missing phone)
+        const validLeads = leads.filter(l => l.phone && l.phone.length >= 10);
+        const phoneNumbers = validLeads.map(l => l.phone);
+
+        // 2. Identify existing leads in the matrix
         const existingLeads = await prisma.lead.findMany({
             where: { phone: { in: phoneNumbers } },
-            select: { phone: true }
+            select: { id: true, phone: true }
         });
-        const existingPhones = new Set(existingLeads.map(l => l.phone));
+        const existingPhonesMap = new Map(existingLeads.map(l => [l.phone, l.id]));
 
-        const uniqueLeads = leads.filter(l => l.phone && !existingPhones.has(l.phone));
+        const toCreate: any[] = [];
+        const toUpdate: { id: string, data: any }[] = [];
 
-        if (uniqueLeads.length === 0) {
-            return { error: "All leads in this batch already exist in the system." };
-        }
-
-        const data = uniqueLeads.map(l => {
+        validLeads.forEach(l => {
             const finalBranchId = l.branchId || globalBranchId;
-            if (!finalBranchId) {
-                throw new Error("Missing center attribution for lead signal.");
-            }
+            if (!finalBranchId) throw new Error("Missing center attribution for lead signal.");
 
-            return {
+            const leadData = {
                 name: l.name || "Unknown Lead",
                 phone: l.phone,
                 email: l.email || null,
                 category: (l.category as TreatmentCategory) || "OTHER",
                 source: (l.source as LeadSource) || "BULK_IMPORT",
                 branchId: finalBranchId,
-                ownerId: (profile?.role === "ORG_ADMIN" || profile?.role === "SUPER_ADMIN") ? (l.ownerId || null) : profile?.id,
+                ownerId: (isAdmin) ? (l.ownerId || null) : profile?.id,
                 status: "RAW" as LeadStatus,
                 intent: "UNSCORED" as LeadIntent,
             };
+
+            const existingId = existingPhonesMap.get(l.phone);
+            if (existingId) {
+                // If lead exists and user is Admin, we update it
+                if (isAdmin) {
+                    toUpdate.push({ id: existingId, data: leadData });
+                }
+            } else {
+                toCreate.push(leadData);
+            }
         });
 
-        const result = await prisma.lead.createMany({
-            data,
-            skipDuplicates: true,
-        });
+        // 3. Execute Operations
+        let insertedCount = 0;
+        let updatedCount = 0;
+
+        if (toCreate.length > 0) {
+            const result = await prisma.lead.createMany({
+                data: toCreate,
+                skipDuplicates: true,
+            });
+            insertedCount = result.count;
+        }
+
+        if (toUpdate.length > 0) {
+            // Processing updates in chunks to avoid overwhelming the connection pool
+            const chunks = [];
+            for (let i = 0; i < toUpdate.length; i += 50) {
+                chunks.push(toUpdate.slice(i, i + 50));
+            }
+
+            for (const chunk of chunks) {
+                await Promise.all(
+                    chunk.map(item => 
+                        prisma.lead.update({
+                            where: { id: item.id },
+                            data: {
+                                name: item.data.name,
+                                email: item.data.email,
+                                category: item.data.category,
+                                branchId: item.data.branchId,
+                                // We don't change owner or source during upsert usually
+                            }
+                        })
+                    )
+                );
+                updatedCount += chunk.length;
+            }
+        }
 
         revalidatePath("/leads");
-        return { success: true, count: result.count };
+        return { 
+            success: true, 
+            insertedCount, 
+            updatedCount, 
+            totalProcessed: validLeads.length 
+        };
     } catch (error: any) {
         console.error("Bulk Import Error:", error);
         return { error: error.message || "Bulk ingestion failed." };

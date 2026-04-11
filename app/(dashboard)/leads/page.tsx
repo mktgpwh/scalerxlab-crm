@@ -47,6 +47,12 @@ export default async function LeadsDashboardPage() {
                 name: true,
                 avatarUrl: true
             }
+        },
+        branch: {
+            select: {
+                id: true,
+                name: true
+            }
         }
     },
     orderBy: { createdAt: "desc" },

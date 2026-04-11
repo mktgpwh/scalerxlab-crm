@@ -21,7 +21,8 @@ import {
   X, 
   ArrowRight, 
   Download,
-  Settings2
+  Settings2,
+  Zap
 } from "lucide-react";
 import { 
     Select, 
@@ -57,7 +58,12 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
     branchId: "",
   });
   const [defaultBranchId, setDefaultBranchId] = useState<string>("");
-  const [step, setStep] = useState<"UPLOAD" | "MAP" | "PREVIEW">("UPLOAD");
+  const [step, setStep] = useState<"UPLOAD" | "MAP" | "PREVIEW" | "SUCCESS">("UPLOAD");
+  const [importResults, setImportResults] = useState<{
+    insertedCount: number;
+    updatedCount: number;
+    totalProcessed: number;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -161,11 +167,12 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
       if (result.error) {
         toast.error("Cluster Ingestion Failed", { description: result.error });
       } else {
-        toast.success("Matrix Synchronized", { 
-          description: `Successfully imported ${result.count} new lead signals.` 
+        setImportResults({
+          insertedCount: result.insertedCount || 0,
+          updatedCount: result.updatedCount || 0,
+          totalProcessed: result.totalProcessed || 0
         });
-        setOpen(false);
-        resetState();
+        setStep("SUCCESS");
         router.refresh();
       }
     } catch (err) {
@@ -208,11 +215,13 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
               {step === "UPLOAD" && "Batch Ingestion"}
               {step === "MAP" && "Field Alignment"}
               {step === "PREVIEW" && "Final Synchronization"}
+              {step === "SUCCESS" && "Sync Complete"}
             </DialogTitle>
             <DialogDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center pt-2">
               {step === "UPLOAD" && "Synchronize internal lead datasets with the Intelligence Matrix"}
               {step === "MAP" && "Align your spreadsheet columns with the Matrix field architecture"}
               {step === "PREVIEW" && "Reviewing the parsed signal payload before commit"}
+              {step === "SUCCESS" && "Matrix records successfully updated and verified"}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -377,31 +386,78 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
                 )}
             </div>
           )}
+          {step === "SUCCESS" && importResults && (
+            <div className="space-y-8 py-6">
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-slate-50 p-6 rounded-[2rem] text-center border border-slate-100">
+                        <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Processed</p>
+                        <p className="text-3xl font-black text-slate-900 tracking-tighter italic">{importResults.totalProcessed}</p>
+                    </div>
+                    <div className="bg-emerald-50/50 p-6 rounded-[2rem] text-center border border-emerald-100">
+                        <p className="text-[10px] font-black uppercase text-emerald-600 mb-2">New Nodes</p>
+                        <p className="text-3xl font-black text-emerald-600 tracking-tighter italic">{importResults.insertedCount}</p>
+                    </div>
+                    <div className="bg-indigo-50/50 p-6 rounded-[2rem] text-center border border-indigo-100">
+                        <p className="text-[10px] font-black uppercase text-indigo-600 mb-2">Revised</p>
+                        <p className="text-3xl font-black text-indigo-600 tracking-tighter italic">{importResults.updatedCount}</p>
+                    </div>
+                </div>
+
+                <div className="bg-emerald-50 border border-emerald-100/50 p-6 rounded-[2.5rem] flex items-center gap-6">
+                    <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-200">
+                        <CheckCircle2 className="h-6 w-6" />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-black text-emerald-900 uppercase tracking-tight">Synchronization Success</h4>
+                        <p className="text-[11px] text-emerald-700 font-bold opacity-80 mt-0.5">Global matrix state has been updated across all regional nodes.</p>
+                    </div>
+                </div>
+
+                <Button 
+                    onClick={() => { setOpen(false); resetState(); }}
+                    className="w-full h-14 rounded-[1.5rem] bg-slate-900 hover:bg-black text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 text-white"
+                >
+                    Dismiss Report
+                </Button>
+            </div>
+          )}
         </div>
 
-        <DialogFooter className="p-8 bg-slate-50/50 border-t border-slate-100 flex-shrink-0">
-            {step === "PREVIEW" ? (
-                <Button 
-                    onClick={handleImport} 
-                    disabled={loading || finalData.length === 0 || !!error}
-                    className={cn(
-                        "w-full h-14 rounded-[2rem] text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all",
-                        (!loading && finalData.length > 0 && !error) ? "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20" : "bg-slate-200 text-slate-400 shadow-none pointer-events-none"
-                    )}
-                >
-                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Initiate Batch Transfer"}
-                </Button>
-            ) : (
-                <div className="w-full flex justify-between items-center text-slate-400">
-                    <p className="text-[10px] font-black uppercase tracking-widest">Insecure connections will be terminated</p>
-                    {file && (
-                        <Button variant="ghost" onClick={resetState} className="text-[10px] font-black uppercase text-rose-500 hover:bg-rose-50">
-                            Clear Payload
-                        </Button>
-                    )}
-                </div>
-            )}
-        </DialogFooter>
+        {step !== "SUCCESS" && (
+            <DialogFooter className="p-8 bg-slate-50/50 border-t border-slate-100 flex-shrink-0">
+                {step === "PREVIEW" ? (
+                    <Button 
+                        onClick={handleImport} 
+                        disabled={loading || finalData.length === 0 || !!error}
+                        className={cn(
+                            "w-full h-14 rounded-[2rem] text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all relative overflow-hidden",
+                            (!loading && finalData.length > 0 && !error) ? "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20" : "bg-slate-200 text-slate-400 shadow-none pointer-events-none"
+                        )}
+                    >
+                        {loading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Synchronizing Matrix...</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Zap className="h-4 w-4 fill-white" />
+                                <span>Initiate Batch Transfer</span>
+                            </div>
+                        )}
+                    </Button>
+                ) : (
+                    <div className="w-full flex justify-between items-center text-slate-400">
+                        <p className="text-[10px] font-black uppercase tracking-widest">Insecure connections will be terminated</p>
+                        {file && (
+                            <Button variant="ghost" onClick={resetState} className="text-[10px] font-black uppercase text-rose-500 hover:bg-rose-50">
+                                Clear Payload
+                            </Button>
+                        )}
+                    </div>
+                )}
+            </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

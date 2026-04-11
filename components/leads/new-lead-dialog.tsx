@@ -208,7 +208,7 @@ export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) 
                 disabled={loading}
                 className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 transition-all font-heading"
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Capture Signal"}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Lead Profile"}
             </Button>
           </div>
         </form>
