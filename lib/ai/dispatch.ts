@@ -94,3 +94,36 @@ export async function sendWhatsAppMessage(params: DispatchParams) {
         return { success: false, error: error.message };
     }
 }
+/**
+ * Fetch User Profile (Identity Enrichment)
+ * Resolves real names from PSID (Facebook) or IGSID (Instagram).
+ */
+export async function fetchMetaUserProfile(externalId: string, platform: 'facebook' | 'instagram') {
+    try {
+        const config = await getIntegrationConfig("meta_ads");
+        const token = decryptToken(config.pageAccessToken);
+
+        console.log(`[ENRICHMENT] [META] Resolving identity for ${externalId} on ${platform}...`);
+
+        // Fields vary slightly by platform
+        const fields = platform === 'instagram' ? 'name,username' : 'first_name,last_name';
+        const url = `https://graph.facebook.com/v21.0/${externalId}?fields=${fields}&access_token=${token}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error?.message || "Profile API Error");
+
+        let name = "Meta Lead";
+        if (platform === 'instagram') {
+            name = data.name || data.username || name;
+        } else {
+            name = `${data.first_name || ""} ${data.last_name || ""}`.trim() || name;
+        }
+
+        return { success: true, name, profilePic: data.profile_pic };
+    } catch (error: any) {
+        console.warn(`[ENRICHMENT_FAILED] [META]`, error.message);
+        return { success: false, error: error.message };
+    }
+}

@@ -103,6 +103,8 @@ export async function POST(req: NextRequest) {
     }
 }
 
+import { fetchMetaUserProfile } from "@/lib/ai/dispatch";
+
 async function processMetaMessage(
     senderId: string, 
     text: string, 
@@ -133,15 +135,36 @@ async function processMetaMessage(
                     status: "RAW",
                     metadata: {
                         externalId: senderId,
-                        platform: sourceLabel,
+                        platform: sourceLabel.includes('INSTAGRAM') ? 'instagram' : 'facebook',
                         pageSource: metadata.recipientId,
                         lastInteraction: new Date().toISOString()
                     }
                 }
             });
             console.log(`✨ [TRACE] New Lead Created: ${lead.id}`);
+
+            // 🚀 IDENTITY ENRICHMENT (Asynchronous but tracked)
+            const enrichment = await fetchMetaUserProfile(senderId, sourceLabel.includes('INSTAGRAM') ? 'instagram' : 'facebook');
+            if (enrichment.success && enrichment.name !== "Meta Lead") {
+                lead = await prisma.lead.update({
+                    where: { id: lead.id },
+                    data: { name: enrichment.name }
+                });
+                console.log(`💎 [ENRICHED] Name resolved to: ${enrichment.name}`);
+            }
         } else {
             console.log(`🎯 [TRACE] Existing Lead Found: ${lead.id}`);
+            
+            // OPTIONAL: Re-enrich if name is still generic
+            if (lead.name.startsWith("Meta Lead")) {
+                const enrichment = await fetchMetaUserProfile(senderId, sourceLabel.includes('INSTAGRAM') ? 'instagram' : 'facebook');
+                if (enrichment.success && enrichment.name !== "Meta Lead") {
+                    lead = await prisma.lead.update({
+                        where: { id: lead.id },
+                        data: { name: enrichment.name }
+                    });
+                }
+            }
         }
 
         // 2. Log Activity

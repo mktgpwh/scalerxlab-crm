@@ -1,19 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useOptimistic } from "react";
 import { 
-  Search,
-  MoreVertical,
-  Paperclip,
-  Smile,
-  Send,
-  CheckCheck,
   Bot,
   User,
-  Zap,
   ShieldAlert,
   Sparkles,
-  ChevronRight
+  Send,
+  Smile,
 } from "lucide-react";
 import { IntegrationIcon } from "@/components/ui/integration-icon";
 import { Input } from "@/components/ui/input";
@@ -38,6 +32,7 @@ export default function SharedInboxPage() {
   const supabase = createClient();
   const normalAudio = useRef<HTMLAudioElement | null>(null);
   const emergencyAudio = useRef<HTMLAudioElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Initialize Audio
   useEffect(() => {
@@ -61,30 +56,41 @@ export default function SharedInboxPage() {
   // Initial Load
   useEffect(() => {
     loadThreads();
-  }, []);
+  }, [loadThreads]);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [threads, activeThreadId]);
 
   // Real-time Subscription
   useEffect(() => {
     const channel = supabase
-      .channel('inbox_updates')
+      .channel('inbox_realtime')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'activity_logs' },
         (payload) => {
-          console.log("📥 NEW_LOG_DETECTED", payload);
-          loadThreads(true); // Silent refresh
+          console.log("📥 REALTIME_UPDATE", payload);
+          loadThreads(true);
 
-          // Play Sound Logic
           const text = (payload.new.description || "").toLowerCase();
           const isEmergency = /pain|bleeding|emergency|urgency|severe|help/i.test(text);
 
           if (isEmergency) {
-              emergencyAudio.current?.play().catch(e => console.warn(e));
-              toast.error("Emergency Message Received!", { description: payload.new.description });
-          } else {
-              normalAudio.current?.play().catch(e => console.warn(e));
+              emergencyAudio.current?.play().catch(() => {});
+              toast.error("Emergency Alert!", { description: payload.new.description });
+          } else if (payload.new.action.includes('RECEIVED')) {
+              normalAudio.current?.play().catch(() => {});
           }
         }
+      )
+      .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'leads' },
+          () => loadThreads(true)
       )
       .subscribe();
 
@@ -104,9 +110,9 @@ export default function SharedInboxPage() {
       if (result.success && result.draft) {
           setMessageInput(result.draft);
           if (result.isEmergency) {
-              toast.error("Emergency Detected!", { description: "AgentX flagged this chat for immediate attention." });
+              toast.error("Emergency Detected!", { description: "AgentX flagged this chat for high-priority clinical attention." });
           } else {
-              toast.success("AI Draft Ready");
+              toast.success("AI Draft Synthesized");
           }
       }
   };
@@ -117,19 +123,41 @@ export default function SharedInboxPage() {
       const result = await updateAiStatus(activeThreadId, status);
       setLoading(false);
       if (result.success) {
-          toast.success(`Switched to ${status === 'AGENTX_ACTIVE' ? 'AgentX' : 'Manual'}`);
+          toast.success(`Switched to ${status === 'AGENTX_ACTIVE' ? 'AgentX Auto' : 'Manual Override'}`);
           loadThreads(true);
       }
   };
 
   const handleSendMessage = async () => {
       if (!messageInput.trim() || !activeThreadId) return;
-      setLoading(true);
-      const result = await sendMessage(activeThreadId, messageInput);
-      setLoading(false);
-      if (result.success) {
-          setMessageInput("");
-          toast.success("Message Sent");
+      
+      const originalInput = messageInput;
+      setMessageInput("");
+
+      // 🚀 OPTIMISTIC UPDATE: Add message to UI immediately
+      const tempId = Math.random().toString();
+      setThreads(prev => prev.map(t => {
+          if (t.id === activeThreadId) {
+              return {
+                  ...t,
+                  history: [{
+                      id: tempId,
+                      description: originalInput,
+                      action: 'CLINIC_MESSAGE_SENT',
+                      createdAt: new Date().toISOString()
+                  }, ...t.history]
+              };
+          }
+          return t;
+      }));
+
+      const result = await sendMessage(activeThreadId, originalInput);
+      
+      if (!result.success) {
+          toast.error("Delivery Failed", { description: result.error });
+          // Rollback if necessary, but silent refresh usually fixes it
+          loadThreads(true);
+      } else {
           loadThreads(true);
       }
   };
@@ -143,8 +171,9 @@ export default function SharedInboxPage() {
   });
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col min-w-0">
-      <div className="flex items-center justify-between mb-6 shrink-0">
+    <div className="h-[calc(100vh-8rem)] flex flex-col min-w-0 pb-4">
+      {/* HEADER SECTION */}
+      <div className="flex items-center justify-between mb-6 shrink-0 px-2">
         <div className="flex items-center gap-2">
             <Bot className="h-6 w-6 text-primary" />
             <h2 className="text-2xl font-black tracking-tighter text-slate-900 dark:text-white lowercase italic">
@@ -196,7 +225,7 @@ export default function SharedInboxPage() {
                                 activeThreadId === thread.id 
                                 ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none z-10" 
                                 : "border-transparent hover:bg-white/40 dark:hover:bg-white/5",
-                                thread.isEscalated && "ring-2 ring-rose-500 animate-pulse"
+                                thread.isEscalated && "ring-2 ring-rose-500 animate-pulse bg-rose-50/50 dark:bg-rose-500/10"
                             )}
                         >
                             <div className="flex justify-between items-start mb-2">
@@ -252,129 +281,132 @@ export default function SharedInboxPage() {
             </ScrollArea>
         </div>
 
-        {/* RIGHT PANE - CHAT WINDOW */}
+        {/* RIGHT PANE - CHAT WINDOW SECTION */}
         <div className="flex-1 flex flex-col min-w-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]">
             {activeThread ? (
-                <>
-                <div className="h-24 border-b border-slate-200/60 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-10 shrink-0">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400">
-                            {activeThread.name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                            <h3 className="text-base font-black text-slate-900 dark:text-white leading-none mb-1.5">{activeThread.name}</h3>
-                            <div className="flex items-center gap-2">
-                                <IntegrationIcon slug={activeThread.platform} size={14} />
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{activeThread.platform.toUpperCase()} Node Live</span>
+                <div className="flex flex-col h-full overflow-hidden">
+                    {/* CHAT HEADER */}
+                    <div className="h-24 border-b border-slate-200/60 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-10 shrink-0 z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400">
+                                {activeThread.name.slice(0, 2).toUpperCase()}
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center bg-slate-100 dark:bg-white/5 p-1 rounded-2xl ring-1 ring-slate-200 dark:ring-white/10">
-                            <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleUpdateStatus('AGENTX_ACTIVE')}
-                                disabled={loading}
-                                className={cn(
-                                    "h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
-                                    activeThread.aiStatus === 'AGENTX_ACTIVE' 
-                                    ? "bg-white dark:bg-slate-800 text-primary shadow-sm" 
-                                    : "text-slate-500 hover:text-slate-900"
-                                )}
-                            >
-                                <Bot className="h-3.5 w-3.5" />
-                                AgentX Auto
-                            </Button>
-                            <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleUpdateStatus('HUMAN_OVERRIDE')}
-                                disabled={loading}
-                                className={cn(
-                                    "h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
-                                    activeThread.aiStatus === 'HUMAN_OVERRIDE' 
-                                    ? "bg-white dark:bg-slate-800 text-rose-500 shadow-sm" 
-                                    : "text-slate-500 hover:text-slate-900"
-                                )}
-                            >
-                                <User className="h-3.5 w-3.5" />
-                                Manual Override
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
-                <ScrollArea className="flex-1 p-8">
-                    <div className="max-w-4xl mx-auto space-y-6">
-                        {activeThread.history?.slice().reverse().map((log: any) => (
-                            <div key={log.id} className={cn("flex", (log.action.includes('SENT') || log.action.includes('REPLY')) ? "justify-end" : "justify-start")}>
-                                <div className={cn(
-                                    "max-w-[80%] p-5 rounded-[2rem] shadow-sm",
-                                    (log.action.includes('SENT') || log.action.includes('REPLY')) 
-                                    ? "bg-slate-900 dark:bg-primary text-white rounded-tr-sm" 
-                                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-tl-sm ring-1 ring-black/5"
-                                )}>
-                                    <p className="text-sm font-medium leading-relaxed">{log.description}</p>
-                                    <div className="flex items-center justify-between mt-3">
-                                        <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">
-                                            {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
-                                        </span>
-                                        {log.action.includes('REPLY') && <Bot className="h-3 w-3 opacity-60" />}
-                                    </div>
+                            <div>
+                                <h3 className="text-base font-black text-slate-900 dark:text-white leading-none mb-1.5">{activeThread.name}</h3>
+                                <div className="flex items-center gap-2">
+                                    <IntegrationIcon slug={activeThread.platform} size={14} />
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{activeThread.platform.toUpperCase()} Node Live</span>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </ScrollArea>
-
-                <div className="p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/60 dark:border-white/5 shrink-0">
-                    <div className="max-w-4xl mx-auto space-y-4">
-                        <div className="flex items-center gap-2">
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={handleGenerateDraft}
-                                disabled={isDrafting || loading}
-                                className={cn(
-                                    "bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 h-9 rounded-xl text-[9px] font-black uppercase tracking-widest gap-2 transition-all",
-                                    isDrafting && "animate-pulse"
-                                )}
-                            >
-                                <Sparkles className={cn("h-3 w-3", isDrafting && "animate-spin")} />
-                                {isDrafting ? "Thinking..." : "AI Draft Suggestion"}
-                            </Button>
                         </div>
 
-                        <div className="flex items-end gap-3 bg-slate-50 dark:bg-black/20 p-3 rounded-[2rem] border border-slate-200/60 dark:border-white/10 ring-1 ring-slate-100 dark:ring-white/5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white dark:focus-within:bg-slate-900 transition-all shadow-inner">
-                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-400 shrink-0">
-                                <Smile className="h-5 w-5" />
-                            </Button>
-                            <Input 
-                                value={messageInput}
-                                onChange={(e) => setMessageInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                placeholder="Type a response clinic (Pauses AgentX)..." 
-                                className="border-none bg-transparent shadow-none focus-visible:ring-0 px-2 h-auto py-3 text-sm font-medium"
-                            />
-                            <Button 
-                                onClick={handleSendMessage}
-                                disabled={loading || !messageInput.trim()}
-                                className="h-12 px-6 rounded-2xl bg-slate-900 hover:bg-black dark:bg-primary text-white font-black uppercase tracking-widest text-[10px] gap-2 shadow-lg shrink-0"
-                            >
-                                <Send className="h-4 w-4" />
-                                Send
-                            </Button>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center bg-slate-100 dark:bg-white/5 p-1 rounded-2xl ring-1 ring-slate-200 dark:ring-white/10">
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => handleUpdateStatus('AGENTX_ACTIVE')}
+                                    disabled={loading}
+                                    className={cn(
+                                        "h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
+                                        activeThread.aiStatus === 'AGENTX_ACTIVE' 
+                                        ? "bg-white dark:bg-slate-800 text-primary shadow-sm" 
+                                        : "text-slate-500 hover:text-slate-900"
+                                    )}
+                                >
+                                    <Bot className="h-3.5 w-3.5" />
+                                    AgentX Auto
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => handleUpdateStatus('HUMAN_OVERRIDE')}
+                                    disabled={loading}
+                                    className={cn(
+                                        "h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all",
+                                        activeThread.aiStatus === 'HUMAN_OVERRIDE' 
+                                        ? "bg-white dark:bg-slate-800 text-rose-500 shadow-sm" 
+                                        : "text-slate-500 hover:text-slate-900"
+                                    )}
+                                >
+                                    <User className="h-3.5 w-3.5" />
+                                    Manual Override
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* MESSAGE HISTORY - SCROLLABLE */}
+                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 scroll-smooth bg-transparent">
+                        <div className="max-w-4xl mx-auto space-y-6">
+                            {activeThread.history?.slice().reverse().map((log: any) => (
+                                <div key={log.id} className={cn("flex", (log.action.includes('SENT') || log.action.includes('REPLY')) ? "justify-end" : "justify-start")}>
+                                    <div className={cn(
+                                        "max-w-[80%] p-5 rounded-[2rem] shadow-sm",
+                                        (log.action.includes('SENT') || log.action.includes('REPLY')) 
+                                        ? "bg-slate-900 dark:bg-primary text-white rounded-tr-sm" 
+                                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-tl-sm ring-1 ring-black/5"
+                                    )}>
+                                        <p className="text-sm font-medium leading-relaxed">{log.description}</p>
+                                        <div className="flex items-center justify-between mt-3">
+                                            <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">
+                                                {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
+                                            </span>
+                                            {log.action.includes('REPLY') && <Bot className="h-3 w-3 opacity-60" />}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* REPLY COMPOSER - STICKY AT BOTTOM */}
+                    <div className="p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/60 dark:border-white/5 shrink-0 z-10 transition-all">
+                        <div className="max-w-4xl mx-auto space-y-4">
+                            <div className="flex items-center gap-2">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={handleGenerateDraft}
+                                    disabled={isDrafting || loading}
+                                    className={cn(
+                                        "bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 h-9 rounded-xl text-[9px] font-black uppercase tracking-widest gap-2 transition-all",
+                                        isDrafting && "animate-pulse"
+                                    )}
+                                >
+                                    <Sparkles className={cn("h-3 w-3", isDrafting && "animate-spin")} />
+                                    {isDrafting ? "Synthesizing..." : "Suggest AI Draft"}
+                                </Button>
+                            </div>
+
+                            <div className="flex items-end gap-3 bg-slate-50 dark:bg-black/20 p-3 rounded-[2rem] border border-slate-200/60 dark:border-white/10 ring-1 ring-slate-100 dark:ring-white/5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white dark:focus-within:bg-slate-900 transition-all shadow-inner">
+                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-400 shrink-0 hover:bg-slate-200/50">
+                                    <Smile className="h-5 w-5" />
+                                </Button>
+                                <Input 
+                                    value={messageInput}
+                                    onChange={(e) => setMessageInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                    placeholder="Type a clinical response (AgentX paused on send)..." 
+                                    className="border-none bg-transparent shadow-none focus-visible:ring-0 px-2 h-auto py-3 text-sm font-medium"
+                                />
+                                <Button 
+                                    onClick={handleSendMessage}
+                                    disabled={loading || !messageInput.trim()}
+                                    className="h-12 px-6 rounded-2xl bg-slate-900 hover:bg-black dark:bg-primary text-white font-black uppercase tracking-widest text-[10px] gap-2 shadow-lg shrink-0 transition-transform active:scale-95"
+                                >
+                                    <Send className="h-4 w-4" />
+                                    Send Reply
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                </>
             ) : (
                 <div className="flex-1 flex flex-col items-center justify-center opacity-40">
                     <Bot className="h-16 w-16 mb-6 animate-pulse" />
                     <h3 className="text-xl font-black italic tracking-tighter">/awaiting_selection</h3>
-                    <p className="text-xs font-medium uppercase tracking-[0.4em] mt-2 text-slate-400">Select a patient thread to begin</p>
+                    <p className="text-xs font-medium uppercase tracking-[0.4em] mt-2 text-slate-400">Select a clinical thread to begin sync</p>
                 </div>
             )}
         </div>
