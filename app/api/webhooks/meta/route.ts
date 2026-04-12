@@ -9,6 +9,7 @@ import { generateProactiveDraft } from "@/lib/ai/proactive";
  */
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // 1. VERIFICATION HANDSHAKE (GET)
 export async function GET(req: NextRequest) {
