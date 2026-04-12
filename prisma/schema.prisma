@@ -75,6 +75,8 @@ model Lead {
   branchId            String?
   isAutoAssigned      Boolean           @default(false)
   category            TreatmentCategory @default(OTHER)
+  aiChatStatus        AiChatStatus      @default(AGENTX_ACTIVE)
+  isEscalated         Boolean           @default(false)
   activityLogs        ActivityLog[]
   autoNurtureQueue    AutoNurtureQueue?
   callLogs            CallLog[]
@@ -215,4 +217,9 @@ enum CallStatus {
   BUSY
   VOICEMAIL
   AI_HANDLED
+}
+
+enum AiChatStatus {
+  AGENTX_ACTIVE
+  HUMAN_OVERRIDE
 }
