@@ -43,7 +43,7 @@ const items = [
   { title: "Capture Pipeline", url: "/pipeline", icon: LayoutDashboard, label: "Sales" },
   { title: "Shared Inbox", url: "/inbox", icon: WhatsAppIcon, label: "WhatsApp" },
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
-  { title: "Integrations", url: "/integrations", icon: Command, label: "Ads & WA" },
+  { title: "Integrations", url: "/settings/integrations", icon: Command, label: "Ads & WA" },
   { title: "Analytics Hub", url: "/analytics", icon: BarChart3, label: "Insights" },
   { title: "Activity Logs", url: "/activity", icon: History },
 ];

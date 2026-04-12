@@ -15,6 +15,15 @@ import {
   MapPin
 } from "lucide-react";
 import { ManageCenters } from "./manage-centers";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { AddUserForm } from "./team/add-user-form";
 
 export default async function SettingsPage() {
   const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
@@ -173,10 +182,31 @@ export default async function SettingsPage() {
                        </div>
                     ))}
                     <div className="flex items-center justify-center pt-4">
-                       <Button variant="outline" className="rounded-full border-dashed border-slate-300 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-primary hover:border-primary">
-                          <Users className="h-4 w-4 mr-2" />
-                          Invite Team Member
-                       </Button>
+                       <Dialog>
+                          <DialogTrigger 
+                              render={
+                                 <Button variant="outline" className="rounded-full border-dashed border-slate-300 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-primary hover:border-primary">
+                                    <Users className="h-4 w-4 mr-2" />
+                                    Invite Team Member
+                                 </Button>
+                              }
+                           />
+                          <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-white/95 backdrop-blur-xl">
+                              <div className="p-8 pt-10 text-center bg-slate-50/50 border-b border-slate-100">
+                                  <DialogHeader>
+                                      <DialogTitle className="text-3xl font-black tracking-tighter italic lowercase text-slate-900">
+                                          Create System Node
+                                      </DialogTitle>
+                                      <DialogDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest pt-2">
+                                          Securely provision a new clinical or administrative identity
+                                      </DialogDescription>
+                                  </DialogHeader>
+                              </div>
+                              <div className="p-8 pb-10">
+                                  <AddUserForm />
+                              </div>
+                          </DialogContent>
+                       </Dialog>
                     </div>
                 </CardContent>
             </Card>

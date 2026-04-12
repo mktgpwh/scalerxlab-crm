@@ -13,17 +13,25 @@ import {
     Zap, 
     Loader2, 
     ChevronRight,
+    ChevronDown,
+    ChevronUp,
     Target,
     Activity,
     ShieldCheck
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
+import { 
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export default function IntelligenceHubPage() {
     const [narrative, setNarrative] = useState<string | null>(null);
     const [status, setStatus] = useState<string>("MODERATE");
     const [loadingHealth, setLoadingHealth] = useState(true);
+    const [isNarrativeOpen, setIsNarrativeOpen] = useState(true);
     const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'ai', content: string }>>([
         { role: 'ai', content: "AgentX localized. Ready for statistical matrix intersection. What business intelligence do you seek?" }
     ]);
@@ -78,8 +86,15 @@ export default function IntelligenceHubPage() {
 
     return (
         <div className="flex flex-col h-[calc(100vh-120px)] gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* 60% Section: AI Business Pulse */}
-            <div className="flex-[6] min-h-0 flex flex-col gap-4">
+            {/* AI Business Pulse (Collapsible) */}
+            <Collapsible
+                 open={isNarrativeOpen}
+                 onOpenChange={setIsNarrativeOpen}
+                 className={cn(
+                    "flex flex-col gap-4 transition-all duration-500",
+                    isNarrativeOpen ? "flex-[6] min-h-0" : "flex-none"
+                 )}
+            >
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -90,43 +105,57 @@ export default function IntelligenceHubPage() {
                             <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mt-0.5">Automated Clinical Intelligence Pulse</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/20 bg-emerald-500/5">
-                        <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                        <span className="text-[9px] font-black uppercase text-emerald-600 tracking-widest">Strict Zero-PII Policy Active</span>
+                    
+                    <div className="flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/20 bg-emerald-500/5">
+                            <ShieldCheck className="h-3 w-3 text-emerald-500" />
+                            <span className="text-[9px] font-black uppercase text-emerald-600 tracking-widest">Strict Zero-PII Policy Active</span>
+                        </div>
+                        
+                        <CollapsibleTrigger>
+                             <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-all">
+                                {isNarrativeOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                             </Button>
+                        </CollapsibleTrigger>
                     </div>
                 </div>
 
-                <Card className="flex-1 relative overflow-hidden border-none rounded-[3rem] bg-slate-900 shadow-2xl p-1 p-px bg-gradient-to-br from-indigo-500/20 via-transparent to-transparent">
-                    <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
-                    <div className="relative h-full w-full bg-slate-950/90 rounded-[2.9rem] backdrop-blur-3xl p-10 overflow-y-auto custom-scrollbar">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className={cn(
-                                "h-2 w-2 rounded-full animate-pulse",
-                                status === "GOOD" && "bg-emerald-500 shadow-[0_0_10px_#10b981]",
-                                status === "MODERATE" && "bg-amber-500 shadow-[0_0_10px_#f59e0b]",
-                                status === "CRITICAL" && "bg-rose-500 shadow-[0_0_10px_#f43f5e]"
-                            )} />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400">AgentX Mission Narrative</h3>
+                <CollapsibleContent className="flex-1 min-h-0 overflow-hidden rounded-[3rem] data-[state=closed]:animate-collapse-up data-[state=open]:animate-collapse-down">
+                    <Card className="h-full relative overflow-hidden border-none bg-slate-900 shadow-2xl p-1 p-px bg-gradient-to-br from-indigo-500/20 via-transparent to-transparent">
+                        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+                        <div className="relative h-full w-full bg-slate-950/90 rounded-[2.9rem] backdrop-blur-3xl p-10 overflow-y-auto custom-scrollbar">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className={cn(
+                                    "h-2 w-2 rounded-full animate-pulse",
+                                    status === "GOOD" && "bg-emerald-500 shadow-[0_0_10px_#10b981]",
+                                    status === "MODERATE" && "bg-amber-500 shadow-[0_0_10px_#f59e0b]",
+                                    status === "CRITICAL" && "bg-rose-500 shadow-[0_0_10px_#f43f5e]"
+                                )} />
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400">AgentX Mission Narrative</h3>
+                            </div>
+
+                            {loadingHealth ? (
+                                <div className="flex flex-col items-center justify-center h-64 text-center">
+                                    <Loader2 className="h-10 w-10 text-primary/40 animate-spin mb-4" />
+                                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 animate-pulse">Aggregating Clinical Matrix Data...</p>
+                                </div>
+                            ) : (
+                                <div className="prose prose-invert max-w-none text-slate-200 prose-p:text-slate-200 prose-p:text-lg prose-p:leading-relaxed prose-headings:text-white prose-headings:italic prose-headings:tracking-tight prose-strong:text-primary prose-strong:font-black">
+                                    <ReactMarkdown>
+                                        {narrative || "System initialized. No metrics detected in current cycle."}
+                                    </ReactMarkdown>
+                                </div>
+                            )}
                         </div>
+                    </Card>
+                </CollapsibleContent>
+            </Collapsible>
 
-                        {loadingHealth ? (
-                            <div className="flex flex-col items-center justify-center h-64 text-center">
-                                <Loader2 className="h-10 w-10 text-primary/40 animate-spin mb-4" />
-                                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 animate-pulse">Aggregating Clinical Matrix Data...</p>
-                            </div>
-                        ) : (
-                            <div className="prose prose-invert max-w-none text-slate-200 prose-p:text-slate-200 prose-p:text-lg prose-p:leading-relaxed prose-headings:text-white prose-headings:italic prose-headings:tracking-tight prose-strong:text-primary prose-strong:font-black">
-                                <ReactMarkdown>
-                                    {narrative || "System initialized. No metrics detected in current cycle."}
-                                </ReactMarkdown>
-                            </div>
-                        )}
-                    </div>
-                </Card>
-            </div>
-
-            {/* 40% Section: AgentX Chat Console */}
-            <div className="flex-[4] min-h-0 flex flex-col gap-4">
+            {/* AgentX Chat Console */}
+            <div className={cn(
+                "min-h-0 flex flex-col gap-4 transition-all duration-500",
+                isNarrativeOpen ? "flex-[4]" : "flex-1"
+            )}>
                 <div className="flex items-center gap-2 px-2">
                     <MessageSquare className="h-4 w-4 text-slate-400" />
                     <h3 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">AgentX Statistical Query Console</h3>
