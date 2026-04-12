@@ -2,6 +2,88 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import Groq from "groq-sdk";
+
+// Initialize Groq Client
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+});
+
+/**
+ * Generate AI Draft Action
+ * Orchestrates Groq to create a context-aware clinical reply.
+ */
+export async function generateDraftAction(leadId: string) {
+    try {
+        // 1. Context Gathering: Lead Details + Recent History
+        const lead = await prisma.lead.findUnique({
+            where: { id: leadId },
+            include: {
+                activityLogs: {
+                    where: { action: { contains: 'RECEIVED' } },
+                    orderBy: { createdAt: 'desc' },
+                    take: 5
+                }
+            }
+        });
+
+        if (!lead) return { success: false, error: "Lead not found" };
+
+        const historyContext = lead.activityLogs
+            .map(log => `Patient: ${log.description}`)
+            .reverse()
+            .join("\n");
+
+        const lastMessage = lead.activityLogs[0]?.description || "";
+
+        // 2. System Prompt with Mirroring & Emergency Rules
+        const systemPrompt = `You are AgentX, a highly empathetic clinical counseling assistant at Pahlajani's Women's Hospital & IVF Center.
+        
+        GOAL: Comfort the patient and guide them to book a consultation for ${lead.category || 'Clinical Care'}.
+        
+        IDENTITY: You are NOT a doctor. You must NEVER diagnose, prescribe, or give medical advice.
+        
+        STYLE: warm, human-like, and strictly UNDER 3 sentences.
+        
+        LANGUAGE MIRRORING: Analyze the language and script of the patient's last message: "${lastMessage}".
+        You MUST generate the draft in the EXACT same language (English, Hindi, or Hinglish) and script.
+        
+        EMERGENCY PROTOCOL: If you detect severe medical urgency (e.g. intense pain, bleeding, emergency), your response must be an JSON object: { "isEmergency": true, "draft": "URGENT_DRAFT" }.
+        Otherwise, return: { "isEmergency": false, "draft": "YOUR_DRAFT" }.`;
+
+        // 3. LLM Orchestration
+        const completion = await groq.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: `Conversation Context:\n${historyContext}\n\nDraft a reply to the latest message.` }
+            ],
+            model: "llama-3.3-70b-versatile",
+            response_format: { type: "json_object" }
+        });
+
+        const result = JSON.parse(completion.choices[0]?.message?.content || "{}");
+        const { isEmergency, draft } = result;
+
+        // 4. Autonomous Handoff Logic
+        if (isEmergency) {
+            await prisma.lead.update({
+                where: { id: leadId },
+                data: { 
+                    aiChatStatus: 'HUMAN_OVERRIDE',
+                    isEscalated: true 
+                }
+            });
+            console.log(`🚨 EMERGENCY_DETECTED for Lead ${leadId}. Escalating to Human Operator.`);
+            revalidatePath("/inbox");
+        }
+
+        return { success: true, draft, isEmergency };
+
+    } catch (error) {
+        console.error("AgentX Draft Engine Failure:", error);
+        return { success: false, error: "AI processing failure" };
+    }
+}
 
 /**
  * Update AI Chat Status

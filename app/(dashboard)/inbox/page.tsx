@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { updateAiStatus, sendMessage } from "./actions";
+import { updateAiStatus, sendMessage, generateDraftAction } from "./actions";
 import { toast } from "sonner";
 
 // Enhanced Dummy Data for HITL Logic
@@ -39,8 +39,28 @@ export default function SharedInboxPage() {
   const [activeAiFilter, setActiveAiFilter] = useState<string>("all");
   const [messageInput, setMessageInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isDrafting, setIsDrafting] = useState(false);
 
   const activeChat = CONTACTS.find(c => c.id === activeChatId);
+
+  const handleGenerateDraft = async () => {
+      setIsDrafting(true);
+      const result = await generateDraftAction(activeChatId.toString());
+      setIsDrafting(false);
+
+      if (result.success && result.draft) {
+          setMessageInput(result.draft);
+          if (result.isEmergency) {
+              toast.error("Emergency Detected!", {
+                  description: "AgentX flagged this chat for immediate clinical attention."
+              });
+          } else {
+              toast.success("AI Draft Ready", { description: "You can now edit and send the response." });
+          }
+      } else {
+          toast.error("AI Draft Failed", { description: result.error || "Could not reach AgentX." });
+      }
+  };
 
   const handleUpdateStatus = async (status: 'AGENTX_ACTIVE' | 'HUMAN_OVERRIDE') => {
       setLoading(true);
@@ -279,10 +299,24 @@ export default function SharedInboxPage() {
                         <Button 
                             variant="outline" 
                             size="sm" 
-                            className="bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 h-9 rounded-xl text-[9px] font-black uppercase tracking-widest gap-2"
+                            onClick={handleGenerateDraft}
+                            disabled={isDrafting || loading}
+                            className={cn(
+                                "bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 h-9 rounded-xl text-[9px] font-black uppercase tracking-widest gap-2 transition-all",
+                                isDrafting && "animate-pulse"
+                            )}
                         >
-                            <Sparkles className="h-3 w-3" />
-                            AI Draft Suggestion
+                            {isDrafting ? (
+                                <>
+                                    <Sparkles className="h-3 w-3 animate-spin" />
+                                    AgentX Thinking...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="h-3 w-3" />
+                                    AI Draft Suggestion
+                                </>
+                            )}
                         </Button>
                         <span className="text-[9px] font-medium text-slate-400 italic">Let AgentX prepare a structured clinical response</span>
                     </div>
