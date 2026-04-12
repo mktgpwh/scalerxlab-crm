@@ -13,11 +13,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
-import { LeadIntent } from "@prisma/client";
+import type { LeadIntent } from "@prisma/client";
 import { Lead } from "@/lib/types";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Phone, ShieldAlert, Zap } from "lucide-react";
-import { WhatsAppIcon } from "@/components/icons";
+import { SiWhatsapp } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { 
   Tooltip, 
@@ -198,8 +198,8 @@ export function RealtimeLeadsTable({
                           variant="ghost"
                           disabled={!lead.consentFlag}
                           className={cn(
-                            "h-8 w-8 rounded-lg",
-                            lead.consentFlag ? "text-emerald-500 hover:bg-emerald-50 hover:text-emerald-600" : "text-gray-300 pointer-events-none"
+                            "h-8 w-8 rounded-lg transition-all",
+                            lead.consentFlag ? "text-slate-600 hover:bg-slate-100 hover:text-slate-900" : "text-gray-300 pointer-events-none"
                           )}
                           onClick={(e) => handleCall(e, lead)}
                         >
@@ -218,15 +218,15 @@ export function RealtimeLeadsTable({
                           variant="ghost"
                           disabled={!lead.consentFlag}
                           className={cn(
-                            "h-8 w-8 rounded-lg",
-                            lead.consentFlag ? "text-[#25D366] hover:bg-green-50" : "text-gray-300 pointer-events-none"
+                            "h-8 w-8 rounded-lg transition-all",
+                            lead.consentFlag ? "hover:bg-green-50" : "text-gray-300 pointer-events-none"
                           )}
                           onClick={(e) => {
                             e.stopPropagation();
                             openLead(lead.id, "engagement");
                           }}
                         >
-                          <WhatsAppIcon className="h-4 w-4" />
+                          <SiWhatsapp className="h-4 w-4 text-[#25D366] cursor-pointer hover:opacity-80 transition-opacity" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="text-[10px] uppercase font-black">

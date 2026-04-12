@@ -1,4 +1,4 @@
-import { LeadStatus, LeadIntent, LeadSource, TreatmentCategory } from "@prisma/client";
+import type { LeadStatus, LeadIntent, LeadSource, TreatmentCategory } from "@prisma/client";
 
 export interface Lead {
   id: string;

@@ -23,7 +23,7 @@ import { KanbanCard } from "./kanban-card";
 import { createClient } from "@/lib/supabase/client";
 import { updateLeadStatusAction } from "./actions";
 import { Lead } from "@/lib/types";
-import { LeadStatus } from "@prisma/client";
+import type { LeadStatus } from "@prisma/client";
 
 const COLUMNS = [
   { id: "RAW", title: "Raw Intake" },
