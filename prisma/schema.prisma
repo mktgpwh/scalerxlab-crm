@@ -177,6 +177,7 @@ enum LeadSource {
   LINKEDIN_ADS
   MANUAL_ENTRY
   BULK_IMPORT
+  META_MESSAGING
 }
 
 enum LeadStatus {
