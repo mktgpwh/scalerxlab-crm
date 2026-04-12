@@ -8,6 +8,8 @@ import { generateProactiveDraft } from "@/lib/ai/proactive";
  * Hardened with HMAC-SHA256 and Proactive Drafting.
  */
 
+export const dynamic = 'force-dynamic';
+
 // 1. VERIFICATION HANDSHAKE (GET)
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);

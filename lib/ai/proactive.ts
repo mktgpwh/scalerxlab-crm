@@ -2,12 +2,6 @@ import { prisma } from "@/lib/prisma";
 import Groq from "groq-sdk";
 import { createClient } from "@supabase/supabase-js";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 /**
  * AgentX Proactive Sentinel
  * Orchestrates clinical drafts, emergency detect, and branch attribution.
@@ -22,6 +16,13 @@ export interface ProactiveDraftParams {
 
 export async function generateProactiveDraft({ leadId, messageText, category = "Clinical Consultation", pageId }: ProactiveDraftParams) {
     try {
+        // 🛡️ LAZY INITIALIZATION (Build Safety)
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        const supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
         const lead = await prisma.lead.findUnique({ where: { id: leadId } });
         if (!lead) throw new Error("Lead not found");
 
