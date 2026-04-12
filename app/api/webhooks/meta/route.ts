@@ -112,14 +112,13 @@ async function processMetaMessage(
 ) {
     console.log(`🔍 [TRACE_START] Sender: ${senderId} | Source: ${sourceLabel}`);
     try {
-        // 1. Lead Matching (Refined for JSONB Robustness)
-        console.log(`⌛ [TRACE] Database Querying for Lead: ${senderId}...`);
+        // 1. Lead Matching (High-Performance 'contains' Filter)
+        console.log(`⌛ [TRACE] Database Searching for Social Identity: ${senderId}...`);
         
         let lead = await prisma.lead.findFirst({
             where: {
                 metadata: {
-                    path: ["externalId"],
-                    equals: senderId
+                    contains: { externalId: senderId }
                 }
             }
         });
