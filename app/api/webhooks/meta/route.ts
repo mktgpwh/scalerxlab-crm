@@ -110,15 +110,22 @@ async function processMetaMessage(
     defaultName: string,
     metadata: any
 ) {
-    console.log(`🔍 [TRACE] Processing message for Sender: ${senderId}`);
+    console.log(`🔍 [TRACE_START] Sender: ${senderId} | Source: ${sourceLabel}`);
     try {
-        // 1. Lead Matching
+        // 1. Lead Matching (Refined for JSONB Robustness)
+        console.log(`⌛ [TRACE] Database Querying for Lead: ${senderId}...`);
+        
         let lead = await prisma.lead.findFirst({
-            where: { metadata: { path: ["externalId"], equals: senderId } }
+            where: {
+                metadata: {
+                    path: ["externalId"],
+                    equals: senderId
+                }
+            }
         });
 
         if (!lead) {
-            console.log(`🌱 [TRACE] No lead found for ${senderId}. Creating new lead...`);
+            console.log(`🌱 [TRACE] Producing NEW clinical identity for ${senderId}...`);
             lead = await prisma.lead.create({
                 data: {
                     name: defaultName,
@@ -132,12 +139,12 @@ async function processMetaMessage(
                     }
                 }
             });
-            console.log(`✅ [TRACE] New Lead Created: ${lead.id}`);
+            console.log(`✨ [TRACE] New Lead Created: ${lead.id}`);
         } else {
-            console.log(`🎯 [TRACE] Existing Lead Matched: ${lead.id}`);
+            console.log(`🎯 [TRACE] Existing Lead Found: ${lead.id}`);
         }
 
-        // 2. Activity Logging
+        // 2. Log Activity
         const log = await prisma.activityLog.create({
             data: {
                 leadId: lead.id,
@@ -146,20 +153,19 @@ async function processMetaMessage(
                 metadata: { senderId, timestamp: new Date().toISOString() }
             }
         });
-        console.log(`📝 [TRACE] Activity Logged: ${log.id}`);
+        console.log(`📝 [TRACE] Clinical Log Generated: ${log.id}`);
 
-        // 3. Proactive AI
-        console.log(`🤖 [TRACE] Triggering AgentX Proactive Sentinel...`);
+        // 3. Proactive Assistant (AgentX)
+        console.log(`🤖 [TRACE] AgentX synthesis starting...`);
         await generateProactiveDraft({
             leadId: lead.id,
             messageText: text,
             category: lead.category,
             pageId: metadata.recipientId
         });
-        console.log(`🧠 [TRACE] AgentX Drafting Complete`);
+        console.log(`🏆 [TRACE_SUCCESS] Omnichannel Logic Complete for Lead ${lead.id}`);
 
     } catch (error) {
-        console.error("🛑 [PRISMA_FAILURE] Error in processMetaMessage:", error);
-        throw error; // Rethrow to be caught by the outer catch
+        console.error("🛑 [CRITICAL_FAILURE] Omega Process Error:", error);
     }
 }
