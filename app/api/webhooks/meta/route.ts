@@ -112,16 +112,16 @@ async function processMetaMessage(
 ) {
     console.log(`🔍 [TRACE_START] Sender: ${senderId} | Source: ${sourceLabel}`);
     try {
-        // 1. Lead Matching (High-Performance 'contains' Filter)
-        console.log(`⌛ [TRACE] Database Searching for Social Identity: ${senderId}...`);
+        // 1. Lead Matching (Raw SQL for Performance & TS Safety)
+        console.log(`⌛ [TRACE] Database Raw-Searching for: ${senderId}...`);
         
-        let lead = await prisma.lead.findFirst({
-            where: {
-                metadata: {
-                    contains: { externalId: senderId }
-                }
-            }
-        });
+        const rawLeads: any[] = await prisma.$queryRaw`
+            SELECT * FROM leads 
+            WHERE metadata->>'externalId' = ${senderId} 
+            LIMIT 1
+        `;
+        
+        let lead = rawLeads.length > 0 ? rawLeads[0] : null;
 
         if (!lead) {
             console.log(`🌱 [TRACE] Producing NEW clinical identity for ${senderId}...`);
