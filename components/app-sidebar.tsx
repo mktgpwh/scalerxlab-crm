@@ -14,6 +14,7 @@ import {
   Phone,
   LogOut
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { WhatsAppIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
