@@ -10,6 +10,54 @@ const groq = new Groq({
 });
 
 /**
+ * Fetch Inbox Threads
+ * Retrieves Leads (Patients) who have arrived via META_MESSAGING or WHATSAPP.
+ * Filters for leads with at least one communication log and sorts by recency.
+ */
+export async function fetchInboxThreads() {
+    try {
+        const leads = await prisma.lead.findMany({
+            where: {
+                OR: [
+                    { source: 'META_MESSAGING' },
+                    { source: 'WHATSAPP' }
+                ],
+                // Ensure we only show threads with message history
+                activityLogs: { some: {} }
+            },
+            include: {
+                activityLogs: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 50 // Fetch recent history for preview and chat window
+                }
+            },
+            orderBy: {
+                updatedAt: 'desc' // Leads are updated whenever a new message log is added
+            }
+        });
+
+        // Format for UI consumption
+        return { 
+            success: true, 
+            threads: leads.map(lead => ({
+                id: lead.id,
+                name: lead.name,
+                platform: (lead.metadata as any)?.platform || "messenger",
+                status: lead.status,
+                aiStatus: lead.aiChatStatus,
+                isEscalated: lead.isEscalated,
+                lastMessage: lead.activityLogs[0]?.description || "No message context",
+                lastTime: lead.activityLogs[0]?.createdAt || lead.updatedAt,
+                history: lead.activityLogs
+            }))
+        };
+    } catch (error) {
+        console.error("Failed to fetch inbox threads:", error);
+        return { success: false, error: "Database fetch failed" };
+    }
+}
+
+/**
  * Generate AI Draft Action
  * Orchestrates Groq to create a context-aware clinical reply.
  */
