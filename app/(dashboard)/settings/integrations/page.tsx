@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { 
     Phone, Smartphone, Globe, Target, Calculator, 
-    MessageSquare, Camera, Facebook, Sparkles, Zap, ShieldCheck, Loader2 
+    MessageSquare, Camera, MessageCircle, Sparkles, Zap, ShieldCheck, Loader2 
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons";
 import { saveIntegration, toggleIntegration } from "./actions";
@@ -60,7 +60,7 @@ const PROVIDERS = [
         category: "Growth & Ads",
         title: "Meta (FB/IG) Ads",
         desc: "Direct lead form & pixel tracking.",
-        icon: Facebook,
+        icon: MessageCircle,
         fields: [
             { id: "pixelId", label: "Pixel ID", placeholder: "15-digit ID", type: "text" },
             { id: "accessToken", label: "Access Token", placeholder: "Enter System User Token", type: "password" },
