@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import crypto from "crypto";
+import { generateProactiveDraft } from "@/lib/ai/proactive";
 
 /**
  * META WEBHOOK ENGINE
- * Handles Facebook Messenger and Instagram Direct Messages.
- * 
- * Logic:
- * 1. GET: Handshake verification for Meta App setup.
- * 2. POST: Process incoming message objects, create/update leads, and log activities.
+ * Hardened with HMAC-SHA256 and Proactive Drafting.
  */
 
 // 1. VERIFICATION HANDSHAKE (GET)
@@ -17,24 +15,41 @@ export async function GET(req: NextRequest) {
     const token = searchParams.get("hub.verify_token");
     const challenge = searchParams.get("hub.challenge");
 
-    // Security check against environment variables
-    if (mode && token) {
-        if (mode === "subscribe" && token === process.env.META_WEBHOOK_VERIFY_TOKEN) {
-            console.log("✅ META_WEBHOOK_VERIFIED");
-            return new Response(challenge, { status: 200 });
-        } else {
-            console.error("❌ META_WEBHOOK_VERIFY_FAILED: Token mismatch");
-            return new Response("Forbidden", { status: 403 });
-        }
-    }
+    // Important: Name must exactly match Vercel Environment Variable
+    const SERVER_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN;
 
-    return new Response("Bad Request", { status: 400 });
+    if (mode === "subscribe" && token === SERVER_TOKEN) {
+        console.log("✅ META_WEBHOOK_VERIFIED");
+        return new Response(challenge, { status: 200 });
+    } else {
+        console.error("❌ META_WEBHOOK_VERIFY_FAILED: Token mismatch.");
+        return new Response("Forbidden", { status: 403 });
+    }
 }
 
 // 2. MESSAGE RECEIVER (POST)
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
+        const rawBody = await req.text();
+        const signature = req.headers.get("x-hub-signature-256");
+
+        // 🛡️ SECURITY: HMAC-SHA256 Authenticated Encryption Check
+        if (process.env.META_APP_SECRET) {
+            if (!signature) {
+                console.warn("❌ AUTH_FAILURE: Missing signature header");
+                return new Response("Unauthorized", { status: 401 });
+            }
+
+            const hmac = crypto.createHmac("sha256", process.env.META_APP_SECRET);
+            const digest = "sha256=" + hmac.update(rawBody).digest("hex");
+
+            if (signature !== digest) {
+                console.error("❌ AUTH_FAILURE: HMAC match failed.");
+                return new Response("Unauthorized", { status: 401 });
+            }
+        }
+
+        const body = JSON.parse(rawBody);
 
         // Meta webhooks can contain multiple entries/messages
         if (body.object === "page" || body.object === "instagram") {
@@ -48,7 +63,6 @@ export async function POST(req: NextRequest) {
                         const senderId = messageObj.sender.id;
                         const recipientId = messageObj.recipient.id;
                         const messageText = messageObj.message.text;
-                        const timestamp = messageObj.timestamp;
 
                         // Identify Source
                         const isInstagram = body.object === "instagram";
@@ -109,6 +123,7 @@ async function processMetaMessage(
                     metadata: {
                         externalId: senderId,
                         platform: sourceLabel,
+                        pageSource: metadata.recipientId, // Page Attribution
                         lastInteraction: new Date().toISOString()
                     }
                 }
@@ -129,7 +144,16 @@ async function processMetaMessage(
             }
         });
 
-        console.log(`📝 ACTIVITY_LOGGED for lead ${lead.id} via ${actionLabel}`);
+        // 🚀 PROACTIVE DRAFTING & EMERGENCY DETECTION
+        // Prepared AgentX draft the microsecond a message arrives.
+        await generateProactiveDraft({
+            leadId: lead.id,
+            messageText: text,
+            category: lead.category,
+            pageId: metadata.recipientId
+        });
+
+        console.log(`📝 PROACTIVE_SENTINEL_COMPLETE for lead ${lead.id}`);
 
     } catch (error) {
         console.error("Prisma processing failed for Meta message:", error);

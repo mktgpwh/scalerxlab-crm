@@ -1,6 +1,9 @@
+import { prisma } from "@/lib/prisma";
+import { decryptToken } from "@/lib/security/encryption";
+
 /**
  * AgentX Platform Dispatcher
- * Handles outbound messaging across Meta and WhatsApp ecosystems.
+ * Refactored: Production Graph API Orchestration with In-Memory Decryption.
  */
 
 export interface DispatchParams {
@@ -11,25 +14,83 @@ export interface DispatchParams {
 }
 
 /**
- * Send Messenger/Instagram DM via Meta Graph API
+ * Shared Helper: Fetch & Decrypt Integration Config
  */
-export async function sendMetaMessage(params: DispatchParams) {
-    console.log(`[DISPATCH] [META] To: ${params.recipientId} | Platform: ${params.platform} | Text: ${params.text}`);
+async function getIntegrationConfig(type: string) {
+    const settings = await prisma.systemSettings.findFirst({ where: { id: "singleton" } });
+    if (!settings) throw new Error("CRITICAL: System settings missing.");
     
-    // Placeholder for fetch call to Meta Graph API
-    // const res = await fetch(`https://graph.facebook.com/v21.0/me/messages?access_token=${process.env.META_ACCESS_TOKEN}`, { ... });
-    
-    return { success: true, messageId: `meta_${Date.now()}` };
+    const integrations = (settings.integrations as Record<string, any>) || {};
+    const config = integrations[type];
+
+    if (!config || !config.isActive) {
+        throw new Error(`Integration [${type}] is not configured or active.`);
+    }
+
+    return config;
 }
 
 /**
- * Send WhatsApp Message via Cloud API
+ * Send Messenger/Instagram DM via Meta Graph API v21.0
+ */
+export async function sendMetaMessage(params: DispatchParams) {
+    try {
+        const config = await getIntegrationConfig("meta_ads");
+        const token = decryptToken(config.pageAccessToken);
+
+        console.log(`[DISPATCH] [META] Orchestrating Graph API for ${params.platform}...`);
+
+        const res = await fetch(`https://graph.facebook.com/v21.0/me/messages?access_token=${token}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                recipient: { id: params.recipientId },
+                message: { text: params.text },
+                messaging_type: "RESPONSE"
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "Meta API Error");
+
+        return { success: true, messageId: data.message_id };
+    } catch (error: any) {
+        console.error(`[DISPATCH_FAILURE] [META]`, error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Send WhatsApp Message via Cloud API v21.0
  */
 export async function sendWhatsAppMessage(params: DispatchParams) {
-    console.log(`[DISPATCH] [WHATSAPP] To: ${params.recipientId} | Text: ${params.text}`);
-    
-    // Placeholder for fetch call to WhatsApp Cloud API
-    // const res = await fetch(`https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, { ... });
-    
-    return { success: true, messageId: `wa_${Date.now()}` };
+    try {
+        const config = await getIntegrationConfig("whatsapp");
+        const token = decryptToken(config.whatsappAccessToken);
+        const phoneId = config.phoneNumberId;
+
+        console.log(`[DISPATCH] [WHATSAPP] Orchestrating Cloud API for ${phoneId}...`);
+
+        const res = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                messaging_product: "whatsapp",
+                to: params.recipientId,
+                type: "text",
+                text: { body: params.text }
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "WhatsApp API Error");
+
+        return { success: true, messageId: data.messages?.[0]?.id };
+    } catch (error: any) {
+        console.error(`[DISPATCH_FAILURE] [WHATSAPP]`, error.message);
+        return { success: false, error: error.message };
+    }
 }

@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { Flame, Phone } from "lucide-react";
+import { Flame, Phone, AlertCircle } from "lucide-react";
 
 export function NotificationsListener() {
   const supabase = createClient();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // 🔔 INITIALIZE EMERGENCY CHIME
+    audioRef.current = new Audio("https://actions.google.com/sounds/v1/foley/emergency_chime.ogg");
+    audioRef.current.volume = 0.8;
+  }, []);
 
   useEffect(() => {
     if (!supabase) return;
@@ -20,6 +27,29 @@ export function NotificationsListener() {
       }
 
       channel
+        .on('broadcast', { event: 'CLINICAL_EMERGENCY' }, (payload) => {
+          // 🔊 Play High-Visibility Audio Alert
+          audioRef.current?.play().catch(e => console.warn("Audio play blocked by browser:", e));
+
+          toast.error(`EMERGENCY: CLINICAL URGENCY DETECTED`, {
+            description: `Patient ${payload.payload.name} reports distress: "${payload.payload.concern.substring(0, 40)}..."`,
+            duration: Infinity, // Persistent until dismissed
+            icon: <AlertCircle className="w-6 h-6 text-white animate-bounce" />,
+            action: {
+              label: "RESPOND NOW",
+              onClick: () => window.location.href = `/inbox?leadId=${payload.payload.leadId}`
+            },
+            style: { 
+                backgroundColor: '#991b1b', 
+                color: '#ffffff', 
+                border: '4px solid #fecaca', 
+                boxShadow: '0 0 100px rgba(220, 38, 38, 0.8)',
+                padding: '24px',
+                borderRadius: '1rem'
+            },
+            className: "font-black uppercase tracking-tighter",
+          });
+        })
         .on('broadcast', { event: 'HOT_LEAD' }, (payload) => {
           toast.error(`FLASH ALERT: HIGH INTENT PATIENT`, {
             description: `Patient ${payload.payload.name} scored ${payload.payload.score}/100. Requires immediate triage!`,
@@ -49,11 +79,7 @@ export function NotificationsListener() {
             className: "font-black uppercase tracking-tight",
           });
         })
-        .subscribe((status) => {
-          if (status !== 'SUBSCRIBED') {
-            console.warn("Global notifications channel status:", status);
-          }
-        });
+        .subscribe();
 
       return () => {
         supabase.removeChannel(channel);

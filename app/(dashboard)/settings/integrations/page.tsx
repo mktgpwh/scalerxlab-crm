@@ -55,10 +55,12 @@ const PROVIDERS = [
         id: "meta_ads",
         category: "Growth & Ads",
         title: "Meta (FB/IG) Ads",
-        desc: "Direct lead form & pixel tracking.",
+        desc: "Direct lead form & Messenger/IG re-engagement.",
         fields: [
-            { id: "pixelId", label: "Pixel ID", placeholder: "15-digit ID", type: "text" },
-            { id: "accessToken", label: "Access Token", placeholder: "Enter System User Token", type: "password" },
+            { id: "pixelId", label: "Meta Pixel ID", placeholder: "15-digit ID", type: "text" },
+            { id: "pageId", label: "Facebook Page ID", placeholder: "Enter Page ID", type: "text" },
+            { id: "pageAccessToken", label: "Page Access Token", placeholder: "Enter Permanent Token", type: "password" },
+            { id: "metaAppSecret", label: "Meta App Secret", placeholder: "Enter App Secret for HMAC", type: "password" },
         ]
     },
     {
@@ -67,8 +69,9 @@ const PROVIDERS = [
         title: "WhatsApp Cloud",
         desc: "Official Meta API for high-volume chat.",
         fields: [
-            { id: "phoneNumberId", label: "Phone ID", placeholder: "Meta Phone ID", type: "text" },
-            { id: "accessToken", label: "Permanent Token", placeholder: "Meta Access Token", type: "password" },
+            { id: "phoneNumberId", label: "Phone Number ID", placeholder: "Meta Phone Number ID", type: "text" },
+            { id: "wabaId", label: "WhatsApp Business ID (WABA)", placeholder: "Enter WABA ID", type: "text" },
+            { id: "whatsappAccessToken", label: "System User Token", placeholder: "Enter Permanent Token", type: "password" },
         ]
     },
     {
