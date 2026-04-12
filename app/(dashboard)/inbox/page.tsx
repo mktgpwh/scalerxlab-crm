@@ -9,11 +9,12 @@ import {
   Send,
   CheckCheck
 } from "lucide-react";
-import { WhatsAppIcon, InstagramIcon, FacebookIcon } from "@/components/icons";
+import { IntegrationIcon } from "@/components/ui/integration-icon";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 // Dummy Data mapped to Omnichannel Platforms
 const CONTACTS = [
@@ -28,13 +29,14 @@ export default function SharedInboxPage() {
   const [activeChat, setActiveChat] = useState<number>(1);
   const [activePlatformFilter, setActivePlatformFilter] = useState<string>("all");
 
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case "whatsapp": return <WhatsAppIcon className="h-3.5 w-3.5 text-[#25D366]" />;
-      case "instagram": return <InstagramIcon className="h-3.5 w-3.5 text-[#E1306C]" />;
-      case "facebook": return <FacebookIcon className="h-3.5 w-3.5 text-[#1877F2]" />;
-      default: return <WhatsAppIcon className="h-3.5 w-3.5 text-slate-400" />;
-    }
+  const getPlatformIcon = (platform: string, className?: string) => {
+    return (
+      <IntegrationIcon 
+        slug={platform} 
+        size={14} 
+        className={cn("transition-transform duration-300", className)} 
+      />
+    );
   };
 
   const filteredContacts = CONTACTS.filter(c => activePlatformFilter === 'all' || c.platform === activePlatformFilter);
@@ -43,7 +45,7 @@ export default function SharedInboxPage() {
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col min-w-0">
       <div className="flex items-center gap-2 mb-6 shrink-0">
-        <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
+        <IntegrationIcon slug="whatsapp" size={24} />
         <h2 className="text-2xl font-black tracking-tighter text-slate-900 dark:text-white lowercase italic">
           /shared.inbox
         </h2>
@@ -106,8 +108,8 @@ export default function SharedInboxPage() {
                              </div>
                              <div>
                                 <h4 className="text-xs font-black text-slate-900 dark:text-white capitalize">{contact.name}</h4>
-                                <div className="flex items-center gap-1 mt-0.5">
-                                   {getPlatformIcon(contact.platform)}
+                                <div className="flex items-center gap-1 mt-0.5 group">
+                                   {getPlatformIcon(contact.platform, "group-hover:scale-125 group-hover:rotate-12")}
                                    <span className="text-[9px] font-bold text-slate-400 capitalize">{contact.platform}</span>
                                 </div>
                              </div>
@@ -141,7 +143,7 @@ export default function SharedInboxPage() {
                  <div>
                     <h3 className="text-sm font-black text-slate-900 dark:text-white">{activeChatData?.name}</h3>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                       {getPlatformIcon(activeChatData?.platform || '')}
+                       <IntegrationIcon slug={activeChatData?.platform || ''} size={16} />
                        <span className="text-[10px] font-bold text-slate-500 capitalize tracking-widest">{activeChatData?.platform} Node</span>
                     </div>
                  </div>

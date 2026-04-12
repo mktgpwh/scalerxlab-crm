@@ -15,7 +15,7 @@ import {
   LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WhatsAppIcon } from "@/components/icons";
+import { IntegrationIcon } from "@/components/ui/integration-icon";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -41,7 +41,7 @@ const items = [
   { title: "Command Center", url: "/", icon: Home, label: "Overview" },
   { title: "Intelligence Hub", url: "/intelligence", icon: Sparkles, label: "AI Hub" },
   { title: "Capture Pipeline", url: "/pipeline", icon: LayoutDashboard, label: "Sales" },
-  { title: "Shared Inbox", url: "/inbox", icon: WhatsAppIcon, label: "WhatsApp" },
+  { title: "Shared Inbox", url: "/inbox", icon: (props: any) => <IntegrationIcon slug="whatsapp" {...props} />, label: "WhatsApp" },
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
   { title: "Integrations", url: "/settings/integrations", icon: Command, label: "Ads & WA" },
   { title: "Analytics Hub", url: "/analytics", icon: BarChart3, label: "Insights" },
