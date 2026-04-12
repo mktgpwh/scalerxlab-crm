@@ -10,11 +10,10 @@ import { Switch } from "@/components/ui/switch";
 import { 
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter 
 } from "@/components/ui/dialog";
+import { IntegrationIcon } from "@/components/ui/integration-icon";
 import { 
-    Phone, Smartphone, Globe, Target, Calculator, 
-    MessageSquare, Camera, MessageCircle, Sparkles, Zap, ShieldCheck, Loader2 
+    Zap, ShieldCheck, Loader2 
 } from "lucide-react";
-import { WhatsAppIcon } from "@/components/icons";
 import { saveIntegration, toggleIntegration } from "./actions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -27,7 +26,6 @@ const PROVIDERS = [
         category: "Cloud Telephony",
         title: "Tata SmartFlo",
         desc: "Enterprise cloud PBX & inbound routing.",
-        icon: Phone,
         fields: [
             { id: "apiKey", label: "API Key", placeholder: "Enter TATA Access Token", type: "password" },
             { id: "virtualNumber", label: "Virtual Number", placeholder: "+91 xxxx-xxxxxx", type: "text" },
@@ -38,7 +36,6 @@ const PROVIDERS = [
         category: "Cloud Telephony",
         title: "Knowlarity",
         desc: "Advanced Indian cloud telephony node.",
-        icon: Smartphone,
         fields: [
             { id: "apiKey", label: "API Key", placeholder: "Enter Knowlarity Key", type: "password" },
             { id: "virtualNumber", label: "Virtual Number", placeholder: "800-xxx-xxxx", type: "text" },
@@ -49,7 +46,6 @@ const PROVIDERS = [
         category: "Growth & Ads",
         title: "Google Ads",
         desc: "Performance max & SEM lead capture.",
-        icon: Target,
         fields: [
             { id: "customerId", label: "Customer ID", placeholder: "xxx-xxx-xxxx", type: "text" },
             { id: "developerToken", label: "Developer Token", placeholder: "Enter Google Dev Token", type: "password" },
@@ -60,7 +56,6 @@ const PROVIDERS = [
         category: "Growth & Ads",
         title: "Meta (FB/IG) Ads",
         desc: "Direct lead form & pixel tracking.",
-        icon: MessageCircle,
         fields: [
             { id: "pixelId", label: "Pixel ID", placeholder: "15-digit ID", type: "text" },
             { id: "accessToken", label: "Access Token", placeholder: "Enter System User Token", type: "password" },
@@ -71,7 +66,6 @@ const PROVIDERS = [
         category: "Capture & Messaging",
         title: "WhatsApp Cloud",
         desc: "Official Meta API for high-volume chat.",
-        icon: WhatsAppIcon,
         fields: [
             { id: "phoneNumberId", label: "Phone ID", placeholder: "Meta Phone ID", type: "text" },
             { id: "accessToken", label: "Permanent Token", placeholder: "Meta Access Token", type: "password" },
@@ -82,7 +76,6 @@ const PROVIDERS = [
         category: "Capture & Messaging",
         title: "Instagram DM",
         desc: "Automated AI triage for IG messages.",
-        icon: Camera,
         fields: [
             { id: "pageId", label: "IG Page ID", placeholder: "Instagram Business ID", type: "text" },
             { id: "accessToken", label: "Access Token", placeholder: "Meta System Token", type: "password" },
@@ -93,7 +86,6 @@ const PROVIDERS = [
         category: "Capture & Messaging",
         title: "Website Widget",
         desc: "On-site lead capture & tracking pixel.",
-        icon: Globe,
         fields: [
             { id: "domain", label: "Domain", placeholder: "hospital.com", type: "text" },
         ]
@@ -103,7 +95,6 @@ const PROVIDERS = [
         category: "Payments & Invoicing",
         title: "Razorpay",
         desc: "Collect advance bookings & deposits.",
-        icon: Calculator,
         fields: [
             { id: "keyId", label: "Key ID", placeholder: "rzp_live_xxx", type: "text" },
             { id: "keySecret", label: "Key Secret", placeholder: "Enter Secret Key", type: "password" },
@@ -166,9 +157,11 @@ export default function IntegrationHubPage() {
                                 </div>
 
                                 <div className="flex items-center gap-5 mb-6">
-                                    <div className="h-14 w-14 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                                        <provider.icon className="h-7 w-7 text-primary" />
-                                    </div>
+                                    <IntegrationIcon 
+                                        slug={provider.id} 
+                                        size={56} 
+                                        className="group-hover:scale-110 transition-transform duration-500" 
+                                    />
                                     <div className="flex flex-col">
                                         <h4 className="font-black text-lg tracking-tight text-slate-900 dark:text-white leading-none mb-1">{provider.title}</h4>
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Provider Node</span>
@@ -194,9 +187,7 @@ export default function IntegrationHubPage() {
                 <DialogContent className="sm:max-w-[450px] rounded-[3rem] p-10 border-none bg-white/95 backdrop-blur-3xl shadow-2xl">
                     <DialogHeader className="mb-8">
                         <div className="flex items-center gap-4 mb-4">
-                            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                {selectedProvider?.icon && <selectedProvider.icon className="h-6 w-6 text-primary" />}
-                            </div>
+                            <IntegrationIcon slug={selectedProvider?.id} size={48} />
                             <div className="flex flex-col text-left">
                                 <DialogTitle className="text-2xl font-black tracking-tighter">Connect {selectedProvider?.title}</DialogTitle>
                                 <DialogDescription className="text-xs font-medium text-slate-400">
