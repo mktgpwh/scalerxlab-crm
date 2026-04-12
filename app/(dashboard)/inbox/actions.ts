@@ -156,13 +156,39 @@ export async function updateAiStatus(leadId: string, status: 'AGENTX_ACTIVE' | '
     }
 }
 
+import { sendMetaMessage, sendWhatsAppMessage } from "@/lib/ai/dispatch";
+
 /**
  * Send Manual Message
  * Sends a message from the clinic and automatically triggers HUMAN_OVERRIDE.
  */
 export async function sendMessage(leadId: string, text: string) {
     try {
-        // 1. Log the message in ActivityLog
+        // 1. Fetch Lead context for routing
+        const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+        if (!lead) return { success: false, error: "Lead not found" };
+
+        const metadata = (lead.metadata as any) || {};
+        const recipientId = metadata.externalId;
+        const platform = metadata.platform || (lead.source === 'WHATSAPP' ? 'whatsapp' : 'facebook');
+
+        if (!recipientId) throw new Error("Recipient ID (PSID/WAID) missing in lead metadata.");
+
+        // 2. Dispatch to External Platform
+        console.log(`📡 [OUTBOUND] Routing message to ${platform} for ${lead.name}...`);
+        
+        let dispatchResult;
+        if (platform === 'whatsapp') {
+            dispatchResult = await sendWhatsAppMessage({ leadId, platform, recipientId, text });
+        } else {
+            dispatchResult = await sendMetaMessage({ leadId, platform: platform as 'facebook' | 'instagram', recipientId, text });
+        }
+
+        if (!dispatchResult.success) {
+            throw new Error(`Platform Dispatch Failed: ${dispatchResult.error}`);
+        }
+
+        // 3. Log the message in ActivityLog (Success Path)
         await prisma.activityLog.create({
             data: {
                 leadId,
@@ -170,12 +196,14 @@ export async function sendMessage(leadId: string, text: string) {
                 description: text,
                 metadata: {
                     sender: "CLINIC_AGENT",
+                    platform,
+                    messageId: dispatchResult.messageId,
                     timestamp: new Date().toISOString()
                 }
             }
         });
 
-        // 2. Automatically pause AgentX on human intervention
+        // 4. Automatically pause AgentX on human intervention
         await prisma.lead.update({
             where: { id: leadId },
             data: { aiChatStatus: 'HUMAN_OVERRIDE' }
@@ -183,9 +211,9 @@ export async function sendMessage(leadId: string, text: string) {
 
         revalidatePath("/inbox");
         return { success: true };
-    } catch (error) {
-        console.error("Failed to send message:", error);
-        return { success: false, error: "Transmission failed" };
+    } catch (error: any) {
+        console.error("🛑 [SEND_FAILURE] Failed to deliver message:", error.message);
+        return { success: false, error: error.message };
     }
 }
 
