@@ -3,7 +3,6 @@
 import React from "react";
 import Image from "next/image";
 import { 
-    SiWhatsapp, 
     SiMeta, 
     SiInstagram, 
     SiGoogleads, 
@@ -11,6 +10,7 @@ import {
 } from "react-icons/si";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WhatsAppIcon } from "@/components/icons";
 
 interface IntegrationIconProps {
     slug: string;
@@ -31,7 +31,7 @@ export function IntegrationIcon({ slug, size = 40, className }: IntegrationIconP
     switch (slug) {
         case "whatsapp":
         case "wati":
-            return <SiWhatsapp {...iconProps} className={cn(iconProps.className, "text-[#25D366]")} />;
+            return <WhatsAppIcon {...iconProps} className={cn(iconProps.className, "text-[#25D366]")} />;
         
         case "meta_ads":
         case "meta":

@@ -43,9 +43,27 @@ export function KanbanBoard({
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
   const [activeFunnel, setActiveFunnel] = useState<"OVERALL" | "INFERTILITY" | "MATERNITY">("OVERALL");
+  const [dateRange, setDateRange] = useState<string>("ALL");
   const supabase = createClient();
 
-  const visibleLeads = activeFunnel === "OVERALL" ? leads : leads.filter(l => l.category === activeFunnel);
+  const visibleLeads = React.useMemo(() => {
+      let filtered = activeFunnel === "OVERALL" ? leads : leads.filter(l => l.category === activeFunnel);
+      
+      if (dateRange !== "ALL") {
+          const now = new Date();
+          let cutoff = new Date();
+          if (dateRange === "TODAY") {
+              cutoff.setHours(0,0,0,0);
+          } else if (dateRange === "7D") {
+              cutoff.setDate(now.getDate() - 7);
+          } else if (dateRange === "30D") {
+              cutoff.setDate(now.getDate() - 30);
+          }
+          filtered = filtered.filter(l => new Date(l.createdAt || new Date()) >= cutoff);
+      }
+
+      return filtered;
+  }, [leads, activeFunnel, dateRange]);
 
   // Listen for Realtime Sync
   useEffect(() => {
@@ -154,26 +172,41 @@ export function KanbanBoard({
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      {/* Funnel Navigation Tabs */}
-      <div className="flex items-center gap-2 p-1 bg-white/50 dark:bg-slate-900/50 backdrop-blur border border-slate-200/50 dark:border-white/5 rounded-2xl w-fit">
-         <button 
-            onClick={() => setActiveFunnel("OVERALL")} 
-            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "OVERALL" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
-         >
-            Overall Pipeline
-         </button>
-         <button 
-            onClick={() => setActiveFunnel("INFERTILITY")} 
-            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "INFERTILITY" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
-         >
-            IVF Funnel
-         </button>
-         <button 
-            onClick={() => setActiveFunnel("MATERNITY")} 
-            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "MATERNITY" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
-         >
-            Maternity Funnel
-         </button>
+      {/* Filters Header */}
+      <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
+          {/* Funnel Navigation Tabs */}
+          <div className="flex items-center gap-2 p-1 bg-white/50 dark:bg-slate-900/50 backdrop-blur border border-slate-200/50 dark:border-white/5 rounded-2xl w-fit">
+             <button 
+                onClick={() => setActiveFunnel("OVERALL")} 
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "OVERALL" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
+             >
+                Overall Pipeline
+             </button>
+             <button 
+                onClick={() => setActiveFunnel("INFERTILITY")} 
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "INFERTILITY" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
+             >
+                IVF Funnel
+             </button>
+             <button 
+                onClick={() => setActiveFunnel("MATERNITY")} 
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "MATERNITY" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
+             >
+                Maternity Funnel
+             </button>
+          </div>
+
+          {/* Date Range Selector */}
+          <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="bg-white/80 dark:bg-slate-900/80 backdrop-blur border border-slate-200/60 dark:border-white/10 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-2 h-9 outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer"
+          >
+              <option value="ALL">All Time</option>
+              <option value="TODAY">Today Only</option>
+              <option value="7D">Last 7 Days</option>
+              <option value="30D">Last 30 Days</option>
+          </select>
       </div>
 
       <DndContext

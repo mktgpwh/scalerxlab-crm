@@ -17,7 +17,7 @@ import type { LeadIntent } from "@prisma/client";
 import { Lead } from "@/lib/types";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Phone, ShieldAlert, Zap } from "lucide-react";
-import { SiWhatsapp } from "react-icons/si";
+import { WhatsAppIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { 
   Tooltip, 
@@ -232,7 +232,7 @@ export function RealtimeLeadsTable({
                             openLead(lead.id, "engagement");
                           }}
                         >
-                          <SiWhatsapp className="h-4 w-4 text-[#25D366] cursor-pointer hover:opacity-80 transition-opacity" />
+                          <WhatsAppIcon className="h-4 w-4 shrink-0 transition-opacity" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="text-[10px] uppercase font-black">
