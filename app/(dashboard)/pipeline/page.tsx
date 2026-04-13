@@ -16,13 +16,13 @@ export default async function PipelinePage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-1">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Live Pipeline Management</span>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Specialized Funnels Matrix</span>
           </div>
           <h2 className="text-3xl font-black tracking-tight text-slate-900 lowercase italic">
-            /sales.funnel
+            /lead.pipelines
           </h2>
           <p className="text-sm font-medium text-slate-500">
-            Visualize and manage <span className="text-slate-900 underline decoration-primary/30 underline-offset-4">{clinicName}</span> conversion stages.
+            Visualize and route patients through specialized <span className="text-slate-900 underline decoration-primary/30 underline-offset-4">{clinicName}</span> department pipelines.
           </p>
         </div>
 

@@ -42,7 +42,10 @@ export function KanbanBoard({
 }) {
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
+  const [activeFunnel, setActiveFunnel] = useState<"OVERALL" | "INFERTILITY" | "MATERNITY">("OVERALL");
   const supabase = createClient();
+
+  const visibleLeads = activeFunnel === "OVERALL" ? leads : leads.filter(l => l.category === activeFunnel);
 
   // Listen for Realtime Sync
   useEffect(() => {
@@ -150,23 +153,46 @@ export function KanbanBoard({
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex h-full gap-4 overflow-x-auto snap-x snap-mandatory pb-4 hide-scrollbar">
-        {COLUMNS.map((col) => (
-          <KanbanColumn
-            key={col.id}
-            id={col.id}
-            title={col.title}
-            leads={leads.filter((l) => l.status === col.id)}
-          />
-        ))}
+    <div className="flex flex-col h-full space-y-4">
+      {/* Funnel Navigation Tabs */}
+      <div className="flex items-center gap-2 p-1 bg-white/50 dark:bg-slate-900/50 backdrop-blur border border-slate-200/50 dark:border-white/5 rounded-2xl w-fit">
+         <button 
+            onClick={() => setActiveFunnel("OVERALL")} 
+            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "OVERALL" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
+         >
+            Overall Pipeline
+         </button>
+         <button 
+            onClick={() => setActiveFunnel("INFERTILITY")} 
+            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "INFERTILITY" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
+         >
+            IVF Funnel
+         </button>
+         <button 
+            onClick={() => setActiveFunnel("MATERNITY")} 
+            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeFunnel === "MATERNITY" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
+         >
+            Maternity Funnel
+         </button>
       </div>
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex flex-1 gap-4 overflow-x-auto snap-x snap-mandatory pb-4 hide-scrollbar">
+          {COLUMNS.map((col) => (
+            <KanbanColumn
+              key={col.id}
+              id={col.id}
+              title={col.title}
+              leads={visibleLeads.filter((l) => l.status === col.id)}
+            />
+          ))}
+        </div>
 
       <DragOverlay dropAnimation={{
           sideEffects: defaultDropAnimationSideEffects({
@@ -182,5 +208,6 @@ export function KanbanBoard({
         ) : null}
       </DragOverlay>
     </DndContext>
+    </div>
   );
 }
