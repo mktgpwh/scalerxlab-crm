@@ -59,7 +59,7 @@ export default function LoginPage() {
         description: "Accessing Command Center...",
       });
       
-      router.push("/leads");
+      router.push("/");
       router.refresh();
     } catch (err) {
       toast.error("System Error", {

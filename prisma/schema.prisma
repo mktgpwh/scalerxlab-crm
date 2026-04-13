@@ -203,6 +203,7 @@ enum TreatmentCategory {
   MATERNITY
   GYNECOLOGY
   INFERTILITY
+  PEDIATRICS
   OTHER
 }
 

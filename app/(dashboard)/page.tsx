@@ -2,10 +2,21 @@ import { prisma } from "@/lib/prisma";
 import { ExecutiveDashboard } from "./leads/executive-dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getPrismaDateFilter } from "@/lib/utils/date-filters";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-export default async function CommandCenterPage() {
+interface PageProps {
+  searchParams: Promise<{ 
+    from?: string; 
+    to?: string; 
+    category?: string;
+    branchId?: string;
+  }>;
+}
+
+export default async function CommandCenterPage({ searchParams }: PageProps) {
+  const params = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -25,6 +36,11 @@ export default async function CommandCenterPage() {
 
   const isAdmin = profile.role === "ORG_ADMIN" || profile.role === "SUPER_ADMIN";
 
+  // Build Prisma Filters
+  const dateFilter = getPrismaDateFilter(params.from, params.to);
+  const categoryFilter = params.category ? { category: params.category } : {};
+  const branchFilter = params.branchId ? { branchId: params.branchId } : {};
+
   // Get Active Branches for Attribution
   const branches = await prisma.branch.findMany({
     where: { isActive: true },
@@ -39,8 +55,11 @@ export default async function CommandCenterPage() {
 
   // Enforce Visibility Architecture
   const leads = await prisma.lead.findMany({
-    where: isAdmin ? {} : {
-      ownerId: profile.id
+    where: {
+      ...(isAdmin ? {} : { ownerId: profile.id }),
+      ...dateFilter,
+      ...categoryFilter,
+      ...branchFilter
     },
     include: {
         owner: {

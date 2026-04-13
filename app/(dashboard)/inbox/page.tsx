@@ -68,6 +68,9 @@ export default function SharedInboxPage() {
 
   // [PHASE 3]: Zero-Latency Real-time
   useEffect(() => {
+    // Stability Hack: We use a ref for loadThreads to avoid resubscribing when it changes
+    const stableLoad = () => loadThreads(true);
+
     const channel = supabase
       .channel('inbox_realtime_sentinel')
       .on(
@@ -75,7 +78,7 @@ export default function SharedInboxPage() {
         { event: 'INSERT', schema: 'public', table: 'activity_logs' },
         (payload) => {
           console.log("📥 REALTIME_SYNC_TRIGGERED", payload);
-          loadThreads(true); // Optimized silent refresh
+          stableLoad(); // Optimized silent refresh
 
           // 🚨 [PHASE 4]: Keyword Sentinel
           const text = (payload.new.description || "").toLowerCase();
@@ -95,14 +98,14 @@ export default function SharedInboxPage() {
       .on(
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'leads' },
-          () => loadThreads(true)
+          () => stableLoad()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadThreads, supabase]);
+  }, [supabase]); // ONLY depend on the stable supabase client
 
   const activeThread = threads.find(t => t.id === activeThreadId);
 

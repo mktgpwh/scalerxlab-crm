@@ -12,6 +12,7 @@ import {
   BarChart3,
   Home,
   Phone,
+  Puzzle,
   LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,7 +44,7 @@ const items = [
   { title: "Capture Pipeline", url: "/pipeline", icon: LayoutDashboard, label: "Sales" },
   { title: "Shared Inbox", url: "/inbox", icon: (props: any) => <IntegrationIcon slug="whatsapp" {...props} />, label: "WhatsApp" },
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
-  { title: "Integrations", url: "/settings/integrations", icon: Command, label: "Ads & WA" },
+  { title: "Connections", url: "/integrations", icon: Puzzle, label: "Expansion Hub" },
   { title: "Analytics Hub", url: "/analytics", icon: BarChart3, label: "Insights" },
   { title: "Activity Logs", url: "/activity", icon: History },
 ];
@@ -82,7 +83,7 @@ export function AppSidebar() {
   const filteredItems = items.filter((item) => {
     // Only hide if role is EXPLICITLY a non-admin role
     if (role === "USER" || role === "AGENT") {
-      if (["Integrations", "Analytics Hub"].includes(item.title)) {
+      if (["Connections", "Analytics Hub"].includes(item.title)) {
         return false;
       }
     }
@@ -92,9 +93,9 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-slate-200/50 bg-white/80 backdrop-blur-xl shadow-2xl max-md:bg-white/98 max-md:backdrop-blur-none">
       <SidebarHeader className="h-20 flex items-center px-4 bg-transparent border-b border-slate-100">
-        <div className="flex items-center gap-3 group">
+        <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push("/")}>
           {/* Logo mark (collapsed state) */}
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-slate-900 ring-1 ring-slate-800 shadow-xl transition-transform group-hover:scale-105 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-slate-900 ring-1 ring-slate-800 shadow-xl transition-all group-hover:scale-110 group-hover:rotate-3 shrink-0">
             <Image src="/scalerxlab-logo.png" alt={clinicName} width={32} height={32} className="object-contain" />
           </div>
           {/* Full logo (expanded state) */}
@@ -123,7 +124,7 @@ export function AppSidebar() {
                       render={<Link href={item.url} />}
                       tooltip={item.title}
                       isActive={isActive}
-                      className={`h-12 transition-all duration-300 rounded-none group relative overflow-hidden ${
+                      className={`h-12 transition-all duration-300 rounded-none group relative overflow-hidden cursor-pointer ${
                         isActive
                           ? "bg-primary/10 text-black font-black border-l-4 border-primary"
                           : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-950"
@@ -183,9 +184,9 @@ export function AppSidebar() {
               render={<Link href="/settings" />}
               isActive={pathname === "/settings"}
               className={cn(
-                "h-10 rounded-xl px-3 transition-colors",
+                "h-10 rounded-xl px-3 transition-all cursor-pointer",
                 pathname === "/settings" 
-                  ? "bg-primary/10 text-primary font-bold" 
+                  ? "bg-primary/10 text-primary font-bold shadow-sm" 
                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
               )}
             >
@@ -199,7 +200,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleLogout}
-              className="h-10 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl px-3 transition-colors"
+              className="h-10 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl px-3 transition-all cursor-pointer active:scale-95"
             >
               <LogOut className="h-4 w-4" />
               <span className="font-black text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">

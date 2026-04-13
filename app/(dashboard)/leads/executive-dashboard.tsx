@@ -51,18 +51,39 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
   const hotRatio   = totalLeads > 0 ? ((hotLeads / totalLeads) * 100).toFixed(1) : 0;
   const displayAdSpend = adSpendMode === 'MANUAL' ? customAdSpend : totalLeads * 200;
 
+  // ─── CBIO BUSINESS INTELLIGENCE ENGINE ─────────────────────
+  // Intent-based Revenue Benchmarks
+  const IVF_VALUE = 100000;
+  const MDT_VALUE = 80000;
+  const ESTIMATED_CONV = 0.25; // 25% for HOT leads
+
+  const hotInfertility = leads.filter(l => l.category === 'INFERTILITY' && l.metadata?.intentLevel === 'HOT').length;
+  const hotMaternity   = leads.filter(l => l.category === 'MATERNITY' && l.metadata?.intentLevel === 'HOT').length;
+
+  const predictiveROI = (hotInfertility * IVF_VALUE * ESTIMATED_CONV) + (hotMaternity * MDT_VALUE * ESTIMATED_CONV);
+
   const ivfLeads      = leads.filter(l => l.category === 'INFERTILITY').length;
   const maternityLeads = leads.filter(l => l.category === 'MATERNITY').length;
   const gynoLeads     = leads.filter(l => l.category === 'GYNECOLOGY').length;
   const otherLeads    = leads.filter(l => !l.category || l.category === 'OTHER').length;
-  const targetProgress = Math.min((ivfLeads / 50) * 100, 100);
-
+  
   const treatmentData = [
     { name: 'IVF',  value: ivfLeads },
     { name: 'MDT',  value: maternityLeads },
     { name: 'GYN',  value: gynoLeads },
     { name: 'OTH',  value: otherLeads },
   ].filter(d => d.value > 0);
+
+  // Sentiment Pulse Trends (Mocked for current view)
+  const sentimentTrends = [
+    { day: 'Mon', positive: 65, neutral: 20, negative: 15 },
+    { day: 'Tue', positive: 70, neutral: 25, negative: 5 },
+    { day: 'Wed', positive: 55, neutral: 35, negative: 10 },
+    { day: 'Thu', positive: 80, neutral: 15, negative: 5 },
+    { day: 'Fri', positive: 75, neutral: 20, negative: 5 },
+    { day: 'Sat', positive: 90, neutral: 10, negative: 0 },
+    { day: 'Sun', positive: 85, neutral: 10, negative: 5 },
+  ];
 
   const regionalData = branches.map(branch => ({
     name: branch.name,
@@ -105,13 +126,12 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KpiCard 
-          title="Total Ad Spend" 
-          value={`₹${(displayAdSpend / 1000).toFixed(1)}k`} 
-          subValue={`${totalLeads} Leads`} 
+          title="Predictive ROI" 
+          value={`₹${(predictiveROI / 100000).toFixed(1)}L`} 
+          subValue="Future Conversions" 
           icon={<TrendingUp className="h-5 w-5" />} 
-          color="blue" 
-          estimated={adSpendMode === 'AUTO'}
-          onSettings={() => {}}
+          color="emerald" 
+          estimated
         />
         <KpiCard 
           title="Global Hot Ratio" 
@@ -121,12 +141,11 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
           color="rose" 
         />
         <KpiCard 
-          title="IVF Target" 
-          value={ivfLeads.toString()} 
-          subValue="/ 50 Cycles" 
+          title="Avg. Acquisition" 
+          value={`₹${(displayAdSpend / totalLeads || 0).toFixed(0)}`} 
+          subValue="Cost Per Lead" 
           icon={<Target className="h-5 w-5" />} 
-          color="emerald" 
-          progress={targetProgress}
+          color="blue" 
         />
         <KpiCard 
           title="Presence" 
@@ -138,62 +157,61 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         {/* Conversion Pipeline Chart (Funnel) */}
+         {/* Sentiment Trends Chart (Area) */}
          <Card className="lg:col-span-2 surface-layered border-none rounded-[3rem] p-10 shadow-sm ring-1 ring-slate-200/50">
-            <div className="flex items-center gap-2 mb-8">
-              <Activity className="h-5 w-5 text-primary" />
-              <h4 className="text-lg font-black italic tracking-tight">Conversion Pipeline Chart</h4>
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5 text-emerald-500" />
+                <h4 className="text-lg font-black italic tracking-tight">Sentinel Sentiment Pulse</h4>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-emerald-500" /> <span className="text-[9px] font-black uppercase text-slate-400 font-medium">Positive</span></div>
+                <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-rose-500" /> <span className="text-[9px] font-black uppercase text-slate-400 font-medium">Negative</span></div>
+              </div>
             </div>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" opacity={0.5} />
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="stage" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} width={120} />
-                  <Tooltip cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }} contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
-                  <Bar dataKey="count" radius={[0, 10, 10, 0]} barSize={32}>
-                    {funnelData.map((_, index) => (
-                      <Cell key={index} fill={[`#6366f1`, `#818cf8`, `#a5b4fc`, `#10b981`][index % 4]} />
-                    ))}
-                  </Bar>
-                </BarChart>
+                <AreaChart data={sentimentTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorPositive" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorNegative" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
+                  <YAxis hide />
+                  <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+                  <Area type="monotone" dataKey="positive" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPositive)" />
+                  <Area type="monotone" dataKey="negative" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorNegative)" />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
          </Card>
 
-         {/* Treatment Split Chart (Donut) */}
+         {/* Funnel Distribution Chart (Bar) */}
          <Card className="surface-layered border-none rounded-[3rem] p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col">
-            <div className="mb-6">
-              <h4 className="text-sm font-black italic tracking-tight uppercase">Treatment Split Chart</h4>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Donut: Maternity vs Infertility</p>
+            <div className="mb-8">
+              <h4 className="text-sm font-black italic tracking-tight uppercase">IVF Sales Funnel</h4>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Stage Conversion Probability</p>
             </div>
-            <div className="flex-1 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={treatmentData}
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={8}
-                    dataKey="value"
-                    strokeWidth={0}
-                  >
-                    {treatmentData.map((_, index) => (
-                      <Cell key={index} fill={[COLORS[0], COLORS[2], COLORS[1], COLORS[3]][index % 4]} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-2 mt-6">
-              {treatmentData.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-white/5">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: [COLORS[0], COLORS[2], COLORS[1], COLORS[3]][idx % 4] }} />
-                    <span className="text-[10px] font-black uppercase tracking-tight">{item.name}</span>
+            <div className="flex-1 space-y-6">
+              {funnelData.map((item, idx) => (
+                <div key={idx} className="space-y-2">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase">
+                    <span>{item.stage}</span>
+                    <span className="text-slate-400">{item.count}</span>
                   </div>
-                  <span className="text-[10px] font-black text-slate-400">{item.value}</span>
+                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                        className={cn("h-full rounded-full transition-all duration-1000", idx < 2 ? "bg-indigo-500" : "bg-emerald-500")}
+                        style={{ width: `${(item.count / totalLeads) * 400}%` }} // Relative to pipeline
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -519,10 +537,14 @@ function LeadsDataView({
 
                     {/* Heat Score */}
                     <td className="px-5 py-4">
-                      <Badge className={cn("text-[8px] font-black uppercase px-2 py-0.5 ring-1 border-none", INTENT_STYLES[lead.intent] || INTENT_STYLES.UNSCORED)}>
-                        {lead.intent === 'HOT' && <Flame className="h-2.5 w-2.5 mr-1 inline" />}
-                        {lead.intent || "UNSCORED"}
-                      </Badge>
+                      {lead.metadata?.intentLevel ? (
+                        <Badge className={cn("text-[8px] font-black uppercase px-2 py-0.5 ring-1 border-none", INTENT_STYLES[lead.metadata.intentLevel] || INTENT_STYLES.UNSCORED)}>
+                          {lead.metadata.intentLevel === 'HOT' && <Flame className="h-2.5 w-2.5 mr-1 inline animate-pulse" />}
+                          {lead.metadata.intentLevel}
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-slate-100 text-slate-400 text-[8px] font-black uppercase px-2 py-0.5 border-none">Pending AI</Badge>
+                      )}
                     </td>
 
                     {/* AI Score */}
@@ -530,11 +552,16 @@ function LeadsDataView({
                       <div className="flex items-center gap-2">
                         <div className="w-12 h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                           <div
-                            className={cn("h-full rounded-full", (lead.aiScore || 0) > 70 ? "bg-emerald-500" : (lead.aiScore || 0) > 40 ? "bg-amber-500" : "bg-slate-300")}
-                            style={{ width: `${lead.aiScore || 0}%` }}
+                            className={cn("h-full rounded-full transition-all duration-700", (lead.metadata?.intentScore || 0) > 70 ? "bg-emerald-500" : (lead.metadata?.intentScore || 0) > 40 ? "bg-amber-500" : "bg-slate-300")}
+                            style={{ width: `${lead.metadata?.intentScore || 0}%` }}
                           />
                         </div>
-                        <span className={cn("text-[10px] font-black", (lead.aiScore || 0) > 70 ? "text-emerald-600" : "text-slate-500")}>
+                        <span className={cn("text-[10px] font-black", (lead.metadata?.intentScore || 0) > 70 ? "text-emerald-600" : "text-slate-500")}>
+                          {lead.metadata?.intentScore ?? "—"}
+                        </span>
+                      </div>
+                    </td>
+core || 0) > 70 ? "text-emerald-600" : "text-slate-500")}>
                           {lead.aiScore ?? "—"}
                         </span>
                       </div>
@@ -617,7 +644,7 @@ function FilterChip({ label, value, options, onChange }: { label: string; value:
   return (
     <Popover>
       <PopoverTrigger className={cn(
-        "flex items-center gap-1.5 h-9 px-3 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+        "flex items-center gap-1.5 h-9 px-3 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer hover:border-primary/50",
         isActive
           ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
           : "bg-white dark:bg-white/5 text-slate-500 border-slate-200/60 dark:border-white/10 hover:border-primary/30 hover:text-primary"
@@ -739,7 +766,7 @@ function KpiCard({ title, value, subValue, icon, color, progress, estimated }: a
     };
 
     return (
-        <Card className="surface-layered border-none rounded-[2.5rem] p-8 shadow-sm ring-1 ring-slate-200/50 overflow-hidden relative group transition-all hover:shadow-xl hover:ring-primary/20">
+        <Card className="surface-layered border-none rounded-[2.5rem] p-8 shadow-sm ring-1 ring-slate-200/50 overflow-hidden relative group transition-all hover:shadow-2xl hover:ring-primary/30 hover:scale-[1.01] cursor-pointer">
             <div className="flex justify-between items-start mb-6">
                 <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500", colorMap[color])}>
                     {icon}

@@ -14,6 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useDashboardStore } from "@/lib/store/use-dashboard-store";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function DashboardFilterBar() {
   const { 
@@ -27,6 +28,35 @@ export function DashboardFilterBar() {
     setOwnerId,
     resetFilters 
   } = useDashboardStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Sync state to URL
+  const updateUrl = React.useCallback((params: Record<string, string | null>) => {
+    const newParams = new URLSearchParams(searchParams.toString());
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+    });
+    router.push(`?${newParams.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  // Wrap store actions to also update URL
+  const handleSetDateRange = (range: { from: Date | undefined; to?: Date | undefined }) => {
+    setDateRange(range);
+    updateUrl({
+        from: range.from ? range.from.toISOString() : null,
+        to: range.to ? range.to.toISOString() : null
+    });
+  };
+
+  const handleSetCategory = (cat: string | null) => {
+      setCategory(cat);
+      updateUrl({ category: cat });
+  };
 
   const presets = [
     { label: "Today", getValue: () => ({ from: startOfDay(new Date()), to: endOfDay(new Date()) }) },
@@ -63,7 +93,7 @@ export function DashboardFilterBar() {
               <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 rounded-3xl border-slate-200/60 shadow-2xl z-[100]" align="start">
+          <PopoverContent className="w-auto p-0 rounded-3xl border-slate-200/60 dark:border-white/10 shadow-2xl z-[100] bg-white dark:bg-slate-950" align="start">
             <div className="flex flex-col md:flex-row">
               <div className="p-4 border-r border-slate-100 dark:border-white/5 flex flex-col gap-2 bg-slate-50/50 dark:bg-slate-900/50">
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-2">Presets</span>
@@ -71,8 +101,8 @@ export function DashboardFilterBar() {
                   <Button
                     key={preset.label}
                     variant="ghost"
-                    className="justify-start font-bold text-xs rounded-xl h-9 hover:bg-white dark:hover:bg-white/5"
-                    onClick={() => setDateRange(preset.getValue())}
+                    className="justify-start font-bold text-xs rounded-xl h-9 hover:bg-white dark:hover:bg-white/5 cursor-pointer"
+                    onClick={() => handleSetDateRange(preset.getValue())}
                   >
                     {preset.label}
                   </Button>
@@ -84,9 +114,9 @@ export function DashboardFilterBar() {
                   mode="range"
                   defaultMonth={dateRange?.from}
                   selected={{ from: dateRange.from, to: dateRange.to }}
-                  onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                  onSelect={(range) => handleSetDateRange({ from: range?.from, to: range?.to })}
                   numberOfMonths={2}
-                  className="rounded-2xl"
+                  className="rounded-2xl cursor-pointer"
                 />
               </div>
             </div>
@@ -100,13 +130,14 @@ export function DashboardFilterBar() {
         {/* Category Select (Mocked options for now) */}
         <select 
           value={category || ""} 
-          onChange={(e) => setCategory(e.target.value || null)}
-          className="h-11 px-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/10 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20"
+          onChange={(e) => handleSetCategory(e.target.value || null)}
+          className="h-11 px-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/10 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
         >
           <option value="">All Categories</option>
           <option value="MATERNITY">Maternity</option>
           <option value="INFERTILITY">Infertility (IVF)</option>
           <option value="GYNECOLOGY">Gynecology</option>
+          <option value="PEDIATRICS">Pediatrics</option>
         </select>
 
         {/* Action Button to clear */}

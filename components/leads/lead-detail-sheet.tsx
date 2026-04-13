@@ -210,25 +210,25 @@ export function LeadDetailSheet() {
                 <TabsList className="bg-transparent h-14 p-0 gap-6">
                   <TabsTrigger 
                     value="overview" 
-                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all"
+                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all cursor-pointer hover:text-primary/70"
                   >
                     /Overview
                   </TabsTrigger>
                   <TabsTrigger 
                     value="engagement" 
-                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all"
+                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all cursor-pointer hover:text-primary/70"
                   >
                     /Engage
                   </TabsTrigger>
                   <TabsTrigger 
                     value="timeline" 
-                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all"
+                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all cursor-pointer hover:text-primary/70"
                   >
                     /Timeline
                   </TabsTrigger>
                   <TabsTrigger 
                     value="notes" 
-                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all"
+                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all cursor-pointer hover:text-primary/70"
                   >
                     /Notes
                   </TabsTrigger>
@@ -324,7 +324,7 @@ export function LeadDetailSheet() {
                         variant="outline" 
                         disabled={!lead.consentFlag}
                         className={cn(
-                            "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group",
+                            "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group cursor-pointer",
                             lead.consentFlag ? "hover:bg-emerald-500 hover:text-white" : "opacity-50 cursor-not-allowed"
                         )}
                         onClick={handleCall}

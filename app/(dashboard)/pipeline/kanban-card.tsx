@@ -132,7 +132,7 @@ export function KanbanCard({
       layoutId={lead.id}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      whileHover={{ y: -4, scale: 1.02, transition: { duration: 0.2 } }}
     >
       <Card
         ref={setNodeRef}
@@ -144,9 +144,9 @@ export function KanbanCard({
             openLead();
         }}
         className={cn(
-          "cursor-grab active:cursor-grabbing transition-all duration-300 border-slate-200/60 dark:border-white/5 rounded-[2rem] shadow-sm hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/30 bg-white dark:bg-slate-950 group",
+          "cursor-pointer active:scale-[0.98] transition-all duration-300 border-slate-200/60 dark:border-white/5 rounded-[2rem] shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/40 bg-white dark:bg-slate-950 group",
           isOverlay && "ring-4 ring-primary shadow-2xl rotate-2",
-          lead.intent === 'HOT' && "shadow-[0_0_20px_rgba(244,63,94,0.05)] border-rose-500/20"
+          lead.intent === 'HOT' && "shadow-[0_0_20px_rgba(244,63,94,0.1)] border-rose-500/30"
         )}
       >
         <CardContent className="p-5 space-y-4">
