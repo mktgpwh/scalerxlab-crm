@@ -153,6 +153,27 @@ export function LeadDetailSheet() {
     }
   };
 
+  const handleSendWhatsapp = async (text: string) => {
+      if (!lead) return;
+      const promise = fetch(`/api/leads/${lead.id}/whatsapp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+      }).then(async res => {
+          if (!res.ok) {
+              const data = await res.json();
+              throw new Error(data.error || "WATI Dispatch Failed");
+          }
+          return res.json();
+      });
+
+      toast.promise(promise, {
+          loading: "Transmitting via Native Node...",
+          success: "Message securely dispatched via WATI",
+          error: (err) => err.message
+      });
+  };
+
   if (!leadId) return null;
 
   const isArchived = lead?.status === 'LOST';
@@ -338,8 +359,8 @@ export function LeadDetailSheet() {
                             "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group cursor-pointer hover:bg-[#25D366] hover:text-white hover:border-[#25D366]"
                         )}
                         onClick={() => {
-                           logEngagement("WHATSAPP");
-                           window.open(`https://wa.me/${lead.phone || lead.whatsappNumber}`);
+                           const txt = window.prompt("Enter message to send via WATI:");
+                           if (txt) handleSendWhatsapp(txt);
                         }}
                      >
                         <div className="flex flex-col items-center gap-1">
@@ -380,10 +401,7 @@ export function LeadDetailSheet() {
                               <Button 
                                  className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/10 text-xs font-black uppercase tracking-widest"
                                  disabled={!lead.consentFlag}
-                                 onClick={() => {
-                                    logEngagement("WHATSAPP");
-                                    window.open(`https://wa.me/${lead.phone || lead.whatsappNumber}?text=${encodeURIComponent(draft)}`);
-                                 }}
+                                 onClick={() => handleSendWhatsapp(draft!)}
                               >
                                  <WhatsAppIcon className="h-4 w-4 mr-2" />
                                  Transmit via WhatsApp
