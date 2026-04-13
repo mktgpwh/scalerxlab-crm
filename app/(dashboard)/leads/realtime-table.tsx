@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { IntegrationIcon } from "@/components/ui/integration-icon";
 
 export function RealtimeLeadsTable({ 
   initialLeads 
