@@ -30,6 +30,7 @@ export function IntegrationIcon({ slug, size = 40, className }: IntegrationIconP
 
     switch (slug) {
         case "whatsapp":
+        case "wati":
             return <SiWhatsapp {...iconProps} className={cn(iconProps.className, "text-[#25D366]")} />;
         
         case "meta_ads":

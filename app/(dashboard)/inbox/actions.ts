@@ -46,6 +46,7 @@ export async function fetchInboxThreads() {
                 status: lead.status,
                 aiStatus: lead.aiChatStatus,
                 isEscalated: lead.isEscalated,
+                isAd: (lead.metadata as any)?.isAd === true,
                 lastMessage: lead.activityLogs[0]?.description || "No message context",
                 lastTime: lead.activityLogs[0]?.createdAt || lead.updatedAt,
                 history: lead.activityLogs

@@ -4,18 +4,18 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 model SystemSettings {
-  id                String   @id @default("singleton")
-  clinicName        String   @default("Pahlajani's Women's Hospital")
-  brandColor        String   @default("#0f172a")
-  aiRoutingEnabled  Boolean  @default(false)
+  id                       String                   @id @default("singleton")
+  clinicName               String                   @default("Pahlajani's Women's Hospital")
+  brandColor               String                   @default("#0f172a")
+  aiRoutingEnabled         Boolean                  @default(false)
+  tataVirtualNumber        String?
+  updatedAt                DateTime                 @updatedAt
   leadDistributionStrategy LeadDistributionStrategy @default(MANUAL)
-  tataVirtualNumber String?
-  integrations      Json?    @default("{}")
-  updatedAt         DateTime @updatedAt
+  integrations             Json?                    @default("{}")
 
   @@map("system_settings")
 }
@@ -25,9 +25,9 @@ model Branch {
   name      String
   city      String
   isHQ      Boolean  @default(false)
-  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
   leads     Lead[]
 
   @@map("branches")
@@ -40,11 +40,11 @@ model User {
   avatarUrl                String?
   role                     UserRole      @default(AGENT)
   isActive                 Boolean       @default(true)
-  isOnline                 Boolean       @default(false)
   platformConsentGiven     Boolean       @default(false)
   platformConsentTimestamp DateTime?
   createdAt                DateTime      @default(now())
   updatedAt                DateTime      @updatedAt
+  isOnline                 Boolean       @default(false)
   activityLogs             ActivityLog[]
   ownedLeads               Lead[]        @relation("LeadOwner")
 
@@ -64,7 +64,6 @@ model Lead {
   aiScore             Int?
   aiScoredAt          DateTime?
   aiNotes             String?
-  ownerId             String?           @db.Uuid
   assignedAt          DateTime?
   consentFlag         Boolean           @default(false)
   consentTimestamp    DateTime?
@@ -75,13 +74,14 @@ model Lead {
   branchId            String?
   isAutoAssigned      Boolean           @default(false)
   category            TreatmentCategory @default(OTHER)
+  ownerId             String?           @db.Uuid
   aiChatStatus        AiChatStatus      @default(AGENTX_ACTIVE)
   isEscalated         Boolean           @default(false)
   activityLogs        ActivityLog[]
   autoNurtureQueue    AutoNurtureQueue?
   callLogs            CallLog[]
-  owner               User?             @relation("LeadOwner", fields: [ownerId], references: [id])
   branch              Branch?           @relation(fields: [branchId], references: [id])
+  owner               User?             @relation("LeadOwner", fields: [ownerId], references: [id])
 
   @@index([branchId])
   @@index([ownerId])
@@ -159,11 +159,11 @@ enum OrgPlan {
 enum UserRole {
   SUPER_ADMIN
   ORG_ADMIN
-  DOCTOR
-  COUNSELOR
   MANAGER
   AGENT
   VIEWER
+  DOCTOR
+  COUNSELOR
 }
 
 enum LeadSource {
@@ -203,8 +203,8 @@ enum TreatmentCategory {
   MATERNITY
   GYNECOLOGY
   INFERTILITY
-  PEDIATRICS
   OTHER
+  PEDIATRICS
 }
 
 enum CallDirection {

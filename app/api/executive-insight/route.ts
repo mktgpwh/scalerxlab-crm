@@ -24,7 +24,7 @@ export async function GET() {
       messages: [
         {
           role: "system",
-          content: `You are an executive medical intelligence analyst for a Women's Hospital CRM. Analyze this data and provide a 2-sentence clinical insight about lead quality, conversion opportunities, or operational alerts. Be direct and actionable.`
+          content: `You are an executive medical intelligence analyst for ScalerX Business Suite. Analyze this data and provide a 2-sentence clinical insight about lead quality, conversion opportunities, or operational alerts. Be direct and actionable.`
         },
         {
           role: "user",

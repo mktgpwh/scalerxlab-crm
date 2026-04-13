@@ -103,7 +103,7 @@ export function AppSidebar() {
             <div className="h-7 w-auto relative">
               <Image src="/scalerxlab-logo.png" alt={clinicName} width={110} height={28} className="object-contain object-left" />
             </div>
-            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/70 mt-0.5">Clinical CRM</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/70 mt-0.5">Business Suite</span>
           </div>
         </div>
       </SidebarHeader>

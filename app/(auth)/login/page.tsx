@@ -100,7 +100,7 @@ export default function LoginPage() {
               <Sparkles className="h-3 w-3" />
               Intelligence Node
             </h2>
-            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em] mt-2">Active CRM Matrix</p>
+            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em] mt-2">Sovereign Business Suite</p>
           </div>
         </div>
 

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ScalerX Hub — Clinical CRM",
+  title: "ScalerX Hub — Business Suite",
   description: "AI-powered lead intelligence platform. Real-time clinical pipeline management.",
 };
 

@@ -260,6 +260,11 @@ export default function SharedInboxPage() {
                                     <div>
                                         <div className="flex items-center gap-1.5">
                                             <h4 className="text-sm font-black text-slate-900 dark:text-white">{thread.name}</h4>
+                                            {thread.isAd && (
+                                                <Badge className="bg-emerald-500 text-[8px] h-4 font-black px-1.5 border-none animate-pulse">
+                                                    AD
+                                                </Badge>
+                                            )}
                                             {thread.isEscalated && (
                                                 <Badge className="bg-rose-500 text-[8px] h-4 font-black px-1.5 border-none">
                                                     Escalated

@@ -66,22 +66,27 @@ export async function POST(req: NextRequest) {
             return new Response("EVENT_ACK", { status: 200 });
         }
 
-        // 4. Handle Inbound Message (Default Path)
+        // 4. Handle Inbound Message (Source: WHATSAPP/WATI)
         if (!lead) {
             const idSuffix = senderId.slice(-4);
             const fallbackName = `Pahlajani Patient - ${idSuffix}`;
             const senderName = body.senderName || body.contactName || "WhatsApp Patient";
 
+            console.log(`🆕 [WATI] Creating New Clinical Lead: ${senderId}`);
             lead = await prisma.lead.create({
                 data: {
                     name: senderName === "WhatsApp Patient" ? fallbackName : senderName,
-                    source: "WHATSAPP",
+                    source: "WHATSAPP", // Strictly WHATSAPP for Lead Table filtering
                     status: "RAW",
                     whatsappNumber: senderId,
                     metadata: {
                         externalId: senderId,
                         platform: "whatsapp",
                         isWati: true,
+                        isAd: !!body.referral,
+                        adId: body.referral?.ad_id,
+                        adHeadline: body.referral?.headline,
+                        adBody: body.referral?.body,
                         adSource: body.referral?.ad_name || "Direct WhatsApp",
                         referral: body.referral,
                         lastInteraction: new Date().toISOString()
@@ -98,13 +103,16 @@ export async function POST(req: NextRequest) {
                 });
             }
         } else {
-             // Refresh Metadata
+             console.log(`🔄 [WATI] Updating Existing Clinical Lead: ${lead.id}`);
+             // Ensure source is updated if it was previously something else or generic
              await prisma.lead.update({
                  where: { id: lead.id },
                  data: {
+                     source: "WHATSAPP",
                      metadata: {
                          ...(lead.metadata as any || {}),
                          isActive: true,
+                         isWati: true,
                          lastInteraction: new Date().toISOString()
                      }
                  }

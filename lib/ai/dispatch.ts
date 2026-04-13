@@ -111,7 +111,7 @@ export async function sendWhatsAppMessage(params: DispatchParams) {
 export async function sendWatiMessage(params: DispatchParams) {
     try {
         const config = await getIntegrationConfig("wati");
-        const token = config.accessToken;
+        const token = decryptToken(config.accessToken);
         const baseUrl = config.endpoint.replace(/\/$/, ""); // Remove trailing slash if any
 
         // 🛡️ [PHASE: HARDENING] - Sanitize & Auto-Prefix Phone Numbers

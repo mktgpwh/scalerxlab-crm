@@ -171,9 +171,12 @@ export function RealtimeLeadsTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="text-[10px] tracking-wider uppercase bg-gray-100">
-                    {lead.source?.replace('_', ' ')}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <IntegrationIcon slug={lead.source?.toLowerCase() === 'whatsapp' ? 'whatsapp' : lead.source?.toLowerCase() || 'unknown'} size={14} />
+                    <Badge variant="outline" className="text-[10px] tracking-wider uppercase bg-gray-100">
+                      {lead.source?.replace('_', ' ')}
+                    </Badge>
+                  </div>
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge className={`${getIntentBadgeContext(lead.intent)} shadow-sm border-0 font-semibold px-3 py-1`}>
@@ -198,12 +201,14 @@ export function RealtimeLeadsTable({
                           variant="ghost"
                           disabled={!lead.consentFlag}
                           className={cn(
-                            "h-8 w-8 rounded-lg transition-all",
-                            lead.consentFlag ? "text-slate-600 hover:bg-slate-100 hover:text-slate-900" : "text-gray-300 pointer-events-none"
+                            "h-8 w-8 rounded-lg transition-all duration-200 cursor-pointer",
+                            lead.consentFlag 
+                              ? "text-blue-600 bg-blue-50/50 hover:bg-blue-600 hover:text-white hover:scale-110 shadow-sm" 
+                              : "text-gray-300 pointer-events-none"
                           )}
                           onClick={(e) => handleCall(e, lead)}
                         >
-                          <Phone className="h-4 w-4" />
+                          <Phone className="h-4 w-4 fill-current" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="text-[10px] uppercase font-black">
