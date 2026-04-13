@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWatiMessage } from "@/lib/ai/dispatch";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const { text } = await req.json();
         if (!text) return new Response("Text required", { status: 400 });
 
-        const lead = await prisma.lead.findUnique({ where: { id: params.id } });
+        const lead = await prisma.lead.findUnique({ where: { id } });
         if (!lead) return new Response("Lead not found", { status: 404 });
 
         const recipientId = lead.whatsappNumber || lead.phone;
