@@ -16,7 +16,7 @@ import {
 import { 
   BrainCircuit, Target, Flame, TrendingUp, Activity, MapPin, Loader2,
   Settings, Search, Filter, ChevronDown, X, Sparkles, Phone, Users,
-  ArrowUpDown, ExternalLink
+  ArrowUpDown, ExternalLink, Download, ShieldAlert
 } from "lucide-react";
 import { Popover as PopoverRoot } from "@/components/ui/popover";
 import { FacebookIcon, WhatsAppIcon } from "@/components/icons";
@@ -284,6 +284,44 @@ function LeadsDataView({
     else { setSortField(field); setSortDir("desc"); }
   };
 
+  // 📊 DPDPA-Compliant CSV Export (Mobile numbers excluded)
+  const handleExportCSV = () => {
+    const headers = ["Name", "Email", "Source", "Status", "Treatment", "Center", "Heat Score", "AI Score", "Compliance", "Captured"];
+    const rows = filtered.map(l => [
+      l.name || "—",
+      l.email || "—",
+      (l.source || "UNKNOWN").replace(/_/g, " "),
+      (l.status || "RAW").replace(/_/g, " "),
+      l.category || "OTHER",
+      l.branch?.name || "Global Node",
+      l.metadata?.intentLevel || "UNSCORED",
+      l.aiScore ?? "—",
+      l.consentFlag ? "Opt-In" : "Silent",
+      new Date(l.createdAt).toLocaleDateString("en-IN")
+    ]);
+    const csvContent = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url;
+    a.download = `pahlajani-leads-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success("Export Successful", { description: `${filtered.length} leads exported. Mobile numbers excluded for DPDPA compliance.` });
+  };
+
+  // 📞 Tata Smartflo Call Handler
+  const handleCall = async (e: React.MouseEvent, lead: any) => {
+    e.stopPropagation();
+    if (!lead.consentFlag) {
+      toast.error("BLOCKED", { description: "DPDPA consent not verified.", icon: <ShieldAlert className="h-4 w-4 text-rose-500" /> });
+      return;
+    }
+    try {
+      const res = await fetch(`/api/telephony/tata/make-call`, { method: "POST", body: JSON.stringify({ leadId: lead.id }) });
+      const data = await res.json();
+      res.ok ? toast.success("Call Initiated", { description: "Connecting via Tata Smartflo..." }) : toast.error(data.error || "Telephony failure");
+    } catch { toast.error("Connection failed"); }
+  };
+
   const { ownerId, setOwnerId } = useDashboardStore();
 
   const handleReassign = async (leadId: string, newOwnerId: string | null) => {
@@ -391,16 +429,27 @@ function LeadsDataView({
         </div>
       </div>
 
-      {/* Results Summary */}
+      {/* Results Summary + Export */}
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
           Showing <span className="text-slate-900 dark:text-white">{filtered.length}</span> of {leads.length} leads
         </p>
-        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase">
-          <span>Sort:</span>
-          <button onClick={() => toggleSort("createdAt")} className={cn("px-2 py-1 rounded-lg transition-colors", sortField === "createdAt" ? "bg-primary/10 text-primary" : "hover:bg-slate-100")}>Date</button>
-          <button onClick={() => toggleSort("aiScore")} className={cn("px-2 py-1 rounded-lg transition-colors", sortField === "aiScore" ? "bg-primary/10 text-primary" : "hover:bg-slate-100")}>AI Score</button>
-          <button onClick={() => toggleSort("name")} className={cn("px-2 py-1 rounded-lg transition-colors", sortField === "name" ? "bg-primary/10 text-primary" : "hover:bg-slate-100")}>Name</button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase">
+            <span>Sort:</span>
+            <button onClick={() => toggleSort("createdAt")} className={cn("px-2 py-1 rounded-lg transition-colors", sortField === "createdAt" ? "bg-primary/10 text-primary" : "hover:bg-slate-100")}>Date</button>
+            <button onClick={() => toggleSort("aiScore")} className={cn("px-2 py-1 rounded-lg transition-colors", sortField === "aiScore" ? "bg-primary/10 text-primary" : "hover:bg-slate-100")}>AI Score</button>
+            <button onClick={() => toggleSort("name")} className={cn("px-2 py-1 rounded-lg transition-colors", sortField === "name" ? "bg-primary/10 text-primary" : "hover:bg-slate-100")}>Name</button>
+          </div>
+          <Button
+            onClick={handleExportCSV}
+            size="sm"
+            variant="outline"
+            className="h-8 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 border-emerald-500/30 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-500 transition-all"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </Button>
         </div>
       </div>
 
@@ -464,21 +513,28 @@ function LeadsDataView({
                     {/* Patient */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary shrink-0">
+                        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary shrink-0 select-none">
                           {(lead.name || "?")[0].toUpperCase()}
                         </div>
-                        <div>
-                          <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">{lead.name || "Anonymous"}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">{lead.phone || lead.email || "—"}</p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-black text-slate-900 dark:text-white leading-tight truncate max-w-[160px]">{lead.name || "Anonymous"}</p>
+                          <p className="text-[10px] text-slate-400 font-medium truncate">{lead.email || "No email"}</p>
                         </div>
                       </div>
                     </td>
 
                     {/* Source */}
                     <td className="px-5 py-4">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-tight text-slate-700 dark:text-slate-200">{(lead.source || "UNKNOWN").replace(/_/g, " ")}</p>
-                        {lead.metadata?.utm_medium && <p className="text-[9px] text-slate-400 font-medium">UTM: {lead.metadata.utm_medium}</p>}
+                      <div className="flex items-center gap-2">
+                        {(lead.source === 'WHATSAPP' || lead.metadata?.isWati) ? (
+                          <WhatsAppIcon className="h-4 w-4 text-[#25D366] shrink-0" />
+                        ) : (lead.source === 'META_ADS' || lead.source === 'META_MESSAGING') ? (
+                          <FacebookIcon className="h-4 w-4 text-[#0468FF] shrink-0" />
+                        ) : null}
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-tight text-slate-700 dark:text-slate-200 whitespace-nowrap">{(lead.source || "UNKNOWN").replace(/_/g, " ")}</p>
+                          {lead.metadata?.isAd && <p className="text-[8px] text-emerald-600 font-black uppercase">📢 Ad Campaign</p>}
+                        </div>
                       </div>
                     </td>
 
@@ -579,27 +635,38 @@ function LeadsDataView({
 
                     {/* Engagement */}
                     <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                      <div className="flex items-center gap-1.5">
+                        {/* WhatsApp Button */}
+                        <button
                           disabled={!lead.consentFlag}
-                          className={cn("h-8 w-8 p-0 rounded-xl hover:bg-emerald-500 hover:text-white transition-all", !lead.consentFlag && "opacity-20")}
+                          title={lead.consentFlag ? "Open WhatsApp" : "Consent required"}
+                          className={cn(
+                            "h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-200",
+                            lead.consentFlag
+                              ? "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white hover:scale-110 cursor-pointer"
+                              : "opacity-20 cursor-not-allowed"
+                          )}
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.open(`https://wa.me/${lead.phone || lead.whatsappNumber}`);
+                            if (lead.consentFlag) window.open(`https://wa.me/${lead.whatsappNumber || lead.phone}`);
                           }}
                         >
                           <WhatsAppIcon className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        </button>
+                        {/* Phone / Tata Smartflo Button */}
+                        <button
                           disabled={!lead.consentFlag}
-                          className={cn("h-8 w-8 p-0 rounded-xl hover:bg-blue-500 hover:text-white transition-all", !lead.consentFlag && "opacity-20")}
+                          title={lead.consentFlag ? "Call via Tata Smartflo" : "Consent required"}
+                          className={cn(
+                            "h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-200",
+                            lead.consentFlag
+                              ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110 cursor-pointer shadow-sm"
+                              : "opacity-20 cursor-not-allowed"
+                          )}
+                          onClick={(e) => handleCall(e, lead)}
                         >
                           <Phone className="h-4 w-4" />
-                        </Button>
+                        </button>
                       </div>
                     </td>
 
