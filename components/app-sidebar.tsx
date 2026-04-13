@@ -13,7 +13,8 @@ import {
   Home,
   Phone,
   Puzzle,
-  LogOut
+  LogOut,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IntegrationIcon } from "@/components/ui/integration-icon";
@@ -47,6 +48,7 @@ const items = [
   { title: "Connections", url: "/integrations", icon: Puzzle, label: "Expansion Hub" },
   { title: "Analytics Hub", url: "/analytics", icon: BarChart3, label: "Insights" },
   { title: "Activity Logs", url: "/activity", icon: History },
+  { title: "Security & Compliance", url: "/security", icon: ShieldCheck, label: "Privacy Vault" },
 ];
 
 export function AppSidebar() {
