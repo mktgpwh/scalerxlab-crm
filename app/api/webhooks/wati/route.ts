@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
-import { fetchMetaUserProfile } from "@/lib/ai/dispatch";
 
 /**
  * WATI WEBHOOK GATEWAY
@@ -94,14 +93,8 @@ export async function POST(req: NextRequest) {
                 }
             });
 
-            // Identity Enrichment Fallback
-            const enrichment = await fetchMetaUserProfile(senderId, 'whatsapp');
-            if (enrichment.success && enrichment.name !== fallbackName) {
-                lead = await prisma.lead.update({
-                    where: { id: lead.id },
-                    data: { name: enrichment.name }
-                });
-            }
+            // ✅ Lead created — log it
+            console.log(`✅ [WATI] Lead created: ${lead.id} for ${senderId}`);
         } else {
              console.log(`🔄 [WATI] Updating Existing Clinical Lead: ${lead.id}`);
              // Ensure source is updated if it was previously something else or generic
@@ -130,11 +123,16 @@ export async function POST(req: NextRequest) {
                 }
             });
 
-            await generateProactiveDraft({
-                leadId: lead.id,
-                messageText: text,
-                category: lead.category
-            });
+            // Non-blocking AI Draft — failure here must NOT abort lead creation
+            try {
+                await generateProactiveDraft({
+                    leadId: lead.id,
+                    messageText: text,
+                    category: lead.category
+                });
+            } catch (aiErr) {
+                console.warn(`⚠️ [WATI] AI draft skipped for ${lead.id}:`, aiErr);
+            }
         }
 
         return new Response("WATI_PROCESSED", { status: 200 });
