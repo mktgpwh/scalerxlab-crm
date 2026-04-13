@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell, AreaChart, Area
@@ -40,7 +41,19 @@ const INTENT_STYLES: Record<string, string> = {
 
 // ─── Analytics Sub-Component ────────────────────────────────────────────────
 
-function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, any>[], userRole: string, branches: any[] }) {
+function AnalyticsView({ 
+  leads, 
+  userRole, 
+  branches, 
+  callLogs = [], 
+  dailyLeadsSeries = [] 
+}: { 
+  leads: any[], 
+  userRole: string, 
+  branches: any[], 
+  callLogs?: any[], 
+  dailyLeadsSeries?: any[] 
+}) {
   const [insight, setInsight] = useState<string | null>(null);
   const [insightLoading, setInsightLoading] = useState(true);
   const [adSpendMode, setAdSpendMode] = useState<'AUTO' | 'MANUAL' | 'META'>('AUTO');
@@ -65,12 +78,14 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
   const ivfLeads      = leads.filter(l => l.category === 'INFERTILITY').length;
   const maternityLeads = leads.filter(l => l.category === 'MATERNITY').length;
   const gynoLeads     = leads.filter(l => l.category === 'GYNECOLOGY').length;
+  const pediLeads     = leads.filter(l => l.category === 'PEDIATRICS').length;
   const otherLeads    = leads.filter(l => !l.category || l.category === 'OTHER').length;
   
   const treatmentData = [
     { name: 'IVF',  value: ivfLeads },
     { name: 'MDT',  value: maternityLeads },
     { name: 'GYN',  value: gynoLeads },
+    { name: 'PEDI', value: pediLeads },
     { name: 'OTH',  value: otherLeads },
   ].filter(d => d.value > 0);
 
@@ -124,7 +139,69 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Telephony Matrix Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <Dialog>
+           <DialogTrigger render={
+             <div className="h-full">
+                <KpiCard 
+                  title="Daily Signals" 
+                  value={dailyLeadsSeries?.[dailyLeadsSeries.length - 1]?.count || 0} 
+                  subValue="Today's Intake" 
+                  icon={<Activity className="h-5 w-5" />} 
+                  color="indigo" 
+                />
+             </div>
+           } />
+           <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0 overflow-hidden bg-slate-900 border-slate-700 rounded-[2.5rem]">
+               <DialogHeader className="p-6 pb-0">
+                  <DialogTitle className="text-white">Daily Acquisition Trajectory</DialogTitle>
+                  <DialogDescription className="text-slate-400 text-xs">Trailing 30-day signal capture analysis.</DialogDescription>
+               </DialogHeader>
+               <div className="h-[300px] md:h-[450px] w-full p-4 md:p-8">
+                  <ResponsiveContainer width="100%" height="100%">
+                     <AreaChart data={dailyLeadsSeries}>
+                        <defs>
+                          <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.1} />
+                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b' }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px', fontSize: '10px' }} />
+                        <Area type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorLeads)" />
+                     </AreaChart>
+                  </ResponsiveContainer>
+               </div>
+           </DialogContent>
+        </Dialog>
+        
+        <KpiCard 
+           title="Calls Made" 
+           value={callLogs.length} 
+           subValue="Today Outbound" 
+           icon={<Phone className="h-5 w-5" />} 
+           color="blue" 
+        />
+        <KpiCard 
+           title="Calls Handled" 
+           value={callLogs.filter((c: any) => c.status === 'CONNECTED' || c.status === 'AI_HANDLED').length} 
+           subValue="Connected + AI" 
+           icon={<Target className="h-5 w-5" />} 
+           color="emerald" 
+        />
+        <KpiCard 
+           title="Missed Checks" 
+           value={callLogs.filter((c: any) => c.status === 'MISSED').length} 
+           subValue="Unreachable" 
+           icon={<ShieldAlert className="h-5 w-5" />} 
+           color="rose" 
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <KpiCard 
           title="Predictive ROI" 
           value={`₹${(predictiveROI / 100000).toFixed(1)}L`} 
@@ -156,20 +233,58 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         {/* Sentiment Trends Chart (Area) */}
-         <Card className="lg:col-span-2 surface-layered border-none rounded-[3rem] p-10 shadow-sm ring-1 ring-slate-200/50">
-            <div className="flex items-center justify-between mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Speciality Distribution Chart (Pie) */}
+        <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-indigo-500" />
+              <h4 className="text-lg font-black italic tracking-tight">Speciality Distribution</h4>
+            </div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Departmental Flow</p>
+          </div>
+          <div className="h-[220px] md:h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+               <PieChart>
+                 <Pie
+                   data={treatmentData}
+                   innerRadius={60}
+                   outerRadius={80}
+                   paddingAngle={8}
+                   dataKey="value"
+                 >
+                   {treatmentData.map((entry: any, index: number) => (
+                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                   ))}
+                 </Pie>
+                 <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+               </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-6 flex justify-center gap-3 md:gap-4 flex-wrap">
+             {treatmentData.map((item: any, idx: number) => (
+                <div key={idx} className="flex items-center gap-2">
+                   <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                   <span className="text-[9px] md:text-[10px] font-black uppercase tracking-tight text-slate-500">{item.name}</span>
+                   <span className="text-[10px] md:text-[11px] font-black">{item.value}</span>
+                </div>
+             ))}
+          </div>
+        </Card>
+
+        {/* Sentinel Sentiment Pulse (Mobile optimized) */}
+        <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm ring-1 ring-slate-200/50">
+           <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
                 <BrainCircuit className="h-5 w-5 text-emerald-500" />
-                <h4 className="text-lg font-black italic tracking-tight">Sentinel Sentiment Pulse</h4>
+                <h4 className="text-lg font-black italic tracking-tight">Sentinel Pulse</h4>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-emerald-500" /> <span className="text-[9px] font-black uppercase text-slate-400 font-medium">Positive</span></div>
-                <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-rose-500" /> <span className="text-[9px] font-black uppercase text-slate-400 font-medium">Negative</span></div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> <span className="text-[8px] font-black uppercase text-slate-400">Pos</span></div>
+                <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-rose-500" /> <span className="text-[8px] font-black uppercase text-slate-400">Neg</span></div>
               </div>
             </div>
-            <div className="h-[300px] w-full">
+            <div className="h-[220px] md:h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={sentimentTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
@@ -183,7 +298,7 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#64748b' }} />
                   <YAxis hide />
                   <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
                   <Area type="monotone" dataKey="positive" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPositive)" />
@@ -191,54 +306,17 @@ function AnalyticsView({ leads, userRole, branches }: { leads: Record<string, an
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-         </Card>
+        </Card>
+      </div>
 
-         {/* Funnel Distribution Chart (Bar) */}
-         <Card className="surface-layered border-none rounded-[3rem] p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col">
-            <div className="mb-8">
-              <h4 className="text-sm font-black italic tracking-tight uppercase">IVF Sales Funnel</h4>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Stage Conversion Probability</p>
-            </div>
-            <div className="flex-1 space-y-6">
-              {funnelData.map((item, idx) => (
-                <div key={idx} className="space-y-2">
-                  <div className="flex justify-between items-center text-[10px] font-black uppercase">
-                    <span>{item.stage}</span>
-                    <span className="text-slate-400">{item.count}</span>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                        className={cn("h-full rounded-full transition-all duration-1000", idx < 2 ? "bg-indigo-500" : "bg-emerald-500")}
-                        style={{ width: `${(item.count / totalLeads) * 400}%` }} // Relative to pipeline
-                    />
-                  </div>
-                </div>
-              ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         <Card className="lg:col-span-2 surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm ring-1 ring-slate-200/50 hidden md:block">
+            {/* Logic removed as it's merged into the grid above for mobile priority, but keeping a placeholder or specialized view for desktop if needed */}
+            <div className="h-full flex items-center justify-center opacity-20">
+              <Sparkles className="h-20 w-20" />
             </div>
          </Card>
       </div>
-
-      {/* Center Performance Chart (Bar) */}
-      <Card className="surface-layered border-none rounded-[3rem] p-10 shadow-sm ring-1 ring-slate-200/50">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-indigo-500" />
-            <h4 className="text-lg font-black italic tracking-tight">Center Performance Chart</h4>
-          </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Leads mapped to specific branches</p>
-        </div>
-        <div className="h-[250px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={regionalData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }} />
-              <Tooltip cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }} contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
-              <Bar dataKey="count" fill="#6366f1" radius={[8, 8, 0, 0]} barSize={60} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
     </div>
   );
 }
@@ -689,18 +767,47 @@ export function ExecutiveDashboard({
   userRole,
   currentUserId,
   team,
-  branches
+  branches,
+  initialCallLogs = [],
+  dailyLeadsSeries = []
 }: { 
   initialLeads: Record<string, any>[]; 
   userRole: string;
   currentUserId: string;
   team: any[];
   branches: any[];
+  initialCallLogs?: any[];
+  dailyLeadsSeries?: any[];
 }) {
   const { dateRange, category } = useDashboardStore();
+  const [liveLeads, setLiveLeads] = useState<Record<string, any>[]>(initialLeads);
+  const [liveCallLogs, setLiveCallLogs] = useState<any[]>(initialCallLogs);
+  const [liveDailySeries, setLiveDailySeries] = useState<any[]>(dailyLeadsSeries);
+
+  useEffect(() => {
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      const supabase = createClient();
+      const channel = supabase.channel('executive_dashboard')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, (payload: any) => {
+          setLiveLeads(prev => [payload.new, ...prev]);
+          setLiveDailySeries(prev => {
+            const up = [...prev];
+            if(up.length > 0) {
+               up[up.length - 1] = { ...up[up.length - 1], count: up[up.length - 1].count + 1 };
+            }
+            return up;
+          });
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'call_logs' }, (payload: any) => {
+          setLiveCallLogs(prev => [payload.new, ...prev]);
+        })
+        .subscribe();
+      return () => { supabase.removeChannel(channel); };
+    });
+  }, []);
 
   const globalFilteredLeads = useMemo(() => {
-    return initialLeads.filter(l => {
+    return liveLeads.filter((l: any) => {
       // 1. Date Filter
       if (dateRange?.from) {
         const leadDate = new Date(l.createdAt);
@@ -713,7 +820,7 @@ export function ExecutiveDashboard({
       
       return true;
     });
-  }, [initialLeads, dateRange, category]);
+  }, [liveLeads, dateRange, category]);
 
   return (
     <div className="space-y-8 pb-10">
@@ -744,24 +851,30 @@ export function ExecutiveDashboard({
 
       <DashboardFilterBar />
 
-      <Tabs defaultValue="analytics" className="w-full">
-        <TabsList className="bg-white dark:bg-slate-900 h-12 p-1.5 rounded-2xl border border-slate-200/60 dark:border-white/5 shadow-sm w-auto inline-flex gap-1">
-          <TabsTrigger value="analytics" className="rounded-xl text-[10px] font-black uppercase tracking-widest h-9 px-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-            /Analytics
-          </TabsTrigger>
-          <TabsTrigger value="leads" className="rounded-xl text-[10px] font-black uppercase tracking-widest h-9 px-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-            /Leads Data
-            <span className="ml-2 px-1.5 py-0.5 rounded-full bg-current/10 opacity-60 text-[8px]">{globalFilteredLeads.length}</span>
-          </TabsTrigger>
-        </TabsList>
- 
-        <TabsContent value="analytics" className="mt-8 animate-in fade-in slide-in-from-bottom-2">
-          <AnalyticsView leads={globalFilteredLeads} userRole={userRole} branches={branches} />
-        </TabsContent>
-        <TabsContent value="leads" className="mt-8 animate-in fade-in slide-in-from-bottom-2">
-          <LeadsDataView leads={globalFilteredLeads} userRole={userRole} team={team} branches={branches} />
-        </TabsContent>
-      </Tabs>
+      <div className="mt-8 space-y-12">
+          {/* Top Layer - Intelligence & Analytics */}
+          <AnalyticsView 
+            leads={globalFilteredLeads} 
+            userRole={userRole} 
+            branches={branches}
+            callLogs={liveCallLogs}
+            dailyLeadsSeries={liveDailySeries}
+          />
+
+          {/* Bottom Layer - Raw Matrix */}
+          <div className="pt-8">
+             <div className="mb-6">
+                <h3 className="text-2xl font-black italic tracking-tight">/Signals.matrix</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time Lead Telemetry and Engagement Data</p>
+             </div>
+             <LeadsDataView 
+                leads={globalFilteredLeads} 
+                userRole={userRole} 
+                team={team} 
+                branches={branches} 
+             />
+          </div>
+      </div>
     </div>
   );
 }

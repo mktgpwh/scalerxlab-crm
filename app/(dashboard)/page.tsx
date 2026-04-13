@@ -79,6 +79,49 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
     orderBy: { createdAt: "desc" },
   });
 
+  // Telephony Today
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  
+  const initialCallLogs = await prisma.callLog.findMany({
+      where: {
+          createdAt: { gte: todayStart },
+      },
+      select: {
+          direction: true,
+          status: true,
+      }
+  });
+
+  // Daily Leads Time-Series (Last 30 Days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+  thirtyDaysAgo.setHours(0,0,0,0);
+
+  const rawHistory = await prisma.lead.findMany({
+      where: {
+          createdAt: { gte: thirtyDaysAgo },
+          ...(isAdmin ? {} : { ownerId: profile.id })
+      },
+      select: { createdAt: true }
+  });
+
+  const dailyCounts: Record<string, number> = {};
+  for (let i = 0; i < 30; i++) {
+      const d = new Date(thirtyDaysAgo);
+      d.setDate(d.getDate() + i);
+      dailyCounts[d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })] = 0;
+  }
+
+  rawHistory.forEach(l => {
+      const dayStr = l.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      if (dailyCounts[dayStr] !== undefined) {
+          dailyCounts[dayStr]++;
+      }
+  });
+
+  const dailyLeadsSeries = Object.entries(dailyCounts).map(([day, count]) => ({ day, count }));
+
   return (
     <ExecutiveDashboard 
       initialLeads={leads as unknown as Record<string, any>[]} 
@@ -86,6 +129,8 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
       currentUserId={profile.id}
       team={team as any[]}
       branches={branches as any[]}
+      initialCallLogs={initialCallLogs}
+      dailyLeadsSeries={dailyLeadsSeries}
     />
   );
 }

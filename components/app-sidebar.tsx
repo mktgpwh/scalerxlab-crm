@@ -41,7 +41,6 @@ const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
 
 const items = [
   { title: "Command Center", url: "/", icon: Home, label: "Overview" },
-  { title: "Intelligence Hub", url: "/intelligence", icon: Sparkles, label: "AI Hub" },
   { title: "Lead Funnels", url: "/pipeline", icon: LayoutDashboard, label: "Pipelines" },
   { title: "Shared Inbox", url: "/inbox", icon: (props: any) => <IntegrationIcon slug="whatsapp" {...props} />, label: "WhatsApp" },
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
