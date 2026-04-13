@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -46,7 +46,7 @@ export function KanbanBoard({
   const [dateRange, setDateRange] = useState<string>("ALL");
   const supabase = createClient();
 
-  const visibleLeads = React.useMemo(() => {
+  const visibleLeads = useMemo(() => {
       let filtered = activeFunnel === "OVERALL" ? leads : leads.filter(l => l.category === activeFunnel);
       
       if (dateRange !== "ALL") {
