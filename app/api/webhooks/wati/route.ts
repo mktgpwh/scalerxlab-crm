@@ -17,52 +17,79 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         console.log("📦 [WATI_PAYLOAD]", JSON.stringify(body, null, 2));
 
-        // 1. Core Data Extraction
-        const senderId = body.waId || body.from;
-        const text = body.text || body.message?.text || "";
-        const senderName = body.senderName || body.contactName || "WhatsApp Patient";
-        const referral = body.referral || body.message?.referral || null;
-
+        // 1. Detection: Event vs Inbound
+        const eventType = body.eventType || "message_received";
+        const senderId = body.waId || body.from || body.senderId || body.to; // Normalize IDs
+        const text = body.text || body.message?.text || body.messageText || "";
+        
         if (!senderId) {
-            console.error("🚨 [WATI] Missing Sender ID (waId)");
-            return new Response("Missing Sender ID", { status: 400 });
+            console.warn("⚠️ [WATI] Skipping payload without ID");
+            return new Response("No ID", { status: 200 });
         }
 
-        // 🛡️ [CLINICAL_IDENTITY]: Avoid "Meta Lead" naming
-        const idSuffix = senderId.slice(-4);
-        const fallbackName = `Pahlajani Patient - ${idSuffix}`;
-
-        // 2. Lead Orchestration
+        // 2. Lead Discovery
         let lead = await prisma.lead.findFirst({
             where: {
-                OR: [
-                    { whatsappNumber: senderId },
-                    { phone: senderId }
-                ]
+                OR: [{ whatsappNumber: senderId }, { phone: senderId }]
             }
         });
 
+        // 3. Routing by Event
+        if (eventType === "sent_message_delivered" || eventType === "sent_message_delivered_v2") {
+            console.log(`✅ [WATI_STATUS] Delivered to ${senderId}`);
+            if (lead) {
+                await prisma.activityLog.create({
+                    data: {
+                        leadId: lead.id,
+                        action: "WHATSAPP_DELIVERED",
+                        description: `Message successfully received by patient.`,
+                        metadata: { source: "WATI", status: "DELIVERED", raw: body }
+                    }
+                });
+            }
+            return new Response("EVENT_ACK", { status: 200 });
+        }
+
+        if (eventType === "session_message_failed" || eventType === "template_message_failed") {
+            const errorReason = body.data?.message || body.message || "Unknown Provider Error";
+            console.error(`🚨 [WATI_STATUS] Failure for ${senderId}: ${errorReason}`);
+            if (lead) {
+                await prisma.activityLog.create({
+                    data: {
+                        leadId: lead.id,
+                        action: "CLINICAL_DISPATCH_FAILED",
+                        description: `DELIVERY ERROR: ${errorReason}`,
+                        metadata: { source: "WATI", status: "FAILED", error: body }
+                    }
+                });
+            }
+            return new Response("EVENT_ACK", { status: 200 });
+        }
+
+        // 4. Handle Inbound Message (Default Path)
         if (!lead) {
-            console.log(`🌱 [WATI] New Clinical Lead: ${senderId}`);
-            
+            const idSuffix = senderId.slice(-4);
+            const fallbackName = `Pahlajani Patient - ${idSuffix}`;
+            const senderName = body.senderName || body.contactName || "WhatsApp Patient";
+
             lead = await prisma.lead.create({
                 data: {
                     name: senderName === "WhatsApp Patient" ? fallbackName : senderName,
-                    source: "WHATSAPP", // Enum limit check
+                    source: "WHATSAPP",
                     status: "RAW",
                     whatsappNumber: senderId,
                     metadata: {
                         externalId: senderId,
                         platform: "whatsapp",
                         isWati: true,
-                        adSource: referral?.ad_name || "Direct WhatsApp", // Primary Source Mapping
-                        referral: referral, // Full Mirror
+                        adSource: body.referral?.ad_name || "Direct WhatsApp",
+                        referral: body.referral,
                         lastInteraction: new Date().toISOString()
                     }
                 }
             });
 
-            // 🚀 [ENRICHMENT]: Trigger Identity Sequence
+            // Identity Enrichment Fallback
             const enrichment = await fetchMetaUserProfile(senderId, 'whatsapp');
             if (enrichment.success && enrichment.name !== fallbackName) {
                 lead = await prisma.lead.update({
@@ -71,37 +98,36 @@ export async function POST(req: NextRequest) {
                 });
             }
         } else {
-            console.log(`🎯 [WATI] Existing Lead Found: ${lead.id}`);
-            // Update metadata with latest referral & Ensure source is accurate if ad
-            await prisma.lead.update({
-                where: { id: lead.id },
-                data: {
-                    metadata: {
-                        ...(lead.metadata as any || {}),
-                        adSource: referral?.ad_name || (lead.metadata as any)?.adSource || "WHATSAPP",
-                        referral: referral || (lead.metadata as any)?.referral,
-                        lastInteraction: new Date().toISOString()
-                    }
-                }
-            });
+             // Refresh Metadata
+             await prisma.lead.update({
+                 where: { id: lead.id },
+                 data: {
+                     metadata: {
+                         ...(lead.metadata as any || {}),
+                         isActive: true,
+                         lastInteraction: new Date().toISOString()
+                     }
+                 }
+             });
         }
 
-        // 3. Log Clinical Activity
-        await prisma.activityLog.create({
-            data: {
-                leadId: lead.id,
-                action: "WHATSAPP_MSG_RECEIVED",
-                description: text,
-                metadata: { source: "WATI", raw: body }
-            }
-        });
+        // 5. Finalize Inbound Log & AI Synthesis
+        if (text) {
+            await prisma.activityLog.create({
+                data: {
+                    leadId: lead.id,
+                    action: "WHATSAPP_MSG_RECEIVED",
+                    description: text,
+                    metadata: { source: "WATI", raw: body }
+                }
+            });
 
-        // 4. Trigger AgentX Synthesis
-        await generateProactiveDraft({
-            leadId: lead.id,
-            messageText: text,
-            category: lead.category
-        });
+            await generateProactiveDraft({
+                leadId: lead.id,
+                messageText: text,
+                category: lead.category
+            });
+        }
 
         return new Response("WATI_PROCESSED", { status: 200 });
     } catch (error) {
