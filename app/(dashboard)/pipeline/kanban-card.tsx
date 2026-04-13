@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { Lead } from "@/lib/types";
 
 import { motion } from "framer-motion";
-import { Sparkles, Phone, Mail, MoreHorizontal, ShieldAlert } from "lucide-react";
+import { Sparkles, Phone, Mail, MoreHorizontal } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/icons";
@@ -186,48 +186,35 @@ function KanbanCardInner({
           <div className="flex items-center justify-between gap-2 pt-1">
              <div className="flex items-center gap-1.5">
                 <Tooltip>
-                    <TooltipTrigger>
-                        <Button 
-                            size="icon" 
-                            disabled={!lead.consentFlag}
-                            className={cn(
-                                "h-8 w-8 rounded-xl transition-all border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10",
-                                lead.consentFlag 
-                                ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110" 
-                                : "bg-slate-50 dark:bg-white/5 text-slate-300 cursor-not-allowed opacity-50"
-                            )}
+                    <TooltipTrigger asChild>
+                        <button
+                            className="h-8 w-8 rounded-xl transition-all duration-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110 cursor-pointer ring-1 ring-blue-200/50 flex items-center justify-center"
                             onClick={handleCall}
                         >
-                            {lead.consentFlag ? <Phone className="h-3.5 w-3.5" /> : <ShieldAlert className="h-3.5 w-3.5" />}
-                        </Button>
+                            <Phone className="h-3.5 w-3.5" />
+                        </button>
                     </TooltipTrigger>
                     <TooltipContent className="text-[10px] font-black uppercase">
-                        {lead.consentFlag ? "Tata Smartflo Call" : "DPDPA Consent Missing"}
+                        Call via Tata Smartflo
                     </TooltipContent>
                 </Tooltip>
                 
                 <Tooltip>
-                    <TooltipTrigger>
-                        <Button 
-                            size="icon" 
-                            disabled={!lead.consentFlag}
-                            className={cn(
-                                "h-8 w-8 rounded-xl transition-all border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10",
-                                lead.consentFlag 
-                                ? "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white hover:scale-110" 
-                                : "bg-slate-50 dark:bg-white/5 text-slate-300 cursor-not-allowed opacity-50"
-                            )}
+                    <TooltipTrigger asChild>
+                        <button
+                            className="h-8 w-8 rounded-xl transition-all duration-200 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white hover:scale-110 cursor-pointer ring-1 ring-[#25D366]/20 flex items-center justify-center"
                             onClick={(e) => { 
                                 e.stopPropagation(); 
+                                if (!lead.consentFlag) { toast.error("DPDPA Consent Missing", { description: "Consent required before WhatsApp engagement." }); return; }
                                 logEngagement("WHATSAPP");
                                 openLead("engagement");
                             }}
                         >
                             <WhatsAppIcon className="h-3.5 w-3.5" />
-                        </Button>
+                        </button>
                     </TooltipTrigger>
                     <TooltipContent className="text-[10px] font-black uppercase">
-                        {lead.consentFlag ? "AI Smart Drafts" : "DPDPA Consent Missing"}
+                        WhatsApp / AI Smart Drafts
                     </TooltipContent>
                 </Tooltip>
 
@@ -265,9 +252,9 @@ function KanbanCardInner({
                     <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tight">DPDPA Verified</span>
                 </div>
             ) : (
-                <div className="flex items-center gap-1.5 opacity-50">
-                    <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-                    <span className="text-[9px] text-rose-500 font-black uppercase tracking-tighter">Missing Ops</span>
+                <div className="flex items-center gap-1.5 opacity-40">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="text-[9px] text-slate-400 font-medium uppercase tracking-tighter">Pending Consent</span>
                 </div>
             )}
             
