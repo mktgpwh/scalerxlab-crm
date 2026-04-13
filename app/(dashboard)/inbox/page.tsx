@@ -76,7 +76,7 @@ export default function SharedInboxPage() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'activity_logs' },
-        (payload) => {
+        (payload: any) => {
           console.log("📥 REALTIME_SYNC_TRIGGERED", payload);
           stableLoad(); // Optimized silent refresh
 

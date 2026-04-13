@@ -55,7 +55,7 @@ export function KanbanBoard({
           schema: 'public',
           table: 'leads'
         },
-        (payload) => {
+        (payload: any) => {
           const { eventType, new: newRecord, old: oldRecord } = payload;
 
           if (eventType === 'INSERT') {

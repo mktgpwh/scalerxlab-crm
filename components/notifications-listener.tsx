@@ -27,7 +27,7 @@ export function NotificationsListener() {
       }
 
       channel
-        .on('broadcast', { event: 'CLINICAL_EMERGENCY' }, (payload) => {
+        .on('broadcast', { event: 'CLINICAL_EMERGENCY' }, (payload: any) => {
           // 🔊 Play High-Visibility Audio Alert
           audioRef.current?.play().catch(e => console.warn("Audio play blocked by browser:", e));
 
@@ -50,7 +50,7 @@ export function NotificationsListener() {
             className: "font-black uppercase tracking-tighter",
           });
         })
-        .on('broadcast', { event: 'HOT_LEAD' }, (payload) => {
+        .on('broadcast', { event: 'HOT_LEAD' }, (payload: any) => {
           toast.error(`FLASH ALERT: HIGH INTENT PATIENT`, {
             description: `Patient ${payload.payload.name} scored ${payload.payload.score}/100. Requires immediate triage!`,
             duration: 10000,
@@ -59,7 +59,7 @@ export function NotificationsListener() {
             className: "font-black uppercase tracking-widest",
           });
         })
-        .on('broadcast', { event: 'CALL_INCOMING' }, (payload) => {
+        .on('broadcast', { event: 'CALL_INCOMING' }, (payload: any) => {
           toast(`INCOMING CALL: ${payload.payload.leadName}`, {
             description: `Intent: ${payload.payload.intent} | Score: ${payload.payload.score}% | ID: ${payload.payload.callerId}`,
             duration: 15000,

@@ -82,7 +82,7 @@ export default function CallManagementPage() {
       .on(
         'broadcast',
         { event: 'CALL_INCOMING' },
-        (payload) => {
+        (payload: any) => {
           setLiveCalls(prev => prev + 1);
           setStats(prev => ({ ...prev, inbound: prev.inbound + 1 }));
           

@@ -91,7 +91,7 @@ export function RealtimeLeadsTable({
             schema: 'public',
             table: 'leads'
           },
-          (payload) => {
+          (payload: any) => {
             setLeads((currentLeads) => [payload.new as Lead, ...currentLeads]);
           }
         )
@@ -102,7 +102,7 @@ export function RealtimeLeadsTable({
             schema: 'public',
             table: 'leads'
           },
-          (payload) => {
+          (payload: { new: Lead }) => {
             setLeads((currentLeads) => 
               currentLeads.map((lead) => 
                 lead.id === (payload.new as Lead).id ? (payload.new as Lead) : lead
@@ -110,7 +110,7 @@ export function RealtimeLeadsTable({
             );
           }
         )
-        .subscribe((status) => {
+        .subscribe((status: any) => {
            if (status !== 'SUBSCRIBED') {
              console.warn("Realtime leads channel status:", status);
            }

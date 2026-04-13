@@ -561,10 +561,11 @@ function LeadsDataView({
                         </span>
                       </div>
                     </td>
-core || 0) > 70 ? "text-emerald-600" : "text-slate-500")}>
-                          {lead.aiScore ?? "—"}
-                        </span>
-                      </div>
+                    {/* AI Score (Raw) */}
+                    <td className="px-5 py-4">
+                      <span className="text-[10px] font-black text-slate-500 uppercase">
+                        {lead.aiScore ?? "—"}
+                      </span>
                     </td>
 
                     {/* AI Remarks */}

@@ -38,7 +38,7 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
 
   // Build Prisma Filters
   const dateFilter = getPrismaDateFilter(params.from, params.to);
-  const categoryFilter = params.category ? { category: params.category } : {};
+  const categoryFilter = params.category ? { category: params.category as any } : {};
   const branchFilter = params.branchId ? { branchId: params.branchId } : {};
 
   // Get Active Branches for Attribution

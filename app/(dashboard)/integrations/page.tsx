@@ -96,7 +96,7 @@ export default function IntegrationsPage() {
   const loadData = async () => {
     const res = await getConnectionsAction();
     if (res.success) {
-      setConfig(res.integrations);
+      setConfig(res.integrations as any);
     }
     setLoading(false);
   };
