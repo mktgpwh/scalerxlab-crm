@@ -114,11 +114,21 @@ export async function sendWatiMessage(params: DispatchParams) {
         const token = config.accessToken;
         const baseUrl = config.endpoint.replace(/\/$/, ""); // Remove trailing slash if any
 
-        // 🛡️ [PHASE: HARDENING] - Sanitize Phone Number for WATI
-        // Remove '+', spaces, and non-digits
-        const cleanPhone = params.recipientId.replace(/\D/g, "");
+        // 🛡️ [PHASE: HARDENING] - Sanitize & Auto-Prefix Phone Numbers
+        // 1. Recipient (Patient)
+        let cleanPhone = params.recipientId.replace(/\D/g, "");
+        if (cleanPhone.length === 10) {
+            console.log(`[WATI] Prepending Indian country code to recipient: ${cleanPhone}`);
+            cleanPhone = `91${cleanPhone}`;
+        }
 
-        console.log(`[DISPATCH] [WATI] Orchestrating Session API for ${cleanPhone}...`);
+        // 2. Channel (Business)
+        let channelNo = (config.channelPhoneNumber || "9109114894").replace(/\D/g, "");
+        if (channelNo.length === 10) {
+             channelNo = `91${channelNo}`;
+        }
+
+        console.log(`[DISPATCH] [WATI] Orchestrating Session API for ${cleanPhone} from ${channelNo}...`);
 
         const url = `${baseUrl}/api/v1/sendSessionMessage/${cleanPhone}`;
         
@@ -130,7 +140,7 @@ export async function sendWatiMessage(params: DispatchParams) {
             },
             body: JSON.stringify({
                 messageText: params.text,
-                channelPhoneNumber: config.channelPhoneNumber || "9109114894" // Critical for delivery
+                channelPhoneNumber: channelNo
             })
         });
 
