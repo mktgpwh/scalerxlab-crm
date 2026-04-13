@@ -322,33 +322,29 @@ export function LeadDetailSheet() {
                   <div className="grid grid-cols-2 gap-4">
                      <Button 
                         variant="outline" 
-                        disabled={!lead.consentFlag}
                         className={cn(
-                            "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group cursor-pointer",
-                            lead.consentFlag ? "hover:bg-emerald-500 hover:text-white" : "opacity-50 cursor-not-allowed"
+                            "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group cursor-pointer hover:bg-blue-600 hover:text-white"
                         )}
                         onClick={handleCall}
                      >
                         <div className="flex flex-col items-center gap-1">
                            <Phone className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                           <span className="text-[10px] font-black uppercase tracking-widest">{lead.consentFlag ? "Execute Call" : "Blocked"}</span>
+                           <span className="text-[10px] font-black uppercase tracking-widest">Execute Call</span>
                         </div>
                      </Button>
                      <Button 
                         variant="outline" 
-                        disabled={!lead.consentFlag}
                         className={cn(
-                            "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group",
-                            lead.consentFlag ? "hover:bg-primary hover:text-white" : "opacity-50 cursor-not-allowed"
+                            "h-20 rounded-[1.5rem] border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group cursor-pointer hover:bg-[#25D366] hover:text-white hover:border-[#25D366]"
                         )}
                         onClick={() => {
-                           logEngagement("EMAIL");
-                           window.open(`mailto:${lead.email}`);
+                           logEngagement("WHATSAPP");
+                           window.open(`https://wa.me/${lead.phone || lead.whatsappNumber}`);
                         }}
                      >
                         <div className="flex flex-col items-center gap-1">
-                           <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                           <span className="text-[10px] font-black uppercase tracking-widest">{lead.consentFlag ? "Execute Email" : "Blocked"}</span>
+                           <WhatsAppIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                           <span className="text-[10px] font-black uppercase tracking-widest">Engage on WA</span>
                         </div>
                      </Button>
                   </div>

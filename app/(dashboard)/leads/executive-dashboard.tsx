@@ -479,9 +479,7 @@ function LeadsDataView({
                     { label: "Owner", field: "ownerId" },
                     { label: "Heat Score", field: "intent" },
                     { label: "AI Score", field: "aiScore" },
-                    { label: "AI Remarks", field: null },
-                    { label: "Engagement", field: null },
-                    { label: "Compliance", field: "consentFlag" },
+
                     { label: "Captured", field: "createdAt" },
                   ].map(col => (
                     <th
@@ -624,64 +622,7 @@ function LeadsDataView({
                       </span>
                     </td>
 
-                    {/* AI Remarks */}
-                    <td className="px-5 py-4 max-w-[200px]">
-                      <p className="text-[10px] text-slate-500 font-medium leading-relaxed truncate italic">
-                        {lead.aiNotes 
-                          ? `"${lead.aiNotes.slice(0, 80)}${lead.aiNotes.length > 80 ? '…' : ''}"`
-                          : <span className="text-slate-300 not-italic">Pending analysis</span>}
-                      </p>
-                    </td>
 
-                    {/* Engagement */}
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5">
-                        {/* WhatsApp Button */}
-                        <button
-                          disabled={!lead.consentFlag}
-                          title={lead.consentFlag ? "Open WhatsApp" : "Consent required"}
-                          className={cn(
-                            "h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-200",
-                            lead.consentFlag
-                              ? "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white hover:scale-110 cursor-pointer"
-                              : "opacity-20 cursor-not-allowed"
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (lead.consentFlag) window.open(`https://wa.me/${lead.whatsappNumber || lead.phone}`);
-                          }}
-                        >
-                          <WhatsAppIcon className="h-4 w-4" />
-                        </button>
-                        {/* Phone / Tata Smartflo Button */}
-                        <button
-                          disabled={!lead.consentFlag}
-                          title={lead.consentFlag ? "Call via Tata Smartflo" : "Consent required"}
-                          className={cn(
-                            "h-8 w-8 flex items-center justify-center rounded-xl transition-all duration-200",
-                            lead.consentFlag
-                              ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110 cursor-pointer shadow-sm"
-                              : "opacity-20 cursor-not-allowed"
-                          )}
-                          onClick={(e) => handleCall(e, lead)}
-                        >
-                          <Phone className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-
-                    {/* Compliance */}
-                    <td className="px-5 py-4">
-                      {lead.consentFlag ? (
-                        <Badge variant="outline" className="text-[7px] font-black uppercase text-emerald-500 border-emerald-500/20 bg-emerald-500/5">
-                          Opt-In
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-[7px] font-black uppercase text-rose-500 border-rose-500/20 bg-rose-500/5">
-                          Silent
-                        </Badge>
-                      )}
-                    </td>
 
                     {/* Captured */}
                     <td className="px-5 py-4 whitespace-nowrap">
