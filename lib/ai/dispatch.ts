@@ -139,8 +139,9 @@ export async function sendWatiMessage(params: DispatchParams) {
                 "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
-                messageText: params.text,
-                whatsappNumber: cleanPhone, // Doubling down for server compatibility
+                messageText: params.text, // WATI v1
+                text: params.text,        // WATI v2 / Alternative
+                whatsappNumber: cleanPhone,
                 channelPhoneNumber: channelNo
             })
         });
