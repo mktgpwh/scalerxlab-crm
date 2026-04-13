@@ -205,9 +205,9 @@ export default function SharedInboxPage() {
       <div className="flex-1 min-h-0 bg-white dark:bg-slate-900/40 rounded-[3rem] border border-slate-200/60 dark:border-white/5 shadow-2xl flex overflow-hidden ring-1 ring-slate-100 dark:ring-white/5">
         
         {/* LEFT PANE - THREADS */}
-        <div className="w-full md:w-96 border-r border-slate-200/60 dark:border-white/5 flex flex-col shrink-0 bg-slate-50/50 dark:bg-black/20">
+        <div className="w-full md:w-96 border-r border-slate-200/60 dark:border-white/5 flex flex-col shrink-0 bg-slate-50/50 dark:bg-black/20 min-h-0">
             <div className="p-6 space-y-4 shrink-0 border-b border-slate-200/60 dark:border-white/5">
-                <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-white/5 rounded-2xl overflow-x-auto">
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-white/5 rounded-2xl overflow-x-auto no-scrollbar">
                     {[
                         { id: 'all', label: 'All' },
                         { id: 'ai', label: 'AgentX', icon: Bot },
@@ -231,7 +231,7 @@ export default function SharedInboxPage() {
                 </div>
             </div>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0 h-full">
                 <div className="flex flex-col p-3 gap-1">
                     {filteredThreads.map(thread => (
                         <div 

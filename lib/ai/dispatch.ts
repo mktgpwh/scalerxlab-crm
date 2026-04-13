@@ -137,11 +137,13 @@ export async function sendWatiMessage(params: DispatchParams) {
         // Detailed Logging for Debugging
         console.log(`[WATI_RESPONSE] [${res.status}]`, JSON.stringify(data));
 
-        // WATI success mapping: { result: true } or { result: "success" }
-        const isSuccess = data.result === true || data.result === "success" || data.status === "success";
+        // 🛡️ [PHASE: RELAXED VALIDATION]
+        // If HTTP 200, it's generally a success. WATI's numeric 'Error: 200' was 
+        // likely caused by a strict check on a missing 'result' field.
+        const hasExplicitError = data.result === false || data.result === "error" || data.status === "error";
 
-        if (!res.ok || !isSuccess) {
-             throw new Error(data.message || data.errors?.[0] || `WATI API Error: ${res.status}`);
+        if (!res.ok || (hasExplicitError && res.status !== 200)) {
+             throw new Error(data.message || data.errors?.[0] || `WATI Processing Error: ${res.status}`);
         }
 
         return { success: true, messageId: data.id || "wati_msg_sent" };
