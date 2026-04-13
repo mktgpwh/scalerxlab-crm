@@ -130,7 +130,8 @@ export async function sendWatiMessage(params: DispatchParams) {
 
         console.log(`[DISPATCH] [WATI] Orchestrating Session API for ${cleanPhone} from ${channelNo}...`);
 
-        const url = `${baseUrl}/api/v1/sendSessionMessage/${cleanPhone}`;
+        const encodedText = encodeURIComponent(params.text);
+        const url = `${baseUrl}/api/v1/sendSessionMessage/${cleanPhone}?messageText=${encodedText}`;
         
         const res = await fetch(url, {
             method: "POST",
@@ -139,8 +140,9 @@ export async function sendWatiMessage(params: DispatchParams) {
                 "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
-                messageText: params.text, // WATI v1
-                text: params.text,        // WATI v2 / Alternative
+                messageText: params.text, // Sync for Body
+                text: params.text,        // Sync for v2
+                message: params.text,     // Sync for legacy
                 whatsappNumber: cleanPhone,
                 channelPhoneNumber: channelNo
             })
