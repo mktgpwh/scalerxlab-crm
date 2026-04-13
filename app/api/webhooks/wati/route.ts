@@ -48,14 +48,15 @@ export async function POST(req: NextRequest) {
             lead = await prisma.lead.create({
                 data: {
                     name: senderName === "WhatsApp Patient" ? fallbackName : senderName,
-                    source: referral?.ad_name ? `AD: ${referral.ad_name}` : "WHATSAPP",
+                    source: "WHATSAPP", // Enum limit check
                     status: "RAW",
                     whatsappNumber: senderId,
                     metadata: {
                         externalId: senderId,
                         platform: "whatsapp",
                         isWati: true,
-                        referral: referral, // Mirror Ad Data
+                        adSource: referral?.ad_name || "Direct WhatsApp", // Primary Source Mapping
+                        referral: referral, // Full Mirror
                         lastInteraction: new Date().toISOString()
                     }
                 }
@@ -75,9 +76,9 @@ export async function POST(req: NextRequest) {
             await prisma.lead.update({
                 where: { id: lead.id },
                 data: {
-                    source: referral?.ad_name ? `AD: ${referral.ad_name}` : lead.source,
                     metadata: {
                         ...(lead.metadata as any || {}),
+                        adSource: referral?.ad_name || (lead.metadata as any)?.adSource || "WHATSAPP",
                         referral: referral || (lead.metadata as any)?.referral,
                         lastInteraction: new Date().toISOString()
                     }
