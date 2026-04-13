@@ -162,6 +162,7 @@ export default function SharedInboxPage() {
           toast.error("Delivery Failed", { description: result.error });
           loadThreads(true); // Rollback via refresh
       } else {
+          toast.success("Message Delivered", { description: "Clinically dispatched to WhatsApp." });
           loadThreads(true);
       }
   };

@@ -140,6 +140,7 @@ export async function sendWatiMessage(params: DispatchParams) {
             },
             body: JSON.stringify({
                 messageText: params.text,
+                whatsappNumber: cleanPhone, // Doubling down for server compatibility
                 channelPhoneNumber: channelNo
             })
         });
