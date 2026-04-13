@@ -156,7 +156,7 @@ export async function updateAiStatus(leadId: string, status: 'AGENTX_ACTIVE' | '
     }
 }
 
-import { sendMetaMessage, sendWhatsAppMessage } from "@/lib/ai/dispatch";
+import { sendMetaMessage, sendWhatsAppMessage, sendWatiMessage } from "@/lib/ai/dispatch";
 
 /**
  * Send Manual Message
@@ -170,15 +170,18 @@ export async function sendMessage(leadId: string, text: string) {
 
         const metadata = (lead.metadata as any) || {};
         const recipientId = metadata.externalId;
+        const isWati = metadata.isWati === true;
         const platform = metadata.platform || (lead.source === 'WHATSAPP' ? 'whatsapp' : 'facebook');
 
         if (!recipientId) throw new Error("Recipient ID (PSID/WAID) missing in lead metadata.");
 
         // 2. Dispatch to External Platform
-        console.log(`📡 [OUTBOUND] Routing message to ${platform} for ${lead.name}...`);
+        console.log(`📡 [OUTBOUND] Routing message to ${platform} (WATI: ${isWati}) for ${lead.name}...`);
         
         let dispatchResult;
-        if (platform === 'whatsapp') {
+        if (isWati) {
+            dispatchResult = await sendWatiMessage({ leadId, platform: 'whatsapp', recipientId, text });
+        } else if (platform === 'whatsapp') {
             dispatchResult = await sendWhatsAppMessage({ leadId, platform, recipientId, text });
         } else {
             dispatchResult = await sendMetaMessage({ leadId, platform: platform as 'facebook' | 'instagram', recipientId, text });

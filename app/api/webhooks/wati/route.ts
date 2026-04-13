@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
         console.log("📦 [WATI_PAYLOAD]", JSON.stringify(body, null, 2));
 
         // 1. Core Data Extraction
-        // WATI payloads vary, but typically: waId (phone), text, senderName, referral
         const senderId = body.waId || body.from;
         const text = body.text || body.message?.text || "";
         const senderName = body.senderName || body.contactName || "WhatsApp Patient";
@@ -29,13 +28,16 @@ export async function POST(req: NextRequest) {
             return new Response("Missing Sender ID", { status: 400 });
         }
 
+        // 🛡️ [CLINICAL_IDENTITY]: Avoid "Meta Lead" naming
+        const idSuffix = senderId.slice(-4);
+        const fallbackName = `Pahlajani Patient - ${idSuffix}`;
+
         // 2. Lead Orchestration
         let lead = await prisma.lead.findFirst({
             where: {
                 OR: [
                     { whatsappNumber: senderId },
-                    { phone: senderId },
-                    { metadata: { path: ['externalId'], equals: senderId } }
+                    { phone: senderId }
                 ]
             }
         });
@@ -43,29 +45,25 @@ export async function POST(req: NextRequest) {
         if (!lead) {
             console.log(`🌱 [WATI] New Clinical Lead: ${senderId}`);
             
-            // Initial Fallback Name
-            const suffix = senderId.slice(-4);
-            const defaultName = `Pahlajani Patient - ${suffix}`;
-
             lead = await prisma.lead.create({
                 data: {
-                    name: senderName === "WhatsApp Patient" ? defaultName : senderName,
-                    source: "WHATSAPP",
+                    name: senderName === "WhatsApp Patient" ? fallbackName : senderName,
+                    source: referral?.ad_name ? `AD: ${referral.ad_name}` : "WHATSAPP",
                     status: "RAW",
                     whatsappNumber: senderId,
                     metadata: {
                         externalId: senderId,
                         platform: "whatsapp",
                         isWati: true,
-                        referral: referral, // CTWA Ad Data
+                        referral: referral, // Mirror Ad Data
                         lastInteraction: new Date().toISOString()
                     }
                 }
             });
 
-            // Identity Enrichment attempt (Meta API might not have WAIDs, but we check)
-            const enrichment = await fetchMetaUserProfile(senderId, 'facebook');
-            if (enrichment.success && !enrichment.name.includes('Pahlajani Patient')) {
+            // 🚀 [ENRICHMENT]: Trigger Identity Sequence
+            const enrichment = await fetchMetaUserProfile(senderId, 'whatsapp');
+            if (enrichment.success && enrichment.name !== fallbackName) {
                 lead = await prisma.lead.update({
                     where: { id: lead.id },
                     data: { name: enrichment.name }
@@ -73,18 +71,18 @@ export async function POST(req: NextRequest) {
             }
         } else {
             console.log(`🎯 [WATI] Existing Lead Found: ${lead.id}`);
-            // Update metadata with latest referral if present
-            if (referral) {
-                await prisma.lead.update({
-                    where: { id: lead.id },
-                    data: {
-                        metadata: {
-                            ...(lead.metadata as any || {}),
-                            referral: referral
-                        }
+            // Update metadata with latest referral & Ensure source is accurate if ad
+            await prisma.lead.update({
+                where: { id: lead.id },
+                data: {
+                    source: referral?.ad_name ? `AD: ${referral.ad_name}` : lead.source,
+                    metadata: {
+                        ...(lead.metadata as any || {}),
+                        referral: referral || (lead.metadata as any)?.referral,
+                        lastInteraction: new Date().toISOString()
                     }
-                });
-            }
+                }
+            });
         }
 
         // 3. Log Clinical Activity

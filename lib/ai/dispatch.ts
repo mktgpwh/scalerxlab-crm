@@ -95,11 +95,55 @@ export async function sendWhatsAppMessage(params: DispatchParams) {
     }
 }
 /**
+ * Send WhatsApp Message via WATI API v1
+ */
+export async function sendWatiMessage(params: DispatchParams) {
+    try {
+        const config = await getIntegrationConfig("wati");
+        const token = config.accessToken; // Assumed stored as full JWT or key
+        const baseUrl = config.endpoint;
+
+        console.log(`[DISPATCH] [WATI] Orchestrating Session API for ${params.recipientId}...`);
+
+        // WATI expects recipientId (phone) in the path
+        const res = await fetch(`${baseUrl}/api/v1/sendSessionMessage/${params.recipientId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                messageText: params.text
+            })
+        });
+
+        const data = await res.json();
+        
+        // WATI success is usually { result: true } or { result: "success" }
+        if (!res.ok || data.result === false || data.result === "error") {
+             throw new Error(data.message || data.errors?.[0] || "WATI API Error");
+        }
+
+        return { success: true, messageId: data.id || "wati_msg_sent" };
+    } catch (error: any) {
+        console.error(`[DISPATCH_FAILURE] [WATI]`, error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Fetch User Profile (Identity Enrichment)
  * Resolves real names from PSID (Facebook) or IGSID (Instagram).
  */
-export async function fetchMetaUserProfile(externalId: string, platform: 'facebook' | 'instagram') {
+export async function fetchMetaUserProfile(externalId: string, platform: 'facebook' | 'instagram' | 'whatsapp') {
     try {
+        // If it's WhatsApp, Meta Profile API won't work unless using Cloud API.
+        // For WATI, we usually get the name in the payload, but if called, return fallback.
+        if (platform === 'whatsapp') {
+             const suffix = externalId.slice(-4);
+             return { success: true, name: `Pahlajani Patient - ${suffix}` };
+        }
+
         const config = await getIntegrationConfig("meta_ads");
         const token = decryptToken(config.pageAccessToken);
 
