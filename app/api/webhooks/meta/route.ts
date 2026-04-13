@@ -81,7 +81,10 @@ export async function POST(req: NextRequest) {
                         const isInstagram = body.object === "instagram";
                         const sourceLabel = isInstagram ? "INSTAGRAM_DM" : "FACEBOOK_MSG";
                         const actionLabel = isInstagram ? "INSTAGRAM_DM_RECEIVED" : "FACEBOOK_MSG_RECEIVED";
-                        const defaultName = isInstagram ? "Meta Lead - Instagram" : "Meta Lead - Facebook";
+                        
+                        // 🛡️ [CLINICAL_FALLBACK]: Avoid generic "Meta Lead"
+                        const idSuffix = senderId.slice(-4);
+                        const defaultName = `Pahlajani Patient - ${idSuffix}`;
 
                         processMetaMessage(senderId, messageText, sourceLabel, actionLabel, defaultName, {
                             recipientId,

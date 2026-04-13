@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, useOptimistic } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { 
   Bot,
   User,
@@ -34,9 +34,10 @@ export default function SharedInboxPage() {
   const emergencyAudio = useRef<HTMLAudioElement | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Audio
+  // 🎵 [PHASE 4]: Clinical Audio Sentinel
   useEffect(() => {
     normalAudio.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+    // ScalerX Medical Chime
     emergencyAudio.current = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');
   }, []);
 
@@ -58,30 +59,34 @@ export default function SharedInboxPage() {
     loadThreads();
   }, [loadThreads]);
 
-  // Auto-scroll to bottom on new messages
+  // [PHASE 2]: UX - Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [threads, activeThreadId]);
 
-  // Real-time Subscription
+  // [PHASE 3]: Zero-Latency Real-time
   useEffect(() => {
     const channel = supabase
-      .channel('inbox_realtime')
+      .channel('inbox_realtime_sentinel')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'activity_logs' },
         (payload) => {
-          console.log("📥 REALTIME_UPDATE", payload);
-          loadThreads(true);
+          console.log("📥 REALTIME_SYNC_TRIGGERED", payload);
+          loadThreads(true); // Optimized silent refresh
 
+          // 🚨 [PHASE 4]: Keyword Sentinel
           const text = (payload.new.description || "").toLowerCase();
           const isEmergency = /pain|bleeding|emergency|urgency|severe|help/i.test(text);
 
           if (isEmergency) {
               emergencyAudio.current?.play().catch(() => {});
-              toast.error("Emergency Alert!", { description: payload.new.description });
+              toast.error("CLINICAL EMERGENCY DETECTED!", { 
+                  description: payload.new.description,
+                  duration: 8000
+              });
           } else if (payload.new.action.includes('RECEIVED')) {
               normalAudio.current?.play().catch(() => {});
           }
@@ -134,8 +139,8 @@ export default function SharedInboxPage() {
       const originalInput = messageInput;
       setMessageInput("");
 
-      // 🚀 OPTIMISTIC UPDATE: Add message to UI immediately
-      const tempId = Math.random().toString();
+      // 🚀 [PHASE 3]: OPTIMISTIC UI - Instant Message Injection
+      const tempId = `optimistic-${Math.random()}`;
       setThreads(prev => prev.map(t => {
           if (t.id === activeThreadId) {
               return {
@@ -155,8 +160,7 @@ export default function SharedInboxPage() {
       
       if (!result.success) {
           toast.error("Delivery Failed", { description: result.error });
-          // Rollback if necessary, but silent refresh usually fixes it
-          loadThreads(true);
+          loadThreads(true); // Rollback via refresh
       } else {
           loadThreads(true);
       }
@@ -172,7 +176,20 @@ export default function SharedInboxPage() {
 
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col min-w-0 pb-4">
-      {/* HEADER SECTION */}
+      <style jsx global>{`
+        @keyframes pulse-red {
+          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+          70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .animate-red-pulse {
+          animation: pulse-red 2s infinite;
+          background: rgba(239, 68, 68, 0.05);
+          border-color: rgba(239, 68, 68, 0.3) !important;
+        }
+      `}</style>
+
+      {/* HEADER */}
       <div className="flex items-center justify-between mb-6 shrink-0 px-2">
         <div className="flex items-center gap-2">
             <Bot className="h-6 w-6 text-primary" />
@@ -225,7 +242,8 @@ export default function SharedInboxPage() {
                                 activeThreadId === thread.id 
                                 ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none z-10" 
                                 : "border-transparent hover:bg-white/40 dark:hover:bg-white/5",
-                                thread.isEscalated && "ring-2 ring-rose-500 animate-pulse bg-rose-50/50 dark:bg-rose-500/10"
+                                // 🚨 [PHASE 4]: Visual Sentinel Effect
+                                thread.isEscalated && "animate-red-pulse ring-2 ring-rose-500"
                             )}
                         >
                             <div className="flex justify-between items-start mb-2">
@@ -272,21 +290,16 @@ export default function SharedInboxPage() {
                             </p>
                         </div>
                     ))}
-                    {threads.length === 0 && !loading && (
-                        <div className="p-10 text-center text-slate-400 text-xs font-medium italic">
-                            No social leads messaging yet...
-                        </div>
-                    )}
                 </div>
             </ScrollArea>
         </div>
 
-        {/* RIGHT PANE - CHAT WINDOW SECTION */}
+        {/* RIGHT PANE - [PHASE 2]: FIXED CHAT WINDOW SECTION */}
         <div className="flex-1 flex flex-col min-w-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]">
             {activeThread ? (
                 <div className="flex flex-col h-full overflow-hidden">
                     {/* CHAT HEADER */}
-                    <div className="h-24 border-b border-slate-200/60 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-10 shrink-0 z-10">
+                    <div className="h-24 border-b border-slate-200/60 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-10 shrink-0 z-10 transition-all">
                         <div className="flex items-center gap-4">
                             <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400">
                                 {activeThread.name.slice(0, 2).toUpperCase()}
@@ -336,9 +349,9 @@ export default function SharedInboxPage() {
                         </div>
                     </div>
 
-                    {/* MESSAGE HISTORY - SCROLLABLE */}
+                    {/* [PHASE 2]: MESSAGE HISTORY - SCROLLABLE & STRETCHABLE */}
                     <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 scroll-smooth bg-transparent">
-                        <div className="max-w-4xl mx-auto space-y-6">
+                        <div className="max-w-4xl mx-auto space-y-6 flex flex-col pt-4">
                             {activeThread.history?.slice().reverse().map((log: any) => (
                                 <div key={log.id} className={cn("flex", (log.action.includes('SENT') || log.action.includes('REPLY')) ? "justify-end" : "justify-start")}>
                                     <div className={cn(
@@ -352,7 +365,7 @@ export default function SharedInboxPage() {
                                             <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">
                                                 {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
                                             </span>
-                                            {log.action.includes('REPLY') && <Bot className="h-3 w-3 opacity-60" />}
+                                            {log.action.includes('REPLY') && <Bot className="h-3 w-3 opacity-60 ml-2" />}
                                         </div>
                                     </div>
                                 </div>
@@ -360,8 +373,8 @@ export default function SharedInboxPage() {
                         </div>
                     </div>
 
-                    {/* REPLY COMPOSER - STICKY AT BOTTOM */}
-                    <div className="p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/60 dark:border-white/5 shrink-0 z-10 transition-all">
+                    {/* [PHASE 2]: REPLY COMPOSER - STICKY AT BOTTOM */}
+                    <div className="p-8 pb-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-slate-200/60 dark:border-white/5 shrink-0 z-20">
                         <div className="max-w-4xl mx-auto space-y-4">
                             <div className="flex items-center gap-2">
                                 <Button 
@@ -377,9 +390,14 @@ export default function SharedInboxPage() {
                                     <Sparkles className={cn("h-3 w-3", isDrafting && "animate-spin")} />
                                     {isDrafting ? "Synthesizing..." : "Suggest AI Draft"}
                                 </Button>
+                                {activeThread.isEscalated && (
+                                    <Badge className="bg-rose-500/10 text-rose-500 border-none text-[9px] font-black uppercase tracking-widest animate-pulse">
+                                        Clinical Alert High
+                                    </Badge>
+                                )}
                             </div>
 
-                            <div className="flex items-end gap-3 bg-slate-50 dark:bg-black/20 p-3 rounded-[2rem] border border-slate-200/60 dark:border-white/10 ring-1 ring-slate-100 dark:ring-white/5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white dark:focus-within:bg-slate-900 transition-all shadow-inner">
+                            <div className="flex items-end gap-3 bg-white dark:bg-black/40 p-3 rounded-[2rem] border border-slate-200/60 dark:border-white/10 ring-1 ring-slate-100 dark:ring-white/5 shadow-xl transition-all">
                                 <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-400 shrink-0 hover:bg-slate-200/50">
                                     <Smile className="h-5 w-5" />
                                 </Button>
