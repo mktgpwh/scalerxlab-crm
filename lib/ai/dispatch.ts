@@ -100,13 +100,18 @@ export async function sendWhatsAppMessage(params: DispatchParams) {
 export async function sendWatiMessage(params: DispatchParams) {
     try {
         const config = await getIntegrationConfig("wati");
-        const token = config.accessToken; // Assumed stored as full JWT or key
-        const baseUrl = config.endpoint;
+        const token = config.accessToken;
+        const baseUrl = config.endpoint.replace(/\/$/, ""); // Remove trailing slash if any
 
-        console.log(`[DISPATCH] [WATI] Orchestrating Session API for ${params.recipientId}...`);
+        // 🛡️ [PHASE: HARDENING] - Sanitize Phone Number for WATI
+        // Remove '+', spaces, and non-digits
+        const cleanPhone = params.recipientId.replace(/\D/g, "");
 
-        // WATI expects recipientId (phone) in the path
-        const res = await fetch(`${baseUrl}/api/v1/sendSessionMessage/${params.recipientId}`, {
+        console.log(`[DISPATCH] [WATI] Orchestrating Session API for ${cleanPhone}...`);
+
+        const url = `${baseUrl}/api/v1/sendSessionMessage/${cleanPhone}`;
+        
+        const res = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -119,9 +124,14 @@ export async function sendWatiMessage(params: DispatchParams) {
 
         const data = await res.json();
         
-        // WATI success is usually { result: true } or { result: "success" }
-        if (!res.ok || data.result === false || data.result === "error") {
-             throw new Error(data.message || data.errors?.[0] || "WATI API Error");
+        // Detailed Logging for Debugging
+        console.log(`[WATI_RESPONSE] [${res.status}]`, JSON.stringify(data));
+
+        // WATI success mapping: { result: true } or { result: "success" }
+        const isSuccess = data.result === true || data.result === "success" || data.status === "success";
+
+        if (!res.ok || !isSuccess) {
+             throw new Error(data.message || data.errors?.[0] || `WATI API Error: ${res.status}`);
         }
 
         return { success: true, messageId: data.id || "wati_msg_sent" };
