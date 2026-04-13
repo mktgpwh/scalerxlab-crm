@@ -186,7 +186,7 @@ function KanbanCardInner({
           <div className="flex items-center justify-between gap-2 pt-1">
              <div className="flex items-center gap-1.5">
                 <Tooltip>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger>
                         <button
                             className="h-8 w-8 rounded-xl transition-all duration-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110 cursor-pointer ring-1 ring-blue-200/50 flex items-center justify-center"
                             onClick={handleCall}
@@ -200,7 +200,7 @@ function KanbanCardInner({
                 </Tooltip>
                 
                 <Tooltip>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger>
                         <button
                             className="h-8 w-8 rounded-xl transition-all duration-200 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white hover:scale-110 cursor-pointer ring-1 ring-[#25D366]/20 flex items-center justify-center"
                             onClick={(e) => { 
