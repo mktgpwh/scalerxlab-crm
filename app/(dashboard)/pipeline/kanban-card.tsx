@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
+import { Suspense } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { Lead } from "@/lib/types";
 
@@ -24,7 +25,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   OTHER:       "bg-slate-100 text-slate-500",
 };
 
-export function KanbanCard({ 
+// Inner card — no useSearchParams, safe from SSR/Suspense issues
+function KanbanCardInner({ 
   lead, 
   isOverlay = false
 }: { 
@@ -32,8 +34,6 @@ export function KanbanCard({
   isOverlay?: boolean
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
 
   const {
     setNodeRef,
@@ -55,11 +55,12 @@ export function KanbanCard({
     transform: CSS.Translate.toString(transform),
   };
 
+  // Safe navigation: append leadId to current URL without useSearchParams
   const openLead = (tab?: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("leadId", lead.id);
-    if (tab) params.set("tab", tab);
-    router.push(`${pathname}?${params.toString()}`);
+    const url = new URL(window.location.href);
+    url.searchParams.set("leadId", lead.id);
+    if (tab) url.searchParams.set("tab", tab);
+    router.push(url.pathname + url.search);
   };
 
   const handleCall = async (e: React.MouseEvent) => {
@@ -192,7 +193,7 @@ export function KanbanCard({
                             className={cn(
                                 "h-8 w-8 rounded-xl transition-all border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10",
                                 lead.consentFlag 
-                                ? "bg-slate-100 dark:bg-white/5 hover:bg-emerald-500 hover:text-white text-slate-500" 
+                                ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white hover:scale-110" 
                                 : "bg-slate-50 dark:bg-white/5 text-slate-300 cursor-not-allowed opacity-50"
                             )}
                             onClick={handleCall}
@@ -213,7 +214,7 @@ export function KanbanCard({
                             className={cn(
                                 "h-8 w-8 rounded-xl transition-all border-none shadow-none ring-1 ring-slate-200/50 dark:ring-white/10",
                                 lead.consentFlag 
-                                ? "bg-slate-100 dark:bg-white/5 hover:bg-[#25D366] hover:text-white text-[#25D366]" 
+                                ? "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white hover:scale-110" 
                                 : "bg-slate-50 dark:bg-white/5 text-slate-300 cursor-not-allowed opacity-50"
                             )}
                             onClick={(e) => { 
@@ -277,5 +278,14 @@ export function KanbanCard({
         </CardContent>
       </Card>
     </motion.div>
+  );
+}
+
+// Public export: wrapped in Suspense to isolate from SSR boundary issues
+export function KanbanCard(props: { lead: Lead; isOverlay?: boolean }) {
+  return (
+    <Suspense fallback={<div className="h-[140px] rounded-[2rem] bg-slate-100/50 animate-pulse" />}>
+      <KanbanCardInner {...props} />
+    </Suspense>
   );
 }
