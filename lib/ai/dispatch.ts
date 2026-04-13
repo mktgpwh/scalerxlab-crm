@@ -149,11 +149,15 @@ export async function sendWatiMessage(params: DispatchParams) {
         // Detailed Logging for Debugging
         console.log(`[WATI_RESPONSE] [${res.status}]`, JSON.stringify(data));
 
-        // 🛡️ [PHASE: RELAXED VALIDATION]
-        const hasExplicitError = data.result === false || data.result === "error" || data.status === "error";
+        // 🛡️ [PHASE: DEEP DIAGNOSTIC]
+        // WATI success mapping: Trust HTTP 200 + check if any explicit error in body
+        const isActuallySuccessful = 
+            res.status === 200 && 
+            (data.result === true || data.result === "success" || data.status === "success" || !data.errors);
 
-        if (!res.ok || (hasExplicitError && res.status !== 200)) {
-             throw new Error(data.message || data.errors?.[0] || `WATI Processing Error: ${res.status}`);
+        if (!isActuallySuccessful) {
+             // 🚨 [CRITICAL]: Return full body so user can see reason in Toast
+             throw new Error(`WATI_LOG: [${res.status}] ${JSON.stringify(data)}`);
         }
 
         // Return full metadata for activity logging
