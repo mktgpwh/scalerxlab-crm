@@ -41,11 +41,11 @@ const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
 
 const items = [
   { title: "Command Center", url: "/", icon: Home, label: "Overview" },
+  { title: "Sovereign Intelligence", url: "/intelligence", icon: Sparkles, label: "AgentX" },
   { title: "Lead Funnels", url: "/pipeline", icon: LayoutDashboard, label: "Pipelines" },
   { title: "Shared Inbox", url: "/inbox", icon: (props: any) => <IntegrationIcon slug="whatsapp" {...props} />, label: "WhatsApp" },
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
   { title: "Connections", url: "/integrations", icon: Puzzle, label: "Expansion Hub" },
-  { title: "Analytics Hub", url: "/analytics", icon: BarChart3, label: "Insights" },
   { title: "Activity Logs", url: "/activity", icon: History },
   { title: "Security & Compliance", url: "/security", icon: ShieldCheck, label: "Privacy Vault" },
 ];
@@ -84,7 +84,7 @@ export function AppSidebar() {
   const filteredItems = items.filter((item) => {
     // Only hide if role is EXPLICITLY a non-admin role
     if (role === "USER" || role === "AGENT") {
-      if (["Connections", "Analytics Hub"].includes(item.title)) {
+      if (["Connections", "Sovereign Intelligence"].includes(item.title)) {
         return false;
       }
     }

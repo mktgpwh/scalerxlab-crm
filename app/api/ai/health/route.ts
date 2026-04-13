@@ -1,50 +1,44 @@
 import { NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
+import { prisma } from "@/lib/prisma";
 import Groq from "groq-sdk";
-import { fetchIntelligenceAggregates } from "@/lib/ai/intelligence-data";
 
 export async function GET() {
   try {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    const data = await fetchIntelligenceAggregates();
+
+    const [totalLeads, hotLeads, convertedLeads, callStats] = await Promise.all([
+      prisma.lead.count(),
+      prisma.lead.count({ where: { intent: 'HOT' } }),
+      prisma.lead.count({ where: { status: 'WON' } }),
+      prisma.callLog.groupBy({
+        by: ['status'],
+        _count: { _all: true }
+      })
+    ]);
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
-          content: `You are AgentX, the Sovereign Intelligence Analyst for ScalerX Business Suite. 
-          Analyze the provided clinical business data and generate a high-level executive health summary.
-          RULES:
-          1. Use a professional, slightly futuristic, mission-command tone.
-          2. Compare performance between clinical nodes (centers).
-          3. Critique lead quality and conversion velocity.
-          4. Format with clean sections: health pulse, center comparison, and urgent alerts.
-          5. DO NOT mention any PII (no names, emails, phones).
-          6. FINALLY, add a single word on the last line of your response enclosed in brackets like [GOOD], [MODERATE], or [CRITICAL] representing the overall health of the clinical matrix.`
+          content: `You are AgentX, a Sovereign Business Intelligence Core for ScalerX Hub. Develop a "Mission Narrative" summary based on the provided stats. Use a professional, slightly futuristic, and analytical tone. Format your response in clean Markdown. Include insights on conversion velocity, lead intent ratios, and specialized funnel pressure. Keep it under 250 words.`
         },
         {
           role: "user",
-          content: JSON.stringify(data)
+          content: JSON.stringify({ totalLeads, hotLeads, convertedLeads, callStats })
         }
       ],
-      temperature: 0.7,
-      max_tokens: 800
+      max_tokens: 600
     });
 
-    const rawContent = completion.choices[0]?.message?.content || "";
-    const statusMatch = rawContent.match(/\[(GOOD|MODERATE|CRITICAL)\]/);
-    const status = statusMatch ? statusMatch[1] : "MODERATE";
-    const narrative = rawContent.replace(/\[(GOOD|MODERATE|CRITICAL)\]/, "").trim();
-
     return NextResponse.json({
-      narrative: narrative || null,
-      status,
-      data
+      narrative: completion.choices[0]?.message?.content || "Intelligence stream stabilized. Matrix initialized.",
+      status: hotLeads > totalLeads * 0.2 ? "GOOD" : "MODERATE"
     });
 
   } catch (error) {
     console.error("[AI_HEALTH_ERROR]", error);
-    return NextResponse.json({ error: "Mission control linkage failure." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to sync intelligence" }, { status: 500 });
   }
 }
