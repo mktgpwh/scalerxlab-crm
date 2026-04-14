@@ -21,10 +21,22 @@ export async function POST(req: NextRequest) {
         const eventType = body.eventType || "message_received";
         const senderId = body.waId || body.from || body.senderId || body.to; // Normalize IDs
         const text = body.text || body.message?.text || body.messageText || "";
+        const wamiId = body.whatsappMessageId || body.id || "";
         
         if (!senderId) {
             console.warn("⚠️ [WATI] Skipping payload without ID");
             return new Response("No ID", { status: 200 });
+        }
+
+        // 🚀 [PHASE 5]: Intelligence - Check for Duplicates
+        if (wamiId) {
+            const existingLog = await prisma.activityLog.findFirst({
+                where: { metadata: { path: ['raw', 'whatsappMessageId'], equals: wamiId } }
+            });
+            if (existingLog) {
+                console.log(`⏭️ [WATI] Skipping duplicate signal: ${wamiId}`);
+                return new Response("DUPLICATE_ACK", { status: 200 });
+            }
         }
 
         // 2. Logic: Auto-Classification & Branch Mapping
@@ -50,8 +62,7 @@ export async function POST(req: NextRequest) {
             include: { branch: true }
         });
 
-        // 4. Branch Resolution (Optional: Map cities to branch IDs if possible)
-        // For now, we look for city names in ad context
+        // 4. Branch Resolution
         const detectedCity = ["Raipur", "Bhilai", "Bilaspur"].find(city => adContext.includes(city.toLowerCase()));
         let detectedBranchId = lead?.branchId || null;
 
@@ -60,7 +71,7 @@ export async function POST(req: NextRequest) {
             if (branch) detectedBranchId = branch.id;
         }
 
-        // 5. Routing by Event
+        // 5. Routing by Event (Status Updates)
         if (eventType === "sent_message_delivered" || eventType === "sent_message_delivered_v2") {
             console.log(`✅ [WATI_STATUS] Delivered to ${senderId}`);
             if (lead) {
@@ -78,33 +89,26 @@ export async function POST(req: NextRequest) {
 
         if (eventType === "session_message_failed" || eventType === "template_message_failed") {
             const errorReason = body.data?.message || body.message || "Unknown Provider Error";
-            console.error(`🚨 [WATI_STATUS] Failure for ${senderId}: ${errorReason}`);
-            if (lead) {
-                await prisma.activityLog.create({
-                    data: {
-                        leadId: lead.id,
-                        action: "CLINICAL_DISPATCH_FAILED",
-                        description: `DELIVERY ERROR: ${errorReason}`,
-                        metadata: { source: "WATI", status: "FAILED", error: body }
-                    }
-                });
-            }
+            console.warn(`🚨 [WATI_STATUS] Failure for ${senderId}: ${errorReason}`);
             return new Response("EVENT_ACK", { status: 200 });
         }
 
-        // 6. Handle Inbound Message (Source: WHATSAPP/WATI)
-        const isEmergency = detectEmergency(text);
+        // 6. Handle Inbound vs Outbound logic
+        const isOutbound = eventType.includes("sessionMessageSent") || eventType.includes("templateMessageSent");
+        const action = isOutbound ? "CLINIC_MESSAGE_SENT" : "WHATSAPP_MSG_RECEIVED";
+        
+        const isEmergency = !isOutbound && detectEmergency(text);
         const category = classifyCategory();
+        const incomingName = body.senderName || body.contactName || body.name || "";
 
         if (!lead) {
             const idSuffix = senderId.slice(-4);
             const fallbackName = `Pahlajani Patient - ${idSuffix}`;
-            const senderName = body.senderName || body.contactName || "WhatsApp Patient";
 
             console.log(`🆕 [WATI] Creating New Clinical Lead: ${senderId} | Category: ${category}`);
             lead = await prisma.lead.create({
                 data: {
-                    name: senderName === "WhatsApp Patient" ? fallbackName : senderName,
+                    name: incomingName || fallbackName,
                     source: "WHATSAPP", 
                     status: "RAW",
                     category: category,
@@ -117,10 +121,6 @@ export async function POST(req: NextRequest) {
                         platform: "whatsapp",
                         isWati: true,
                         isAd: !!body.referral,
-                        adId: body.referral?.ad_id,
-                        adHeadline: body.referral?.headline,
-                        adBody: body.referral?.body,
-                        adSource: body.referral?.ad_name || "Direct WhatsApp",
                         referral: body.referral,
                         lastInteraction: new Date().toISOString()
                     }
@@ -128,17 +128,19 @@ export async function POST(req: NextRequest) {
                 include: { branch: true }
             });
 
-            console.log(`✅ [WATI] Lead created: ${lead.id} for ${senderId}`);
-
             // 🚀 Trigger Intelligent Distribution
             await distributeLead(lead.id);
         } else {
-             console.log(`🔄 [WATI] Updating Existing Clinical Lead: ${lead.id}`);
+             console.log(`🔄 [WATI] Syncing Lead: ${lead.id} | Action: ${action}`);
+             
+             // Update logic: Resolve placeholder names and update interaction
+             const needsNameUpdate = lead.name.startsWith("Pahlajani Patient") && incomingName && incomingName !== "WhatsApp Patient";
+             
              await prisma.lead.update({
                  where: { id: lead.id },
                  data: {
                      source: "WHATSAPP",
-                     // Only update category if it was OTHER and we now have a better one
+                     ...(needsNameUpdate ? { name: incomingName } : {}),
                      ...(lead.category === 'OTHER' && category !== 'OTHER' ? { category } : {}),
                      ...(isEmergency ? { isEscalated: true, aiChatStatus: "HUMAN_OVERRIDE" } : {}),
                      metadata: {
@@ -147,31 +149,32 @@ export async function POST(req: NextRequest) {
                          isWati: true,
                          lastInteraction: new Date().toISOString()
                      }
-                 },
-                 include: { branch: true }
+                 }
              });
         }
 
-        // 5. Finalize Inbound Log & AI Synthesis
+        // 7. Finalize Signal Entry & AI Synthesis
         if (text) {
             await prisma.activityLog.create({
                 data: {
                     leadId: lead.id,
-                    action: "WHATSAPP_MSG_RECEIVED",
+                    action: action,
                     description: text,
                     metadata: { source: "WATI", raw: body }
                 }
             });
 
-            // Non-blocking AI Draft — failure here must NOT abort lead creation
-            try {
-                await generateProactiveDraft({
-                    leadId: lead.id,
-                    messageText: text,
-                    category: lead.category
-                });
-            } catch (aiErr) {
-                console.warn(`⚠️ [WATI] AI draft skipped for ${lead.id}:`, aiErr);
+            // Only trigger AI drafts for INBOUND messages
+            if (!isOutbound) {
+                try {
+                    await generateProactiveDraft({
+                        leadId: lead.id,
+                        messageText: text,
+                        category: lead.category
+                    });
+                } catch (aiErr) {
+                    console.warn(`⚠️ [WATI] AI draft skipped:`, aiErr);
+                }
             }
         }
 
