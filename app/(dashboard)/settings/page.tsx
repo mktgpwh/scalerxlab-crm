@@ -31,6 +31,10 @@ export default async function SettingsPage() {
     orderBy: { createdAt: "desc" }
   });
 
+  const users = await prisma.user.findMany({
+    orderBy: { createdAt: "desc" }
+  });
+
   return (
     <div className="space-y-10 max-w-5xl mx-auto">
       <div className="flex flex-col gap-2">
@@ -161,23 +165,19 @@ export default async function SettingsPage() {
                     <CardDescription className="text-sm font-medium">Active members assigned to this Command Node.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-12 pt-0 space-y-4">
-                    {[
-                       { name: "Dr. Pahlajani", role: "Executive Director", access: "FULL ACCESS", avatar: "DP" },
-                       { name: "HOD Infertility", role: "Department Head", access: "DEPT. VIEW", avatar: "HI" },
-                       { name: "Receptionist 1", role: "Lead Agent", access: "BASIC", avatar: "R1" },
-                    ].map((member, i) => (
-                       <div key={i} className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-white/5 ring-1 ring-slate-200/50 dark:ring-white/5">
+                    {users.map((member, i) => (
+                       <div key={member.id} className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-white/5 ring-1 ring-slate-200/50 dark:ring-white/5">
                           <div className="flex items-center gap-4">
-                             <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
-                                {member.avatar}
+                             <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary uppercase">
+                                {member.name?.[0] || member.email[0]}
                              </div>
                              <div>
-                                <p className="text-sm font-black">{member.name}</p>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{member.role}</p>
+                                <p className="text-sm font-black">{member.name || "System Node"}</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{member.role.replace('_', ' ')}</p>
                              </div>
                           </div>
                           <Badge className="text-[9px] font-black bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-200 border-none uppercase">
-                             {member.access}
+                             {member.isActive ? "ACTIVE" : "INACTIVE"}
                           </Badge>
                        </div>
                     ))}
