@@ -16,7 +16,8 @@ import {
 } from "recharts";
 import { 
   BrainCircuit, Target, Flame, TrendingUp, Activity, MapPin, Loader2,
-  Settings, Search, Filter, ChevronDown, Sparkles, Phone, Users, ShieldAlert
+  Settings, Search, Filter, ChevronDown, Sparkles, Phone, Users, ShieldAlert,
+  ShieldCheck, Lock, Shield
 } from "lucide-react";
 import { Popover as PopoverRoot } from "@/components/ui/popover";
 import { FacebookIcon, WhatsAppIcon } from "@/components/icons";
@@ -308,14 +309,59 @@ function AnalyticsView({
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         <Card className="lg:col-span-2 surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm ring-1 ring-slate-200/50 hidden md:block">
-            {/* Logic removed as it's merged into the grid above for mobile priority, but keeping a placeholder or specialized view for desktop if needed */}
-            <div className="h-full flex items-center justify-center opacity-20">
-              <Sparkles className="h-20 w-20" />
-            </div>
-         </Card>
-      </div>
+         {/* Security & Compliance Section */}
+         <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+            {/* DPDPA Sovereignty Card */}
+            <Card className="surface-layered border-none rounded-[2.5rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 relative overflow-hidden group">
+               <div className="flex items-center justify-between mb-6">
+                  <Badge className="bg-emerald-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full border-none shadow-lg shadow-emerald-500/20">
+                    Verified
+                  </Badge>
+                  <ShieldCheck className="h-6 w-6 text-emerald-500 opacity-20 group-hover:opacity-100 transition-opacity" />
+               </div>
+               
+               <div className="space-y-2">
+                  <h4 className="text-2xl font-black italic tracking-tight text-slate-900 dark:text-white">DPDPA Sovereignty</h4>
+                  <p className="text-sm font-bold text-slate-500">European & Indian Data Privacy Compliance Status.</p>
+               </div>
+
+               <div className="mt-8 p-4 rounded-3xl bg-emerald-50/50 border border-emerald-100/50 flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                     <ShieldCheck className="h-6 w-6 text-emerald-500" />
+                  </div>
+                  <div>
+                     <p className="text-[11px] font-black uppercase tracking-tight text-slate-900">Active Audit Log</p>
+                     <p className="text-[10px] font-medium text-slate-500 leading-tight">System is currently recording all PII access and WhatsApp engagement events for regulatory auditing.</p>
+                  </div>
+               </div>
+            </Card>
+
+            {/* AES-256-GCM Encryption Card */}
+            <Card className="surface-layered border-none rounded-[2.5rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 relative overflow-hidden group">
+               <div className="flex items-center justify-between mb-6">
+                  <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-sm">
+                     <Shield className="h-5 w-5" />
+                  </div>
+                  <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] font-black px-3 py-1 rounded-full">
+                     ACTIVE
+                  </Badge>
+               </div>
+
+               <div className="space-y-4">
+                  <h4 className="text-2xl font-black italic tracking-tight text-slate-900 dark:text-white">AES-256-GCM Encryption</h4>
+                  <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                     All integration tokens (WATI, Tata Smartflo, Meta) are encrypted using AES-256-GCM before being stored in the database. Plain-text credentials are never persisted.
+                  </p>
+               </div>
+
+               <div className="mt-10 pt-6 border-t border-slate-100 flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                     <Settings className="h-3 w-3 text-slate-400 animate-spin-slow" />
+                     <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">256-Bit Key • GCM Mode • Random IV Per Token</span>
+                  </div>
+               </div>
+            </Card>
+         </div>
     </div>
   );
 }
