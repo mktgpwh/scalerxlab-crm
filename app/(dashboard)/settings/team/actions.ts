@@ -12,9 +12,16 @@ export async function createUserAction(formData: {
 }) {
   try {
     // 1. Initialize Supabase Admin client (Service Role)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+       return { error: "Tactical Configuration Failure: Missing Supabase Credentials in environment." };
+    }
+
     const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      supabaseUrl,
+      supabaseServiceKey,
       {
         auth: {
           autoRefreshToken: false,
@@ -59,15 +66,22 @@ export async function createUserAction(formData: {
     return { success: true };
   } catch (error: any) {
     console.error("User creation error:", error);
-    return { error: "An unexpected system error occurred while provisioning the user." };
+    return { error: `Provisioning Error: ${error.message || "An unexpected system error occurred."}` };
   }
 }
 
 export async function deleteUserAction(userId: string) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+       return { error: "Tactical Configuration Failure: Missing Supabase Credentials." };
+    }
+
     const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      supabaseUrl,
+      supabaseServiceKey
     );
 
     // Delete from Supabase Auth
