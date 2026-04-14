@@ -251,9 +251,11 @@ export function LeadsDataView({
           Showing <span className="text-slate-900 dark:text-white">{filtered.length}</span> Matrix Nodes
         </p>
         <div className="flex items-center gap-3">
-          <Button onClick={handleExportCSV} size="sm" variant="outline" className="h-8 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 border-emerald-500/30 text-emerald-600">
-            <Download className="h-3.5 w-3.5" /> Export CSV
-          </Button>
+          {["SUPER_ADMIN", "ORG_ADMIN", "MANAGER"].includes(userRole) && (
+            <Button onClick={handleExportCSV} size="sm" variant="outline" className="h-8 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 border-emerald-500/30 text-emerald-600">
+              <Download className="h-3.5 w-3.5" /> Export CSV
+            </Button>
+          )}
         </div>
       </div>
 

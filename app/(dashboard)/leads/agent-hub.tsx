@@ -12,6 +12,7 @@ import {
   Sparkles, 
   ChevronRight, 
   AlertTriangle,
+  Plus,
   History,
   TrendingUp,
   Inbox
@@ -26,9 +27,14 @@ interface AgentHubProps {
   initialLeads: any[];
   currentUserId: string;
   branches: any[];
+  userRole: string;
 }
 
-export function AgentHub({ initialLeads, currentUserId, branches }: AgentHubProps) {
+import { NewLeadDialog } from "@/components/leads/new-lead-dialog";
+
+export function AgentHub({ initialLeads, currentUserId, branches, userRole }: AgentHubProps) {
+  const [isAddLeadOpen, setIsAddLeadOpen] = React.useState(false);
+  
   // 1. Filter Leads strictly for this agent
   const myLeads = useMemo(() => initialLeads.filter(l => l.ownerId === currentUserId), [initialLeads, currentUserId]);
   
@@ -103,14 +109,16 @@ export function AgentHub({ initialLeads, currentUserId, branches }: AgentHubProp
         <Card className="lg:col-span-2 rounded-[3rem] border-none shadow-sm ring-1 ring-slate-200/50 p-8 bg-slate-900 text-white relative overflow-hidden">
            <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                   <div className="flex items-center gap-2 mb-1">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Signal Intelligent</span>
-                   </div>
-                   <h2 className="text-3xl font-black italic tracking-tighter">High-Intensity Sentinel</h2>
-                </div>
+              <div className="flex items-center gap-3">
+                {userRole === "FIELD_SALES" && (
+                  <Button 
+                    onClick={() => setIsAddLeadOpen(true)}
+                    className="h-10 px-6 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Capture Field Lead
+                  </Button>
+                )}
                 <Badge className="bg-primary/20 text-primary border-none font-black text-[10px] px-3 py-1">
                    {priorityLeads.length} HOT TARGETS
                 </Badge>
@@ -170,12 +178,17 @@ export function AgentHub({ initialLeads, currentUserId, branches }: AgentHubProp
         </div>
         <LeadsDataView 
             initialLeads={myLeads} 
-            userRole="AGENT" 
+            userRole={userRole} 
             currentUserId={currentUserId} 
             team={[]} 
             branches={branches} 
         />
       </div>
+
+      <NewLeadDialog 
+        open={isAddLeadOpen} 
+        onOpenChange={setIsAddLeadOpen} 
+      />
     </div>
   );
 }

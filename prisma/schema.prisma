@@ -164,6 +164,8 @@ enum UserRole {
   VIEWER
   DOCTOR
   COUNSELOR
+  TELESALES
+  FIELD_SALES
 }
 
 enum LeadSource {

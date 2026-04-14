@@ -93,9 +93,11 @@ export function AddUserForm() {
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-none shadow-xl">
               <SelectItem value="DOCTOR" className="rounded-xl font-bold text-xs uppercase tracking-wider">Doctor</SelectItem>
-              <SelectItem value="COUNSELOR" className="rounded-xl font-bold text-xs uppercase tracking-wider">Counselor</SelectItem>
+              <SelectItem value="COUNSELOR" className="rounded-xl font-bold text-xs uppercase tracking-wider">Counsellor</SelectItem>
+              <SelectItem value="TELESALES" className="rounded-xl font-bold text-xs uppercase tracking-wider">Tele Agent (Sales)</SelectItem>
+              <SelectItem value="FIELD_SALES" className="rounded-xl font-bold text-xs uppercase tracking-wider">Field Sales</SelectItem>
               <SelectItem value="ORG_ADMIN" className="rounded-xl font-bold text-xs uppercase tracking-wider">Admin</SelectItem>
-              <SelectItem value="AGENT" className="rounded-xl font-bold text-xs uppercase tracking-wider">Agent</SelectItem>
+              <SelectItem value="AGENT" className="rounded-xl font-bold text-xs uppercase tracking-wider">General Agent</SelectItem>
             </SelectContent>
           </Select>
         </div>

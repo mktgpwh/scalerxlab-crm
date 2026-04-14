@@ -123,12 +123,15 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
 
   const dailyLeadsSeries = Object.entries(dailyCounts).map(([day, count]) => ({ day, count }));
 
-  if (!isAdmin) {
+  const isOperationalRole = ["AGENT", "TELESALES", "FIELD_SALES", "COUNSELOR"].includes(profile.role);
+
+  if (isOperationalRole) {
     return (
       <AgentHub 
         initialLeads={leads as unknown as any[]} 
         currentUserId={profile.id}
         branches={branches as any[]}
+        userRole={profile.role}
       />
     );
   }

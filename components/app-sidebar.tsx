@@ -105,11 +105,22 @@ export function AppSidebar() {
 
   // Filter items based on role
   const filteredItems = items.filter((item) => {
-    if (role === "USER" || role === "AGENT") {
-      if (["Connections", "Sovereign Intelligence"].includes(item.title)) {
+    const isOperationalRole = ["AGENT", "TELESALES", "FIELD_SALES", "COUNSELOR"].includes(role || "");
+    
+    // Non-admin roles restricted from specific high-level system components
+    if (isOperationalRole) {
+      if (["Connections", "Sovereign Intelligence", "Security & Compliance"].includes(item.title)) {
         return false;
       }
     }
+    
+    // Counsellor specifically doesn't need telephony call management or Command Center
+    if (role === "COUNSELOR") {
+      if (["Command Center", "Call Management"].includes(item.title)) {
+        return false;
+      }
+    }
+
     return true;
   });
 

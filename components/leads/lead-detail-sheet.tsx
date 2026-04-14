@@ -52,9 +52,21 @@ export function LeadDetailSheet() {
   const [activities, setActivities] = useState<any[]>([]);
   const [note, setNote] = useState<string>("");
   const [noteSaved, setNoteSaved] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
-  // Fetch lead data when leadId changes
+  // Fetch lead data and user role
   useEffect(() => {
+    async function getProfile() {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+          const { data } = await supabase.from("users").select("role").eq("id", session.user.id).single();
+          if (data) setUserRole(data.role);
+      }
+    }
+    getProfile();
+
     if (leadId) {
       fetchLead(leadId);
     } else {
@@ -235,12 +247,14 @@ export function LeadDetailSheet() {
                   >
                     /Overview
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="engagement" 
-                    className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all cursor-pointer hover:text-primary/70"
-                  >
-                    /Engage
-                  </TabsTrigger>
+                  {userRole !== "COUNSELOR" && (
+                    <TabsTrigger 
+                      value="engagement" 
+                      className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all cursor-pointer hover:text-primary/70"
+                    >
+                      /Engage
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger 
                     value="timeline" 
                     className="relative bg-transparent h-14 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[10px] font-black uppercase tracking-[0.2em] px-0 transition-all cursor-pointer hover:text-primary/70"
@@ -254,6 +268,12 @@ export function LeadDetailSheet() {
                     /Notes
                   </TabsTrigger>
                 </TabsList>
+                {userRole === "COUNSELOR" && (
+                   <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full">
+                      <Lock className="h-3 w-3 text-slate-400" />
+                      <span className="text-[9px] font-black uppercase text-slate-400">Read-Only Matrix</span>
+                   </div>
+                )}
               </div>
 
               <div className="flex-1 overflow-y-auto p-8 lg:p-10 scrollbar-thin">
