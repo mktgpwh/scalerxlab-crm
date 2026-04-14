@@ -61,7 +61,7 @@ export function PipelineFilterBar() {
     <div className="flex flex-col md:flex-row items-center gap-4 p-4">
       <div className="flex items-center gap-2">
         <Popover>
-          <PopoverTrigger asChild>
+          <PopoverTrigger>
             <Button
               variant={"outline"}
               className={cn(

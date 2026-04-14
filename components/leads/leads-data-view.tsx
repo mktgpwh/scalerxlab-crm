@@ -44,8 +44,8 @@ function FilterChip({ label, value, options, onChange }: { label: string; value:
   const isActive = value !== "ALL";
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <button className={cn(
+      <PopoverTrigger>
+        <Button className={cn(
           "flex items-center gap-1.5 h-9 px-3 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer hover:border-primary/50",
           isActive
             ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
@@ -54,7 +54,7 @@ function FilterChip({ label, value, options, onChange }: { label: string; value:
           <Filter className="h-3 w-3" />
           {isActive ? value : label}
           <ChevronDown className="h-3 w-3 opacity-60" />
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-44 rounded-2xl p-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 shadow-xl" align="start">
         <div className="space-y-0.5">
