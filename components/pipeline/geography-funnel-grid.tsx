@@ -3,19 +3,28 @@
 import React, { useMemo } from "react";
 import { FunnelCard, FunnelData } from "./funnel-card";
 
-const CITIES = [
-  { key: "OVERALL", label: "Overall Business", color: "violet" },
-  { key: "Raipur", label: "Raipur Node", color: "cyan" },
-  { key: "Bhilai", label: "Bhilai Node", color: "fuchsia" },
-  { key: "Bilaspur", label: "Bilaspur Node", color: "slate" },
-] as const;
+const COLORS = ['violet', 'cyan', 'fuchsia', 'slate', 'rose', 'indigo', 'emerald', 'amber'];
 
-export function GeographyFunnelGrid({ leads }: { leads: any[] }) {
+export function GeographyFunnelGrid({ leads, branches }: { leads: any[], branches: any[] }) {
+  const dynamicCities = useMemo(() => {
+    const list = [{ key: "OVERALL", label: "Overall Business", color: "violet" }];
+    
+    branches.forEach((branch, idx) => {
+      list.push({
+        key: branch.id,
+        label: `${branch.name} Node`,
+        color: COLORS[(idx + 1) % COLORS.length]
+      });
+    });
+
+    return list;
+  }, [branches]);
+
   const stats = useMemo(() => {
-    return CITIES.reduce((acc, city) => {
+    return dynamicCities.reduce((acc, city) => {
       const cityLeads = city.key === "OVERALL" 
         ? leads 
-        : leads.filter(l => l.branch?.city === city.key);
+        : leads.filter(l => l.branchId === city.key);
 
       acc[city.key] = {
         total: cityLeads.length,
@@ -25,11 +34,11 @@ export function GeographyFunnelGrid({ leads }: { leads: any[] }) {
       };
       return acc;
     }, {} as Record<string, FunnelData>);
-  }, [leads]);
+  }, [leads, dynamicCities]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {CITIES.map((city) => (
+      {dynamicCities.map((city) => (
         <FunnelCard 
           key={city.key} 
           label={city.label} 

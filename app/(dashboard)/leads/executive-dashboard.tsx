@@ -89,17 +89,6 @@ function AnalyticsView({
     { name: 'OTH',  value: otherLeads },
   ].filter(d => d.value > 0);
 
-  // Sentiment Pulse Trends (Mocked for current view)
-  const sentimentTrends = [
-    { day: 'Mon', positive: 65, neutral: 20, negative: 15 },
-    { day: 'Tue', positive: 70, neutral: 25, negative: 5 },
-    { day: 'Wed', positive: 55, neutral: 35, negative: 10 },
-    { day: 'Thu', positive: 80, neutral: 15, negative: 5 },
-    { day: 'Fri', positive: 75, neutral: 20, negative: 5 },
-    { day: 'Sat', positive: 90, neutral: 10, negative: 0 },
-    { day: 'Sun', positive: 85, neutral: 10, negative: 5 },
-  ];
-
   const regionalData = branches.map(branch => ({
     name: branch.name,
     count: leads.filter(l => l.branchId === branch.id).length
@@ -233,7 +222,7 @@ function AnalyticsView({
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         {/* Speciality Distribution Chart (Pie) */}
         <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-8">
@@ -270,42 +259,6 @@ function AnalyticsView({
                 </div>
              ))}
           </div>
-        </Card>
-
-        {/* Sentinel Sentiment Pulse (Mobile optimized) */}
-        <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm ring-1 ring-slate-200/50">
-           <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-2">
-                <BrainCircuit className="h-5 w-5 text-emerald-500" />
-                <h4 className="text-lg font-black italic tracking-tight">Sentinel Pulse</h4>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> <span className="text-[8px] font-black uppercase text-slate-400">Pos</span></div>
-                <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-rose-500" /> <span className="text-[8px] font-black uppercase text-slate-400">Neg</span></div>
-              </div>
-            </div>
-            <div className="h-[220px] md:h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={sentimentTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorPositive" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorNegative" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#64748b' }} />
-                  <YAxis hide />
-                  <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
-                  <Area type="monotone" dataKey="positive" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPositive)" />
-                  <Area type="monotone" dataKey="negative" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorNegative)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
         </Card>
       </div>
 

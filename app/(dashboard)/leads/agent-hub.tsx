@@ -163,7 +163,7 @@ export function AgentHub({ initialLeads, currentUserId, branches, userRole }: Ag
             
             <section className="space-y-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Geography Perspective (Personal)</p>
-                <GeographyFunnelGrid leads={myLeads} />
+                <GeographyFunnelGrid leads={myLeads} branches={branches} />
             </section>
         </div>
       </div>
