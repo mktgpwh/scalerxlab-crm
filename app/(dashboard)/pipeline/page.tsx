@@ -4,11 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getPrismaDateFilter } from "@/lib/utils/date-filters";
 import { SpecialityFunnelGrid } from "@/components/pipeline/speciality-funnel-grid";
+import { GeographyFunnelGrid } from "@/components/pipeline/geography-funnel-grid";
 import { LeadsDataView } from "@/components/leads/leads-data-view";
 import { NewLeadDialog } from "@/components/leads/new-lead-dialog";
 import { BulkImportDialog } from "@/components/leads/bulk-import-dialog";
 import { PipelineFilterBar } from "@/components/pipeline/pipeline-filter-bar";
-import { Activity, ShieldCheck } from "lucide-react";
+import { Activity, ShieldCheck, LayoutGrid, Map as MapIcon, Link as LinkIcon } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +21,7 @@ interface PageProps {
     to?: string; 
     category?: string;
     branchId?: string;
+    view?: "speciality" | "geography";
   }>;
 }
 
@@ -105,13 +109,51 @@ export default async function PipelinePage({ searchParams }: PageProps) {
           <PipelineFilterBar />
       </div>
 
-      {/* Speciality Funnels Layer */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-2">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Department Velocity Matrix</h3>
+      {/* Perspectives Switcher & Funnels Layer */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4">
+            <div className="flex items-center gap-6">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Pipeline Perspectives</h3>
+                <div className="flex items-center p-1 bg-slate-100 dark:bg-white/5 rounded-xl ring-1 ring-slate-200/50">
+                    <Link
+                        href={`/pipeline?${new URLSearchParams({ ...params, view: "speciality" }).toString()}`}
+                        scroll={false}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                            (!params.view || params.view === "speciality") 
+                                ? "bg-white dark:bg-slate-900 shadow-sm text-primary" 
+                                : "text-slate-400 hover:text-slate-600"
+                        )}
+                    >
+                        <LayoutGrid className="h-3 w-3" />
+                        By Speciality
+                    </Link>
+                    <Link
+                        href={`/pipeline?${new URLSearchParams({ ...params, view: "geography" }).toString()}`}
+                        scroll={false}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                            params.view === "geography" 
+                                ? "bg-white dark:bg-slate-900 shadow-sm text-primary" 
+                                : "text-slate-400 hover:text-slate-600"
+                        )}
+                    >
+                        <MapIcon className="h-3 w-3" />
+                        By Geography
+                    </Link>
+                </div>
+            </div>
+            <p className="text-[10px] font-black text-primary uppercase tracking-tighter">
+                {params.view === "geography" ? "City-Wise Node Performance" : "Department Velocity Matrix"}
+            </p>
         </div>
+
         <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse bg-slate-50 rounded-[2rem]">Calculating Funnels...</div>}>
-            <SpecialityFunnelGrid leads={leads} />
+            {params.view === "geography" ? (
+                <GeographyFunnelGrid leads={leads} />
+            ) : (
+                <SpecialityFunnelGrid leads={leads} />
+            )}
         </Suspense>
       </div>
 
