@@ -12,12 +12,13 @@ const SPECIALITIES = [
   { key: "MATERNITY",   label: "MDT / Maternity",   color: "rose" },
   { key: "GYNECOLOGY",  label: "GYN / Gynecology",  color: "emerald" },
   { key: "PEDIATRICS",  label: "PEDI / Pediatrics", color: "amber" },
+  { key: "OTHER",       label: "Unclassified / Raw", color: "slate" },
 ] as const;
 
 export function SpecialityFunnelGrid({ leads }: { leads: any[] }) {
   const stats = useMemo(() => {
     return SPECIALITIES.reduce((acc, spec) => {
-      const specLeads = leads.filter(l => l.category === spec.key);
+      const specLeads = leads.filter(l => (l.category === spec.key) || (spec.key === "OTHER" && !l.category));
       acc[spec.key] = {
         total: specLeads.length,
         qualified: specLeads.filter(l => ['QUALIFIED', 'CONTACTED', 'APPOINTMENT_FIXED', 'VISITED', 'WON'].includes(l.status)).length,
@@ -29,7 +30,7 @@ export function SpecialityFunnelGrid({ leads }: { leads: any[] }) {
   }, [leads]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
       {SPECIALITIES.map((spec) => (
         <FunnelCard 
           key={spec.key} 

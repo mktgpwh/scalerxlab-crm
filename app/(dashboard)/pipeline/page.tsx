@@ -56,7 +56,12 @@ export default async function PipelinePage({ searchParams }: PageProps) {
   const [leads, branches, team] = await Promise.all([
     prisma.lead.findMany({
       where: {
-        ...(isAdmin ? {} : { ownerId: profile.id }),
+        ...(isAdmin ? {} : { 
+          OR: [
+            { ownerId: profile.id },
+            { ownerId: null }
+          ] 
+        }),
         ...dateFilter,
         ...categoryFilter,
         ...branchFilter
