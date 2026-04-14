@@ -223,43 +223,108 @@ function AnalyticsView({
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        {/* Speciality Distribution Chart (Pie) */}
-        <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col justify-between">
+        {/* [PHASE 5]: PROMOTED Acquisition Trend - Full Width */}
+        <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col h-[400px]">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-indigo-500" />
-              <h4 className="text-lg font-black italic tracking-tight">Speciality Distribution</h4>
+              <TrendingUp className="h-5 w-5 text-indigo-500" />
+              <h4 className="text-xl font-black italic tracking-tighter">Clinical Signal Volume</h4>
             </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Departmental Flow</p>
+            <div className="flex items-center gap-4">
+               <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase tracking-widest px-3 py-1">Live Acquisition Trajectory</Badge>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trailing 30 Days</p>
+            </div>
           </div>
-          <div className="h-[220px] md:h-[250px] w-full">
+          <div className="flex-1 w-full">
             <ResponsiveContainer width="100%" height="100%">
-               <PieChart>
-                 <Pie
-                   data={treatmentData}
-                   innerRadius={60}
-                   outerRadius={80}
-                   paddingAngle={8}
-                   dataKey="value"
-                 >
-                   {treatmentData.map((entry: any, index: number) => (
-                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                   ))}
-                 </Pie>
-                 <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
-               </PieChart>
+               <AreaChart data={dailyLeadsSeries}>
+                  <defs>
+                    <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.1} />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b', fontWeight: 'bold' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b', fontWeight: 'bold' }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', color: '#fff' }}
+                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  />
+                  <Area type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorLeads)" />
+               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-6 flex justify-center gap-3 md:gap-4 flex-wrap">
-             {treatmentData.map((item: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-2">
-                   <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
-                   <span className="text-[9px] md:text-[10px] font-black uppercase tracking-tight text-slate-500">{item.name}</span>
-                   <span className="text-[10px] md:text-[11px] font-black">{item.value}</span>
-                </div>
-             ))}
-          </div>
         </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+           {/* [PHASE 5]: Regional Intelligence Matrix */}
+           <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col h-[400px]">
+             <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center gap-2">
+                 <MapPin className="h-5 w-5 text-emerald-500" />
+                 <h4 className="text-lg font-black italic tracking-tight">Branch Intelligence</h4>
+               </div>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Regional Performance</p>
+             </div>
+             <div className="flex-1 w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={regionalData}>
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.1} />
+                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b', fontWeight: 'bold' }} />
+                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b', fontWeight: 'bold' }} />
+                     <Tooltip 
+                        cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
+                     />
+                     <Bar dataKey="count" radius={[10, 10, 0, 0]}>
+                        {regionalData.map((entry: any, index: number) => (
+                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                     </Bar>
+                  </BarChart>
+               </ResponsiveContainer>
+             </div>
+           </Card>
+
+           {/* Speciality Distribution Chart (Pie) */}
+           <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col justify-between h-[400px]">
+             <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center gap-2">
+                 <Users className="h-5 w-5 text-indigo-500" />
+                 <h4 className="text-lg font-black italic tracking-tight">Speciality Distribution</h4>
+               </div>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Departmental Flow</p>
+             </div>
+             <div className="flex-1 w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={treatmentData}
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={10}
+                      dataKey="value"
+                    >
+                      {treatmentData.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+                  </PieChart>
+               </ResponsiveContainer>
+             </div>
+             <div className="mt-6 flex justify-center gap-4 flex-wrap">
+                {treatmentData.map((item: any, idx: number) => (
+                   <div key={idx} className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                      <span className="text-[10px] font-black uppercase tracking-tight text-slate-500">{item.name}</span>
+                      <span className="text-[11px] font-black">{item.value}</span>
+                   </div>
+                ))}
+             </div>
+           </Card>
+        </div>
       </div>
 
          {/* Security & Compliance Section */}
