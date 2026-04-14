@@ -17,7 +17,7 @@ import {
 import { 
   BrainCircuit, Target, Flame, TrendingUp, Activity, MapPin, Loader2,
   Settings, Search, Filter, ChevronDown, Sparkles, Phone, Users, ShieldAlert,
-  ShieldCheck, Lock, Shield
+  ShieldCheck, Lock, Shield, Download
 } from "lucide-react";
 import { Popover as PopoverRoot } from "@/components/ui/popover";
 import { FacebookIcon, WhatsAppIcon } from "@/components/icons";
@@ -29,6 +29,7 @@ import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
 import { NewLeadDialog } from "@/components/leads/new-lead-dialog";
 import { BulkImportDialog } from "@/components/leads/bulk-import-dialog";
+import { exportToCSV } from "@/lib/utils/csv-export";
 
 const COLORS = ["#6366f1", "#10b981", "#ec4899", "#f59e0b"];
 
@@ -237,7 +238,15 @@ function AnalyticsView({
               <h4 className="text-xl font-black italic tracking-tighter">Clinical Signal Volume</h4>
             </div>
             <div className="flex items-center gap-4">
-               <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase tracking-widest px-3 py-1">Live Acquisition Trajectory</Badge>
+               <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 rounded-xl hover:bg-slate-100"
+                onClick={() => exportToCSV(dailyLeadsSeries, 'acquisition_trend')}
+               >
+                 <Download className="h-4 w-4 text-slate-400" />
+               </Button>
+               <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase tracking-widest px-3 py-1 hidden sm:flex">Live Acquisition Trajectory</Badge>
                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trailing 30 Days</p>
             </div>
           </div>
@@ -271,7 +280,17 @@ function AnalyticsView({
                  <MapPin className="h-5 w-5 text-emerald-500" />
                  <h4 className="text-lg font-black italic tracking-tight">Branch Intelligence</h4>
                </div>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Regional Performance</p>
+               <div className="flex items-center gap-3">
+                 <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-xl hover:bg-slate-100"
+                    onClick={() => exportToCSV(regionalData, 'branch_intelligence')}
+                  >
+                    <Download className="h-4 w-4 text-slate-400" />
+                  </Button>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Regional Performance</p>
+               </div>
              </div>
              <div className="flex-1 w-full">
                <ResponsiveContainer width="100%" height="100%">
@@ -300,7 +319,17 @@ function AnalyticsView({
                  <Users className="h-5 w-5 text-indigo-500" />
                  <h4 className="text-lg font-black italic tracking-tight">Speciality Distribution</h4>
                </div>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Departmental Flow</p>
+               <div className="flex items-center gap-3">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-xl hover:bg-slate-100"
+                    onClick={() => exportToCSV(treatmentData, 'speciality_distribution')}
+                  >
+                    <Download className="h-4 w-4 text-slate-400" />
+                  </Button>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Departmental Flow</p>
+               </div>
              </div>
              <div className="flex-1 w-full">
                <ResponsiveContainer width="100%" height="100%">
@@ -474,6 +503,15 @@ export function ExecutiveDashboard({
           </div>
         </div>
 
+        <div className="flex items-center gap-4">
+           <Button 
+            className="rounded-2xl bg-slate-900 text-white hover:bg-black px-6 py-5 flex items-center gap-2 shadow-xl shadow-slate-900/10 group"
+            onClick={() => exportToCSV(globalFilteredLeads, 'full_leads_audit')}
+           >
+             <Download className="h-4 w-4 group-hover:-translate-y-1 transition-transform" />
+             <span className="text-xs font-black uppercase tracking-widest">Export All Filtered</span>
+           </Button>
+        </div>
       </div>
 
       <DashboardFilterBar />
