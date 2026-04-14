@@ -30,10 +30,16 @@ interface NewLeadDialogProps {
   userRole: string;
   team: any[];
   branches: any[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function NewLeadDialog({ userRole, team, branches }: NewLeadDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewLeadDialog({ userRole, team, branches, open: externalOpen, onOpenChange: setExternalOpen }: NewLeadDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = setExternalOpen || setInternalOpen;
+
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",

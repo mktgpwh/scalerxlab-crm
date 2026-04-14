@@ -22,7 +22,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { AddUserForm } from "./add-user-form";
-import { deleteUserAction, updateDistributionStrategy } from "./actions";
+import { deleteUserAction, updateDistributionStrategy, forceOfflineAction } from "./actions";
 import { Switch } from "@/components/ui/switch";
 
 export default async function TeamSettingsPage() {

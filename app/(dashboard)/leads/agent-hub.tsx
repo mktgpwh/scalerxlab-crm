@@ -177,9 +177,8 @@ export function AgentHub({ initialLeads, currentUserId, branches, userRole }: Ag
             </div>
         </div>
         <LeadsDataView 
-            initialLeads={myLeads} 
+            leads={myLeads} 
             userRole={userRole} 
-            currentUserId={currentUserId} 
             team={[]} 
             branches={branches} 
         />
@@ -188,6 +187,9 @@ export function AgentHub({ initialLeads, currentUserId, branches, userRole }: Ag
       <NewLeadDialog 
         open={isAddLeadOpen} 
         onOpenChange={setIsAddLeadOpen} 
+        userRole={userRole}
+        team={[]}
+        branches={branches}
       />
     </div>
   );
