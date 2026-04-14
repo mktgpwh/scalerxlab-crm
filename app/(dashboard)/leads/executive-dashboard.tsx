@@ -89,10 +89,16 @@ function AnalyticsView({
     { name: 'OTH',  value: otherLeads },
   ].filter(d => d.value > 0);
 
-  const regionalData = branches.map(branch => ({
-    name: branch.name,
-    count: leads.filter(l => l.branchId === branch.id).length
-  }));
+  const regionalData = [
+    ...branches.map(branch => ({
+      name: branch.name,
+      count: leads.filter(l => l.branchId === branch.id).length
+    })),
+    {
+      name: "Unallocated",
+      count: leads.filter(l => !l.branchId).length
+    }
+  ].filter(d => d.count > 0);
 
   const ivfPipelineLeads = leads.filter(l => l.category === 'INFERTILITY');
   const funnelData = [
