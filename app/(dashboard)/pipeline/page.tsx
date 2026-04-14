@@ -155,7 +155,7 @@ export default async function PipelinePage({ searchParams }: PageProps) {
 
         <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse bg-slate-50 rounded-[2rem]">Calculating Funnels...</div>}>
             {params.view === "geography" ? (
-                <GeographyFunnelGrid leads={leads} />
+                <GeographyFunnelGrid leads={leads} branches={branches} />
             ) : (
                 <SpecialityFunnelGrid leads={leads} />
             )}
