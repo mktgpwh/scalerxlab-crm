@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { FunnelCard, FunnelData } from "./funnel-card";
-
-const COLORS = ['violet', 'cyan', 'fuchsia', 'slate', 'rose', 'indigo', 'emerald', 'amber'];
-
+import { FunnelCard, FunnelData, FunnelColor } from "./funnel-card";
+ 
+const COLORS: FunnelColor[] = ['violet', 'cyan', 'fuchsia', 'slate', 'rose', 'indigo', 'emerald', 'amber'];
+ 
 export function GeographyFunnelGrid({ leads, branches }: { leads: any[], branches: any[] }) {
   const dynamicCities = useMemo(() => {
-    const list = [{ key: "OVERALL", label: "Overall Business", color: "violet" }];
+    const list: { key: string, label: string, color: FunnelColor }[] = [
+      { key: "OVERALL", label: "Overall Business", color: "violet" }
+    ];
     
     branches.forEach((branch, idx) => {
       list.push({
