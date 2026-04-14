@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-
 import {
   Users,
   LayoutDashboard,
@@ -14,13 +13,17 @@ import {
   Phone,
   Puzzle,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  Radio,
+  PowerOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IntegrationIcon } from "@/components/ui/integration-icon";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { toggleUserPresence } from "@/app/(dashboard)/settings/team/actions";
+import { toast } from "sonner";
 import {
   Sidebar,
   SidebarContent,
@@ -55,20 +58,24 @@ export function AppSidebar() {
   const router = useRouter();
   const supabase = createClient();
   const [role, setRole] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(false);
+  const [isPresenceLoading, setIsPresenceLoading] = useState(false);
 
   useEffect(() => {
     async function getProfile() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.id) {
-        // Fetch role from our 'users' table
+        setUserId(session.user.id);
         const { data, error } = await supabase
           .from("users")
-          .select("role")
+          .select("role, isOnline")
           .eq("id", session.user.id)
           .single();
         
         if (data && !error) {
           setRole(data.role);
+          setIsOnline(data.isOnline);
         }
       }
     }
@@ -80,9 +87,24 @@ export function AppSidebar() {
     router.push("/login");
   };
 
+  const handleTogglePresence = async () => {
+    if (!userId) return;
+    setIsPresenceLoading(true);
+    const newStatus = !isOnline;
+    const result = await toggleUserPresence(userId, newStatus);
+    setIsPresenceLoading(false);
+    
+    if (result.success) {
+      setIsOnline(newStatus);
+      toast.success(newStatus ? "Back on Operations" : "Node Standby", {
+        description: newStatus ? "You are now receiving live leads." : "Leads will pass to other online nodes.",
+        icon: newStatus ? <Radio className="h-4 w-4 text-emerald-500 animate-pulse" /> : <PowerOff className="h-4 w-4 text-slate-400" />
+      });
+    }
+  };
+
   // Filter items based on role
   const filteredItems = items.filter((item) => {
-    // Only hide if role is EXPLICITLY a non-admin role
     if (role === "USER" || role === "AGENT") {
       if (["Connections", "Sovereign Intelligence"].includes(item.title)) {
         return false;
@@ -95,11 +117,9 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-slate-200/50 bg-white/80 backdrop-blur-xl shadow-2xl max-md:bg-white/98 max-md:backdrop-blur-none">
       <SidebarHeader className="h-20 flex items-center px-4 bg-transparent border-b border-slate-100">
         <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push("/")}>
-          {/* Logo mark (collapsed state) */}
           <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-slate-900 ring-1 ring-slate-800 shadow-xl transition-all group-hover:scale-110 group-hover:rotate-3 shrink-0">
             <Image src="/scalerxlab-logo.png" alt={clinicName} width={32} height={32} className="object-contain" />
           </div>
-          {/* Full logo (expanded state) */}
           <div className="flex flex-col gap-0 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none min-w-0">
             <div className="h-7 w-auto relative">
               <Image src="/scalerxlab-logo.png" alt={clinicName} width={110} height={28} className="object-contain object-left" />
@@ -115,10 +135,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
               {filteredItems.map((item) => {
-                const isActive = item.url === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.url);
-
+                const isActive = item.url === "/" ? pathname === "/" : pathname.startsWith(item.url);
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
@@ -126,9 +143,7 @@ export function AppSidebar() {
                       tooltip={item.title}
                       isActive={isActive}
                       className={`h-12 transition-all duration-300 rounded-none group relative overflow-hidden cursor-pointer ${
-                        isActive
-                          ? "bg-primary/10 text-black font-black border-l-4 border-primary"
-                          : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-950"
+                        isActive ? "bg-primary/10 text-black font-black border-l-4 border-primary" : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-950"
                       }`}
                     >
                       <div className="flex items-center gap-3 w-full px-2">
@@ -157,20 +172,13 @@ export function AppSidebar() {
                   Active
                 </span>
               </div>
-              <div className="flex items-center justify-between opacity-60">
-                <span className="text-[11px] font-bold text-slate-500">Integrations</span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">3 Linked</span>
-              </div>
             </div>
-
             <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 transition-all">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-3 w-3 text-primary" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-white leading-none">AI Priority</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-900 leading-none">AI Priority</span>
               </div>
-              <p className="text-[10px] text-slate-500 font-medium leading-[1.4] mb-3">
-                AI is actively scoring incoming leads.
-              </p>
+              <p className="text-[10px] text-slate-500 font-medium leading-[1.4] mb-3">AI scoring active.</p>
               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                 <div className="h-full w-[75%] bg-primary shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
               </div>
@@ -178,23 +186,43 @@ export function AppSidebar() {
           </div>
         </SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter className="p-4 border-t border-slate-100 gap-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton 
-              render={<Link href="/settings" />}
-              isActive={pathname === "/settings"}
+              onClick={handleTogglePresence}
+              disabled={isPresenceLoading}
               className={cn(
-                "h-10 rounded-xl px-3 transition-all cursor-pointer",
-                pathname === "/settings" 
-                  ? "bg-primary/10 text-primary font-bold shadow-sm" 
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                "h-12 rounded-xl px-3 transition-all cursor-pointer group/pres",
+                isOnline ? "bg-emerald-500/10 text-emerald-600 font-bold" : "bg-slate-100/50 text-slate-500"
               )}
             >
+              {isOnline ? (
+                <div className="flex items-center gap-3">
+                  <div className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                  </div>
+                  <span className="font-black text-[10px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">Online & Active</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <PowerOff className="h-4 w-4" />
+                  <span className="font-bold text-[10px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">Offline (Standby)</span>
+                </div>
+              )}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              render={<Link href="/settings" />}
+              isActive={pathname === "/settings"}
+              className={cn("h-10 rounded-xl px-3 transition-all cursor-pointer", pathname === "/settings" ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900")}
+            >
               <Settings className="h-4 w-4" />
-              <span className="font-bold text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">
-                System Settings
-              </span>
+              <span className="font-bold text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">System Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
 
@@ -204,21 +232,10 @@ export function AppSidebar() {
               className="h-10 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl px-3 transition-all cursor-pointer active:scale-95"
             >
               <LogOut className="h-4 w-4" />
-              <span className="font-black text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">
-                Sign Out
-              </span>
+              <span className="font-black text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">Sign Out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-
-        <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden">
-          <div className="h-5 w-5 relative opacity-30">
-            <Image src="/scalerxlab-logo.png" alt="ScalerX" fill className="object-contain grayscale" />
-          </div>
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-            Powered by <span className="text-slate-400">ScalerX Lab</span>
-          </span>
-        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

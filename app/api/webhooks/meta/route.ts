@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
+import { distributeLead } from "@/lib/leads/distributor";
 
 /**
  * META WEBHOOK ENGINE

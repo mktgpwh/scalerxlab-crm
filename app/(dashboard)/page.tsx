@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ExecutiveDashboard } from "./leads/executive-dashboard";
+import { AgentHub } from "./leads/agent-hub";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getPrismaDateFilter } from "@/lib/utils/date-filters";
@@ -121,6 +122,16 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
   });
 
   const dailyLeadsSeries = Object.entries(dailyCounts).map(([day, count]) => ({ day, count }));
+
+  if (!isAdmin) {
+    return (
+      <AgentHub 
+        initialLeads={leads as unknown as any[]} 
+        currentUserId={profile.id}
+        branches={branches as any[]}
+      />
+    );
+  }
 
   return (
     <ExecutiveDashboard 

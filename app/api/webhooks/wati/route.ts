@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
+import { distributeLead } from "@/lib/leads/distributor";
 
 /**
  * WATI WEBHOOK GATEWAY
@@ -128,6 +129,9 @@ export async function POST(req: NextRequest) {
             });
 
             console.log(`✅ [WATI] Lead created: ${lead.id} for ${senderId}`);
+
+            // 🚀 Trigger Intelligent Distribution
+            await distributeLead(lead.id);
         } else {
              console.log(`🔄 [WATI] Updating Existing Clinical Lead: ${lead.id}`);
              await prisma.lead.update({

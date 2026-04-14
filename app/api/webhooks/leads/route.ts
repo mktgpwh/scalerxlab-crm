@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scoreLead } from "@/lib/ai/intent-scorer";
 import { createClient } from "@supabase/supabase-js";
+import { distributeLead } from "@/lib/leads/distributor";
 
 export const dynamic = 'force-dynamic';
 
@@ -66,6 +67,9 @@ export async function POST(req: Request) {
         dataRetentionExpiry: new Date(new Date().setFullYear(new Date().getFullYear() + 3)),
       },
     });
+
+    // 🚀 Trigger Intelligent Distribution
+    await distributeLead(lead.id);
 
     // AI Scoring
     try {

@@ -98,3 +98,38 @@ export async function updateDistributionStrategy(strategy: "ROUND_ROBIN" | "MANU
     return { error: error.message };
   }
 }
+
+/**
+ * Toggle User Presence
+ * Allows agents to mark themselves as online/offline for distribution.
+ */
+export async function toggleUserPresence(userId: string, isOnline: boolean) {
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isOnline }
+    });
+    revalidatePath("/settings/team");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Presence toggle error:", error);
+    return { error: "Failed to update availability status." };
+  }
+}
+
+/**
+ * Force User Offline (Admin Tactical Override)
+ * Allows admins to manually disable an agent's leads intake.
+ */
+export async function forceOfflineAction(userId: string) {
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isOnline: false }
+    });
+    revalidatePath("/settings/team");
+    return { success: true };
+  } catch (error: any) {
+    return { error: "Tactical override failed." };
+  }
+}

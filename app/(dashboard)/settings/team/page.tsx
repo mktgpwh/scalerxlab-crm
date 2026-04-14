@@ -199,18 +199,35 @@ export default async function TeamSettingsPage() {
                                     )}
                                 </td>
                                 <td className="px-12 py-6 text-right">
-                                    <form action={async () => {
-                                        "use server";
-                                        await deleteUserAction(user.id);
-                                    }}>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className="h-9 w-9 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </form>
+                                    <div className="flex items-center justify-end gap-2">
+                                        {user.isOnline && (
+                                            <form action={async () => {
+                                                "use server";
+                                                await forceOfflineAction(user.id);
+                                            }}>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm"
+                                                    className="h-8 rounded-xl text-[9px] font-black uppercase tracking-widest px-3 border border-slate-200 hover:bg-slate-900 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                                    type="submit"
+                                                >
+                                                    Force Offline
+                                                </Button>
+                                            </form>
+                                        )}
+                                        <form action={async () => {
+                                            "use server";
+                                            await deleteUserAction(user.id);
+                                        }}>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-9 w-9 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
