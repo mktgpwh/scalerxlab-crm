@@ -20,10 +20,35 @@ export async function generateProactiveDraft({ leadId, messageText, category, pa
         const lead = await prisma.lead.findUnique({ where: { id: leadId } });
         if (!lead) throw new Error("Lead not found");
 
-        // 1. Neural Analysis via Clinical Sentinel
+        // Fetch ONLY inbound messages from the lead — exclude anything outgoing.
+        // This ensures classification is never influenced by our own replies.
+        const INBOUND_ACTIONS = [
+            "MESSAGE_RECEIVED",
+            "WHATSAPP_MESSAGE_RECEIVED",
+            "INSTAGRAM_DM_RECEIVED",
+            "FACEBOOK_MSG_RECEIVED",
+        ];
+
+        const inboundLogs = await prisma.activityLog.findMany({
+            where: {
+                leadId,
+                action: { in: INBOUND_ACTIONS }
+            },
+            orderBy: { createdAt: "desc" },
+            take: 10, // last 10 inbound messages for context
+            select: { description: true, createdAt: true }
+        });
+
+        // Build a clean history string from lead's messages only
+        const inboundHistory = inboundLogs
+            .reverse()
+            .map(log => `[LEAD]: ${log.description}`)
+            .join("\n");
+
+        // 1. Neural Analysis via Clinical Sentinel — inbound messages ONLY
         const analysis = await analyzeClinicalConversation(
             messageText,
-            "", // Future: Pass history here
+            inboundHistory || "None",
             lead.category || category
         );
 

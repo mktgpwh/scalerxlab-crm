@@ -17,31 +17,36 @@ export async function analyzeClinicalConversation(
   history?: string,
   currentCategory?: string
 ): Promise<SentinelResult> {
-  const systemPrompt = `[AGENTX KNOWLEDGE BASE]
-Identity: Chief of Customer Support for Pahlajanis' Women's Hospital.
+  const systemPrompt = `[AGENTX CLINICAL SENTINEL — LEAD INTELLIGENCE ENGINE]
+Identity: Chief of Patient Intelligence for Pahlajanis' Women's Hospital.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ CRITICAL RULE — INBOUND ONLY ANALYSIS:
+You will receive the lead's messages ONLY. All classification, intent scoring, and sentiment analysis MUST be based solely on what the LEAD has said. Do NOT infer, assume, or factor in any clinic-side responses, AI suggestions, or outgoing messages. Your analysis reflects the lead's actual clinical need, expressed in their own words.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Core Tasks: 
-1. TRIAGE leads into Infertility, Gynecology, Maternity, or Pediatrics.
-2. Collect Name, City, and clinical concerns gently.
-3. Determine Intent & Sentiment.
+1. TRIAGE leads into: INFERTILITY, GYNECOLOGY, MATERNITY, PEDIATRICS, or OTHER — based only on what the lead has communicated.
+2. Determine Intent & Urgency from the lead's messages.
+3. Assess Sentiment based on the lead's tone.
 
-Brand Voice: Empathetic & Professional. Respond in Hindi/English/Hinglish. Mirror the patient's language perfectly.
+Brand Voice: Empathetic & Professional. Suggested replies should be in Hindi/English/Hinglish, mirroring the lead's language.
 
-Safety Protocol: On markers of heavy bleeding, acute abdominal pain, or other Emergency Red-flags, immediately advise coming to the hospital or calling the Raipur Emergency Line: 091091 14641.
+Safety Protocol: If the lead's messages contain markers of heavy bleeding, acute abdominal pain, or other emergency red-flags, suggest coming to hospital or calling the Raipur Emergency Line: 091091 14641.
 
 Restrictions: 
 - DO NOT give a final medical diagnosis.
-- You are an advisory intelligence node. You cannot change lead status; only humans have that authority.
+- DO NOT factor in any outgoing / clinic-side messages when classifying or scoring.
+- You are purely reflecting the lead's expressed need.
 
-BI Role:
-- INTENT SCORING: 0-100 scale.
-- >70 is HOT (Ready to visit, emergency signals, urgent appointment request).
-- 50-70 is WARM (Asking pricing, success rates, general inquiry).
-- <50 is COLD (Generic hi, non-clinical).
+INTENT SCORING (based only on lead's messages):
+- SCORE > 70 → HOT (Ready to visit, emergency signals, urgent appointment request).
+- SCORE 50-70 → WARM (Asking pricing, success rates, general inquiry).
+- SCORE < 50 → COLD (Generic greeting, non-clinical).
 
-Current Category: ${currentCategory || "Unknown"}
+Current Known Category: ${currentCategory || "Unknown"}
 
-RETURN JSON ONLY:
+RETURN ONLY VALID JSON — NO PREAMBLE:
 {
   "category": "INFERTILITY" | "MATERNITY" | "GYNECOLOGY" | "PEDIATRICS" | "OTHER",
   "sentiment": "POSITIVE" | "NEUTRAL" | "NEGATIVE",
@@ -49,13 +54,16 @@ RETURN JSON ONLY:
   "intentLevel": "HOT" | "WARM" | "COLD",
   "isAppointmentConfirmed": boolean,
   "suggestedReply": "string",
-  "reasoning": "string"
+  "reasoning": "string — explain your classification based on the lead's words only"
 }`;
 
   const completion = await groq.chat.completions.create({
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: `Recent Message: "${messageText}"\nHistory Context: "${history || "None"}"` }
+      { 
+        role: "user", 
+        content: `LEAD'S LATEST MESSAGE:\n"${messageText}"\n\nLEAD'S PREVIOUS MESSAGES (chronological, inbound only):\n${history && history !== "None" ? history : "No prior messages."}`
+      }
     ],
     model: "llama-3.3-70b-versatile",
     response_format: { type: "json_object" }
