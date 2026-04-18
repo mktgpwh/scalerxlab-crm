@@ -128,13 +128,11 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-slate-200/50 bg-white/80 backdrop-blur-xl shadow-2xl max-md:bg-white/98 max-md:backdrop-blur-none">
       <SidebarHeader className="h-20 flex items-center px-4 bg-transparent border-b border-slate-100">
         <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push("/")}>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white ring-1 ring-slate-200 shadow-xl transition-all group-hover:scale-110 group-hover:rotate-3 shrink-0">
-            <Image src="/scalerxlab-logo.png" alt="Pahlajani's" width={32} height={32} className="object-contain" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white ring-1 ring-slate-200 shadow-sm transition-all group-hover:scale-110 group-hover:rotate-3 shrink-0 p-1">
+            <Image src="/scalerxlab-logo.png" alt="Pahlajani's" width={32} height={32} className="object-contain w-full h-full" priority />
           </div>
           <div className="flex flex-col gap-0 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none min-w-0 pl-1">
-             <div className="h-6 w-auto relative mb-0.5">
-                <Image src="/scalerxlab-logo.png" alt="Pahlajani's" width={110} height={24} className="object-contain object-left" />
-             </div>
+             <span className="text-sm font-black tracking-tighter text-slate-900 truncate">Pahlajani's</span>
              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/80">Business OS</span>
           </div>
         </div>

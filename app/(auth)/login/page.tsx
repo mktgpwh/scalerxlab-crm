@@ -84,15 +84,21 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-10 space-y-4">
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-indigo-500 rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-white rounded-3xl p-6 shadow-sm border border-slate-200/60 ring-1 ring-slate-100">
-                <Image
-                    src="/scalerxlab-logo.png"
-                    alt="Pahlajani's BOS"
-                    width={200}
-                    height={50}
-                    className="object-contain mx-auto"
-                    priority
-                />
+            <div className="relative bg-white rounded-3xl p-6 shadow-sm border border-slate-200/60 ring-1 ring-slate-100 flex flex-col items-center justify-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0 p-1 ring-1 ring-slate-100">
+                    <Image
+                        src="/scalerxlab-logo.png"
+                        alt="Pahlajani's"
+                        width={64}
+                        height={64}
+                        className="object-contain w-full h-full"
+                        priority
+                    />
+                </div>
+                <div className="flex flex-col text-center">
+                    <span className="text-2xl font-black tracking-tighter text-slate-900">Pahlajani's</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Business OS</span>
+                </div>
             </div>
           </div>
           <div className="text-center">
