@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       data: {
         leadId: lead.id,
         action: "MESSAGE_RECEIVED",
-        description: "Received incoming WhatsApp message via WATI",
+        description: messageText,
         metadata: {
           messageText,
           rawPayload: payload,
