@@ -121,24 +121,24 @@ export function AppSidebar() {
   });
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-slate-200/50 bg-white/80 backdrop-blur-xl shadow-2xl max-md:bg-white/98 max-md:backdrop-blur-none">
-      <SidebarHeader className="h-20 flex items-center px-4 bg-transparent border-b border-slate-100">
+    <Sidebar collapsible="icon" className="border-r border-border/50 bg-background/80 backdrop-blur-xl shadow-xl">
+      <SidebarHeader className="h-16 flex items-center px-4 bg-transparent border-b border-border/40">
         <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push("/")}>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white ring-1 ring-slate-200 shadow-sm transition-all group-hover:scale-110 group-hover:rotate-3 shrink-0 p-1">
-            <Image src="/scalerxlab-logo.png" alt="Pahlajani's" width={32} height={32} className="object-contain w-full h-full" priority />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden bg-background border border-border/60 shadow-sm transition-all group-hover:scale-105 group-hover:-rotate-2 shrink-0 p-1">
+            <Image src="/scalerxlab-logo.png" alt="Pahlajani's" width={28} height={28} className="object-contain w-full h-full" priority />
           </div>
-          <div className="flex flex-col gap-0 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none min-w-0 pl-1">
-             <span className="text-sm font-black tracking-tighter text-slate-900 truncate">Pahlajani's</span>
-             <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/80">Business OS</span>
+          <div className="flex flex-col gap-0.5 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none min-w-0 pl-0.5">
+             <span className="text-sm font-semibold tracking-tight text-foreground truncate">Pahlajani's</span>
+             <span className="text-[10px] font-medium uppercase tracking-widest text-primary/80">Business OS</span>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-4 mt-6">
+      <SidebarContent className="px-3 mt-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 mb-4 px-2">Core Operations</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-2 px-2">Core Operations</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
+            <SidebarMenu className="gap-1">
               {filteredItems.map((item) => {
                 const isActive = item.url === "/" ? pathname === "/" : pathname.startsWith(item.url);
                 return (
@@ -147,15 +147,21 @@ export function AppSidebar() {
                       render={<Link href={item.url} />}
                       tooltip={item.title}
                       isActive={isActive}
-                      className={`h-12 transition-all duration-300 rounded-none group relative overflow-hidden cursor-pointer ${
-                        isActive ? "bg-primary/10 text-black font-black border-l-4 border-primary" : "text-slate-600 hover:bg-slate-100/50 hover:text-slate-950"
-                      }`}
+                      className={cn(
+                        "h-10 transition-all duration-200 rounded-lg group relative overflow-hidden cursor-pointer",
+                        isActive 
+                          ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary" 
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      )}
                     >
                       <div className="flex items-center gap-3 w-full px-2">
-                        <item.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${isActive ? "text-primary" : "text-slate-400 group-hover:text-slate-900"}`} />
-                        <div className="flex flex-col">
-                          <span className="font-bold text-sm tracking-tight">{item.title}</span>
-                          {item.label && <span className="text-[9px] font-medium opacity-60 group-data-[collapsible=icon]:hidden">{item.label}</span>}
+                        <item.icon className={cn(
+                          "h-4.5 w-4.5 transition-transform group-hover:scale-105",
+                          isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                        )} />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-[13px] font-medium tracking-tight truncate">{item.title}</span>
+                          {item.label && <span className="text-[9px] font-medium opacity-50 group-data-[collapsible=icon]:hidden truncate">{item.label}</span>}
                         </div>
                       </div>
                     </SidebarMenuButton>
@@ -167,56 +173,60 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-8">
-          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 mb-4 px-2">System Health</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-2 px-2">System Health</SidebarGroupLabel>
           <div className="px-2 space-y-4 group-data-[collapsible=icon]:hidden">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-600">AgentX Stream</span>
-                <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 uppercase tracking-tighter">
+                <span className="text-[11px] font-medium text-muted-foreground">AgentX Stream</span>
+                <span className="flex items-center gap-2 text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
                   Active
                 </span>
               </div>
             </div>
-            <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 transition-all">
+            <div className="p-4 rounded-xl bg-muted/30 border border-border/40 transition-all">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-3 w-3 text-primary" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-900 leading-none">AI Priority</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground">AI Intelligence</span>
               </div>
-              <p className="text-[10px] text-slate-500 font-medium leading-[1.4] mb-3">AI scoring active.</p>
-              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full w-[75%] bg-primary shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+              <p className="text-[10px] text-muted-foreground leading-relaxed mb-3">Real-time lead scoring and autonomous triage active.</p>
+              <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                <div className="h-full w-[75%] bg-primary shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
               </div>
             </div>
           </div>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-slate-100 gap-2">
-        <SidebarMenu>
+      <SidebarFooter className="p-3 border-t border-border/40 gap-2">
+        <SidebarMenu className="gap-1">
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleTogglePresence}
               disabled={isPresenceLoading}
               className={cn(
-                "h-12 rounded-xl px-3 transition-all cursor-pointer group/pres",
-                isOnline ? "bg-emerald-500/10 text-emerald-600 font-bold" : "bg-slate-100/50 text-slate-500"
+                "h-10 rounded-lg px-3 transition-all cursor-pointer",
+                isOnline 
+                  ? "bg-emerald-50/10 text-emerald-500 border border-emerald-500/20 font-semibold" 
+                  : "bg-muted/50 text-muted-foreground border border-transparent"
               )}
             >
-              {isOnline ? (
-                <div className="flex items-center gap-3">
-                  <div className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                  </div>
-                  <span className="font-black text-[10px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">Online & Active</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <PowerOff className="h-4 w-4" />
-                  <span className="font-bold text-[10px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">Offline (Standby)</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3 w-full">
+                {isOnline ? (
+                  <>
+                    <div className="relative flex h-2.5 w-2.5 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </div>
+                    <span className="text-[11px] font-semibold tracking-tight group-data-[collapsible=icon]:hidden">Node Online</span>
+                  </>
+                ) : (
+                  <>
+                    <PowerOff className="h-4 w-4 shrink-0" />
+                    <span className="text-[11px] font-medium tracking-tight group-data-[collapsible=icon]:hidden">Node Standby</span>
+                  </>
+                )}
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
 
@@ -224,20 +234,25 @@ export function AppSidebar() {
             <SidebarMenuButton 
               render={<Link href="/settings/users" />}
               isActive={pathname.startsWith("/settings/users")}
-              className={cn("h-10 rounded-xl px-3 transition-all cursor-pointer", pathname.startsWith("/settings/users") ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900")}
+              className={cn(
+                "h-10 rounded-lg px-3 transition-all cursor-pointer", 
+                pathname.startsWith("/settings/users") 
+                  ? "bg-primary/10 text-primary font-semibold shadow-sm" 
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              )}
             >
               <Settings className="h-4 w-4" />
-              <span className="font-bold text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">System Settings</span>
+              <span className="text-[11px] font-medium tracking-tight group-data-[collapsible=icon]:hidden">Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
 
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleLogout}
-              className="h-10 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl px-3 transition-all cursor-pointer active:scale-95"
+              className="h-10 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg px-3 transition-all cursor-pointer"
             >
               <LogOut className="h-4 w-4" />
-              <span className="font-black text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">Sign Out</span>
+              <span className="text-[11px] font-semibold tracking-tight group-data-[collapsible=icon]:hidden">Sign Out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
