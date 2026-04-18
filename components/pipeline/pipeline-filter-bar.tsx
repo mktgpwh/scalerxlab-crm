@@ -90,7 +90,7 @@ export function PipelineFilterBar() {
                   format(dateRange.from, "LLL dd, y")
                 )
               ) : (
-                <span>Filter by Date Range</span>
+                <span>{format(new Date(), "LLL dd, y")} (Today)</span>
               )}
               <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
             </Button>
@@ -116,9 +116,9 @@ export function PipelineFilterBar() {
                 <Calendar
                   initialFocus
                   mode="range"
-                  defaultMonth={localRange?.from}
-                  selected={localRange}
-                  onSelect={setLocalRange}
+                  defaultMonth={localRange?.from || new Date()}
+                  selected={localRange?.from ? localRange : undefined}
+                  onSelect={(range) => setLocalRange(range as any)}
                   numberOfMonths={2}
                   className="rounded-2xl"
                 />

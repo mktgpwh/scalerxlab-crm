@@ -45,7 +45,7 @@ export function DashboardFilterBar() {
   }, [router, searchParams]);
 
   const [open, setOpen] = React.useState(false);
-  const [localRange, setLocalRange] = React.useState<{ from: Date | undefined; to?: Date | undefined }>(dateRange);
+  const [localRange, setLocalRange] = React.useState<DateRange | undefined>(dateRange);
 
   React.useEffect(() => {
     setLocalRange(dateRange);
@@ -54,7 +54,7 @@ export function DashboardFilterBar() {
   // Wrap store actions to also update URL
   const applyDateRange = () => {
     setOpen(false);
-    setDateRange(localRange);
+    setDateRange(localRange || { from: undefined, to: undefined });
     updateUrl({
         from: localRange?.from ? localRange.from.toISOString() : null,
         to: localRange?.to ? localRange.to.toISOString() : null
@@ -71,7 +71,7 @@ export function DashboardFilterBar() {
     { label: "Yesterday", getValue: () => ({ from: startOfDay(subDays(new Date(), 1)), to: endOfDay(subDays(new Date(), 1)) }) },
     { label: "Last 7 Days", getValue: () => ({ from: startOfDay(subDays(new Date(), 6)), to: endOfDay(new Date()) }) },
     { label: "This Month", getValue: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) }) },
-    { label: "Custom Range", getValue: () => ({ from: undefined, to: undefined }) },
+    { label: "Custom Range", getValue: () => undefined },
   ];
 
   return (
@@ -97,7 +97,7 @@ export function DashboardFilterBar() {
                   format(dateRange.from, "LLL dd, y")
                 )
               ) : (
-                <span>Pick a date</span>
+                <span>{format(new Date(), "LLL dd, y")} (Today)</span>
               )}
               <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
             </Button>
@@ -121,9 +121,9 @@ export function DashboardFilterBar() {
                 <Calendar
                   initialFocus
                   mode="range"
-                  defaultMonth={localRange?.from}
-                  selected={localRange}
-                  onSelect={(range) => setLocalRange({ from: range?.from, to: range?.to })}
+                  defaultMonth={localRange?.from || new Date()}
+                  selected={localRange?.from ? localRange : undefined}
+                  onSelect={(range) => setLocalRange(range as any)}
                   numberOfMonths={2}
                   className="rounded-2xl cursor-pointer"
                 />

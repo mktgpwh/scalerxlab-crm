@@ -39,12 +39,12 @@ function Calendar({
         week: "flex w-full",
         day: "p-0 border-0 outline-none",
         day_button: cn(
-          "w-10 h-10 p-0 font-bold text-sm rounded-full flex items-center justify-center transition-all hover:bg-slate-100 focus:outline-none cursor-pointer text-slate-900 border-0"
+          "w-10 h-10 p-0 font-bold text-sm rounded-full flex items-center justify-center transition-all hover:bg-slate-100 focus:outline-none cursor-pointer border-0"
         ),
-        selected: "bg-[#243467] text-white hover:bg-[#243467] hover:text-white shadow-lg shadow-[#243467]/40 z-10 relative outline-none ring-0",
-        range_start: "bg-[#243467] text-white",
-        range_end: "bg-[#243467] text-white",
-        range_middle: "bg-[#243467]/10 text-[#243467] shadow-none hover:bg-[#243467]/20 border-0 outline-none rounded-full",
+        selected: "bg-[#243467] !text-white hover:bg-[#243467] hover:!text-white shadow-lg shadow-[#243467]/40 z-10 relative outline-none ring-0",
+        range_start: "bg-[#243467] !text-white",
+        range_end: "bg-[#243467] !text-white",
+        range_middle: "bg-[#243467]/10 !text-[#243467] shadow-none hover:bg-[#243467]/20 border-0 outline-none rounded-full",
         today: "text-[#243467] font-black bg-[#243467]/5",
         outside: "text-slate-300 hover:bg-transparent hover:text-slate-400 opacity-50",
         ...classNames,
