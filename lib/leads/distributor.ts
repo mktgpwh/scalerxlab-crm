@@ -7,17 +7,28 @@ import { UserRole } from "@prisma/client";
  */
 export async function distributeLead(leadId: string) {
   try {
-    // 1. Verify Distribution Policy
+    // 1. Fetch Super Admin for fallback distribution
+    const superAdmin = await prisma.user.findFirst({
+        where: { role: 'SUPER_ADMIN' }
+    });
+
+    // 2. Verify Distribution Policy
     const settings = await prisma.systemSettings.findUnique({
       where: { id: "singleton" }
     });
 
-    if (!settings || settings.leadDistributionStrategy !== "ROUND_ROBIN") {
-      console.log(`ℹ️ [DISTRIBUTOR] Assignment skipped: Policy is ${settings?.leadDistributionStrategy || "MANUAL"}`);
+    const isRoundRobin = settings?.leadDistributionStrategy === "ROUND_ROBIN";
+
+    if (!isRoundRobin) {
+      console.log(`ℹ️ [DISTRIBUTOR] Policy is MANUAL. Falling back to Super Admin default assignment.`);
+      if (superAdmin) {
+          await prisma.lead.update({ where: { id: leadId }, data: { ownerId: superAdmin.id, assignedAt: new Date(), isAutoAssigned: true } });
+          return superAdmin;
+      }
       return null;
     }
 
-    // 2. Identify Online Operational Pool (Agents & Counselors)
+    // 3. Identify Online Operational Pool (Agents & Counselors)
     const onlineUsers = await prisma.user.findMany({
       where: {
         isOnline: true,
@@ -40,7 +51,11 @@ export async function distributeLead(leadId: string) {
     });
 
     if (onlineUsers.length === 0) {
-      console.warn("⚠️ [DISTRIBUTOR] No online agents available for distribution.");
+      console.warn("⚠️ [DISTRIBUTOR] No online agents available. Falling back to SUPER_ADMIN.");
+      if (superAdmin) {
+          await prisma.lead.update({ where: { id: leadId }, data: { ownerId: superAdmin.id, assignedAt: new Date(), isAutoAssigned: true } });
+          return superAdmin;
+      }
       return null;
     }
 

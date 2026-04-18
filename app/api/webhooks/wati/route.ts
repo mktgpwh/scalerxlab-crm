@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { processWithAgentX } from "@/lib/ai/agentx";
+import { generateProactiveDraft } from "@/lib/ai/proactive";
+import { distributeLead } from "@/lib/leads/distributor";
 
 export const dynamic = 'force-dynamic';
 
@@ -27,15 +29,20 @@ export async function POST(req: Request) {
     });
 
     if (!lead) {
+      const extractedName = payload.senderName || payload.pushName || payload.contact?.name || payload.profileName || `WhatsApp User (${cleanWaId.slice(-4)})`;
+      
       lead = await prisma.lead.create({
         data: {
-          name: `WhatsApp User (${cleanWaId.slice(-4)})`,
+          name: extractedName,
           whatsappNumber: cleanWaId,
           source: "WHATSAPP",
           status: "RAW",
           aiChatStatus: "AGENTX_ACTIVE",
         },
       });
+
+      // Distribute lead immediately after creation
+      await distributeLead(lead.id);
     }
 
     // WATI Direction detection
@@ -88,10 +95,15 @@ export async function POST(req: Request) {
     });
 
     // 4. AgentX Handoff (Only for incoming messages)
-    if (!isOutgoing && lead.aiChatStatus === "AGENTX_ACTIVE") {
-      console.log(`[AGENTX_HANDOFF] Processing message for Lead ${lead.id}: "${messageText}"`);
-      // Awaiting here is usually safe for short AI calls, Next.js serverless limits allow up to 10s or 60s
-      await processWithAgentX(lead.id, messageText, cleanWaId);
+    if (!isOutgoing) {
+      // Run Proactive Scoring (Heat Mapping)
+      await generateProactiveDraft({ leadId: lead.id, messageText });
+
+      if (lead.aiChatStatus === "AGENTX_ACTIVE") {
+          console.log(`[AGENTX_HANDOFF] Processing message for Lead ${lead.id}: "${messageText}"`);
+          // Awaiting here is usually safe for short AI calls, Next.js serverless limits allow up to 10s or 60s
+          await processWithAgentX(lead.id, messageText, cleanWaId);
+      }
     }
 
     return NextResponse.json({ success: true, leadId: lead.id });
