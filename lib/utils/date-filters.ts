@@ -3,17 +3,32 @@ import { startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, parseISO } fro
 export type DatePreset = "today" | "yesterday" | "last7" | "last30" | "thisMonth" | "custom";
 
 export function getPrismaDateFilter(from?: string, to?: string) {
-  if (!from) return {};
+  // Guard against strings like "undefined" or "null" which can come from URLSearchParams
+  if (!from || from === "undefined" || from === "null" || from === "") return {};
 
-  const start = startOfDay(parseISO(from));
-  const end = to ? endOfDay(parseISO(to)) : endOfDay(start);
+  try {
+    const start = startOfDay(parseISO(from));
+    
+    // Check if derived date is valid
+    if (isNaN(start.getTime())) return {};
 
-  return {
-    createdAt: {
-      gte: start,
-      lte: end,
-    },
-  };
+    let end: Date;
+    if (to && to !== "undefined" && to !== "null" && to !== "") {
+      end = endOfDay(parseISO(to));
+      if (isNaN(end.getTime())) end = endOfDay(start);
+    } else {
+      end = endOfDay(start);
+    }
+
+    return {
+      createdAt: {
+        gte: start,
+        lte: end,
+      },
+    };
+  } catch (err) {
+    return {};
+  }
 }
 
 export function getDateRangeFromPreset(preset: DatePreset) {

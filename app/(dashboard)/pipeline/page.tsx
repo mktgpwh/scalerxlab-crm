@@ -135,7 +135,11 @@ export default async function PipelinePage({ searchParams }: PageProps) {
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Pipeline Perspectives</h3>
                 <div className="flex items-center p-1 bg-slate-100 dark:bg-white/5 rounded-xl ring-1 ring-slate-200/50">
                     <Link
-                        href={`/pipeline?${new URLSearchParams({ ...params, view: "speciality" }).toString()}`}
+                        href={`/pipeline?${new URLSearchParams(
+                          Object.fromEntries(
+                            Object.entries({ ...params, view: "speciality" }).filter(([_, v]) => v != null && v !== "undefined")
+                          )
+                        ).toString()}`}
                         scroll={false}
                         className={cn(
                             "flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
@@ -148,7 +152,11 @@ export default async function PipelinePage({ searchParams }: PageProps) {
                         By Speciality
                     </Link>
                     <Link
-                        href={`/pipeline?${new URLSearchParams({ ...params, view: "geography" }).toString()}`}
+                        href={`/pipeline?${new URLSearchParams(
+                          Object.fromEntries(
+                            Object.entries({ ...params, view: "geography" }).filter(([_, v]) => v != null && v !== "undefined")
+                          )
+                        ).toString()}`}
                         scroll={false}
                         className={cn(
                             "flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
