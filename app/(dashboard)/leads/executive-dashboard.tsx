@@ -486,19 +486,19 @@ export function ExecutiveDashboard({
     <div className="space-y-8 pb-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100 dark:border-white/5">
-        <div className="flex items-center gap-6">
-          <div className="h-10 w-auto text-slate-900 dark:text-white">
-            <Image src="/scalerxlab-logo.png" alt={process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab"} width={140} height={35} className="object-contain" />
+        <div className="flex items-center gap-5">
+          <div className="h-14 w-14 rounded-2xl bg-white shadow-xl shadow-slate-200 tracking-tight flex items-center justify-center p-1.5 shrink-0 border border-slate-100 overflow-hidden">
+             <Image src="/scalerxlab-logo.png" alt="Hub Logo" width={50} height={50} className="object-contain w-full h-full" priority />
           </div>
-          <div className="h-8 w-px bg-slate-200 dark:bg-white/10 hidden md:block" />
+          <div className="h-10 w-px bg-slate-200 dark:bg-white/10 hidden md:block" />
           <div className="flex items-center gap-4">
             <div className="relative flex h-3 w-3 mt-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
             </div>
             <div>
-              <h2 className="text-4xl font-black tracking-tighter italic lowercase text-slate-900 dark:text-white">/intelligence.hub</h2>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Sovereign Analytics Matrix</p>
+              <h2 className="text-3xl md:text-4xl font-black tracking-tighter italic lowercase text-slate-900 dark:text-white">/intelligence.hub</h2>
+              <p className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mt-0.5">Sovereign Analytics Matrix</p>
             </div>
           </div>
         </div>

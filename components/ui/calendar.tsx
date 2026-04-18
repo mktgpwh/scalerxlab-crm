@@ -33,18 +33,18 @@ function Calendar({
           "h-9 w-9 bg-white p-0 hover:bg-slate-100 hover:text-slate-900 rounded-2xl transition-all shadow-sm ring-1 ring-slate-200"
         ),
         month_caption: "flex justify-center pt-3 pb-1 font-black uppercase tracking-[0.2em] text-[#243467] text-[12px]",
-        table: "w-full border-collapse mt-2",
+        table: "w-full border-separate border-spacing-y-1 border-spacing-x-0 mt-2",
         weekdays: "flex font-black uppercase text-[10px] tracking-widest text-slate-400 mb-3",
-        weekday: "flex-1 w-10 text-center",
-        week: "flex w-full mt-1.5",
-        day: "p-0",
+        weekday: "flex-1 w-10 text-center border-0",
+        week: "flex w-full",
+        day: "p-0 border-0 outline-none",
         day_button: cn(
-          "w-10 h-10 p-0 font-bold text-sm rounded-full flex items-center justify-center transition-all hover:bg-slate-100 focus:outline-none cursor-pointer text-slate-900 ring-offset-background disabled:opacity-50 disabled:pointer-events-none"
+          "w-10 h-10 p-0 font-bold text-sm rounded-full flex items-center justify-center transition-all hover:bg-slate-100 focus:outline-none cursor-pointer text-slate-900 border-0"
         ),
-        selected: "bg-[#243467] text-white hover:bg-[#243467] hover:text-white shadow-lg shadow-[#243467]/40 ring-2 ring-[#243467] ring-offset-2",
-        range_start: "bg-[#243467] text-white rounded-l-full",
-        range_end: "bg-[#243467] text-white rounded-r-full",
-        range_middle: "bg-[#243467]/10 text-[#243467] shadow-none hover:bg-[#243467]/20 ring-0",
+        selected: "bg-[#243467] text-white hover:bg-[#243467] hover:text-white shadow-lg shadow-[#243467]/40 z-10 relative outline-none ring-0",
+        range_start: "bg-[#243467] text-white",
+        range_end: "bg-[#243467] text-white",
+        range_middle: "bg-[#243467]/10 text-[#243467] shadow-none hover:bg-[#243467]/20 border-0 outline-none rounded-full",
         today: "text-[#243467] font-black bg-[#243467]/5",
         outside: "text-slate-300 hover:bg-transparent hover:text-slate-400 opacity-50",
         ...classNames,
