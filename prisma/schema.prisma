@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  previewFeatures = ["driverAdapters", "views"]
 }
 
 datasource db {
@@ -147,6 +147,7 @@ model Lead {
   callLogs            CallLog[]
   branch              Branch?           @relation(fields: [branchId], references: [id])
   owner               User?             @relation("LeadOwner", fields: [ownerId], references: [id])
+  invoices            Invoice[]
 
   @@index([branchId])
   @@index([ownerId])
@@ -296,4 +297,107 @@ enum CallStatus {
 enum AiChatStatus {
   AGENTX_ACTIVE
   HUMAN_OVERRIDE
+}
+
+enum BillingDept {
+  OPD
+  IPD
+  PHARMACY
+  ULTRASOUND
+  LAB
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  CARD
+  INSURANCE
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  tenantId       String        @default("org_pahlajani_001")
+  leadId         String
+  invoiceNumber  String        @unique
+  department     BillingDept
+  subTotal       Float
+  tax            Float         @default(0)
+  totalAmount    Float
+  status         InvoiceStatus @default(UNPAID)
+  paymentLinkId  String?
+  paymentLinkUrl String?
+  issuedAt       DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  lead     Lead          @relation(fields: [leadId], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@index([leadId])
+  @@index([invoiceNumber])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  itemName    String
+  quantity    Int     @default(1)
+  unitPrice   Float
+  tax         Float   @default(0)
+  total       Float
+  
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id               String      @id @default(cuid())
+  tenantId         String      @default("org_pahlajani_001")
+  invoiceId        String
+  amount           Float
+  paymentMode      PaymentMode
+  upiTransactionId String?     @unique
+  externalId       String?
+  createdAt        DateTime    @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+view DailyRevenueSummary {
+  day          DateTime
+  department   BillingDept
+  tenantId     String
+  totalRevenue Float
+
+  @@unique([day, department, tenantId])
+}
+
+view LeadConversionStats {
+  source         LeadSource
+  tenantId       String
+  rawCount       Int
+  wonCount       Int
+  conversionRate Float
+
+  @@unique([source, tenantId])
+}
+
+view SourcePerformance {
+  source      LeadSource
+  tenantId    String
+  totalBilled Float
+
+  @@unique([source, tenantId])
 }
