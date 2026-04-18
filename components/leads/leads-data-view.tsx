@@ -40,6 +40,12 @@ const CATEGORY_STYLES: Record<string, string> = {
   OTHER:       "bg-slate-500/10 text-slate-600 ring-slate-500/20"
 };
 
+const maskPhone = (num?: string | null) => {
+  if (!num) return "No phone";
+  if (num.length <= 4) return num;
+  return '*'.repeat(num.length - 4) + num.slice(-4);
+};
+
 function FilterChip({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   const isActive = value !== "ALL";
   return (
@@ -278,7 +284,7 @@ export function LeadsDataView({
                       <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">{(lead.name || "?")[0].toUpperCase()}</div>
                       <div>
                         <p className="text-sm font-black text-slate-900 leading-tight">{lead.name || "Anonymous"}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">{lead.phone || "No phone"}</p>
+                        <p className="text-[10px] text-slate-400 font-medium">{maskPhone(lead.phone || lead.whatsappNumber)}</p>
                       </div>
                     </div>
                   </td>

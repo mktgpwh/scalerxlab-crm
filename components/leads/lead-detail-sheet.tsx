@@ -189,7 +189,12 @@ export function LeadDetailSheet() {
   if (!leadId) return null;
 
   const isArchived = lead?.status === 'LOST';
-  const mask = (val: string | null | undefined) => isArchived ? "[REDACTED]" : (val || "N/A");
+  const mask = (val: string | null | undefined) => {
+    if (isArchived) return "[REDACTED]";
+    if (!val) return "N/A";
+    if (val.length <= 4) return val;
+    return '*'.repeat(val.length - 4) + val.slice(-4);
+  };
 
   return (
     <Sheet open={!!leadId} onOpenChange={(open) => !open && closeSheet()}>
@@ -289,7 +294,7 @@ export function LeadDetailSheet() {
                            <div className="space-y-2">
                               <div className="flex flex-col">
                                  <span className="text-[9px] font-bold text-slate-400 uppercase">Contact Stream</span>
-                                 <span className="text-sm font-black tracking-tight">{mask(lead.phone)}</span>
+                                 <span className="text-sm font-black tracking-tight">{mask(lead.phone || lead.whatsappNumber)}</span>
                               </div>
                               <div className="flex flex-col">
                                  <span className="text-[9px] font-bold text-slate-400 uppercase">Signal</span>

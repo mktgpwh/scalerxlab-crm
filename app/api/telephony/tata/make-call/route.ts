@@ -17,7 +17,9 @@ export async function POST(req: Request) {
 
     const lead = await prisma.lead.findUnique({ where: { id: leadId } });
 
-    if (!lead || !lead.phone) {
+    const targetPhone = lead.phone || lead.whatsappNumber;
+
+    if (!lead || !targetPhone) {
       return NextResponse.json({ error: "Lead not found or has no phone" }, { status: 404 });
     }
 
@@ -30,7 +32,7 @@ export async function POST(req: Request) {
 
     // Trigger Tata Smartflo
     const callResponse = await tataClient.makeCall({
-      to: lead.phone,
+      to: targetPhone,
       from: virtualNumber,
       organizationId: "singleton",
       agentId: "AGENT_001"
@@ -41,7 +43,7 @@ export async function POST(req: Request) {
       data: {
         leadId: lead.id,
         callerId: virtualNumber,
-        receiverId: lead.phone,
+        receiverId: targetPhone,
         direction: "OUTBOUND",
         status: "CONNECTED",
         duration: 0,
