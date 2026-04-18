@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import { auth } from "@/auth";
 import { NotificationsListener } from "@/components/notifications-listener";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -13,7 +14,12 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
   const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
+
+  const userInitials = session?.user?.name
+    ? session.user.name.split(" ").map((n) => n[0]).join("").toUpperCase()
+    : "??";
 
   return (
     <TooltipProvider>
@@ -43,8 +49,8 @@ export default async function DashboardLayout({
                     Live Stream
                   </span>
                 </div>
-                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200/60 dark:border-white/5 flex items-center justify-center text-[10px] font-black text-slate-500 ring-1 ring-slate-100 dark:ring-white/10 transition-transform hover:rotate-3">
-                  JD
+                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200/60 dark:border-white/5 flex items-center justify-center text-[10px] font-black text-slate-500 ring-1 ring-slate-100 dark:ring-white/10 transition-transform hover:rotate-3 uppercase">
+                  {userInitials}
                 </div>
               </div>
             </header>

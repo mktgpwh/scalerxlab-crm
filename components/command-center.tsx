@@ -25,13 +25,11 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export function CommandCenter() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
-  const params = useParams();
-  const orgSlug = params.orgSlug as string;
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -81,17 +79,17 @@ export function CommandCenter() {
           </CommandEmpty>
           
           <CommandGroup heading="Navigation Nodes">
-            <CommandItem onSelect={() => runCommand(() => router.push(`/${orgSlug}/leads`))} className="rounded-xl h-12 gap-3 cursor-pointer">
+            <CommandItem onSelect={() => runCommand(() => router.push(`/leads`))} className="rounded-xl h-12 gap-3 cursor-pointer">
               <Users className="mr-2 h-4 w-4" />
               <span className="font-bold tracking-tight">Intelligence Hub (Leads)</span>
               <CommandShortcut className="text-[10px] font-black opacity-40">G L</CommandShortcut>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => router.push(`/${orgSlug}/pipeline`))} className="rounded-xl h-12 gap-3 cursor-pointer">
+            <CommandItem onSelect={() => runCommand(() => router.push(`/pipeline`))} className="rounded-xl h-12 gap-3 cursor-pointer">
               <LayoutDashboard className="mr-2 h-4 w-4" />
               <span className="font-bold tracking-tight">Capture Pipeline (Sales)</span>
               <CommandShortcut className="text-[10px] font-black opacity-40">G P</CommandShortcut>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => router.push(`/${orgSlug}/integrations`))} className="rounded-xl h-12 gap-3 cursor-pointer">
+            <CommandItem onSelect={() => runCommand(() => router.push(`/integrations`))} className="rounded-xl h-12 gap-3 cursor-pointer">
               <CommandIcon className="mr-2 h-4 w-4" />
               <span className="font-bold tracking-tight">Integrations Hub</span>
               <CommandShortcut className="text-[10px] font-black opacity-40">G I</CommandShortcut>
@@ -101,7 +99,7 @@ export function CommandCenter() {
           <CommandSeparator className="my-2 bg-slate-100 dark:bg-white/5" />
           
           <CommandGroup heading="System Controls">
-            <CommandItem onSelect={() => runCommand(() => router.push(`/${orgSlug}/settings`))} className="rounded-xl h-12 gap-3 cursor-pointer">
+            <CommandItem onSelect={() => runCommand(() => router.push(`/settings`))} className="rounded-xl h-12 gap-3 cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
               <span className="font-bold tracking-tight">Configuration (Settings)</span>
               <CommandShortcut className="text-[10px] font-black opacity-40">G S</CommandShortcut>
