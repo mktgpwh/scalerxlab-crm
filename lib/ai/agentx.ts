@@ -57,6 +57,12 @@ export async function processWithAgentX(leadId: string, messageText: string, wha
             }
         });
 
+        // Bump updatedAt for UI Sorting
+        await prisma.lead.update({
+            where: { id: leadId },
+            data: { updatedAt: new Date() }
+        });
+
         console.log(`[AGENTX_SUCCESS] Reply sent successfully to ${whatsappNumber}`);
 
     } catch (error) {

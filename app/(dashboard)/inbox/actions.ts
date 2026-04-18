@@ -207,10 +207,10 @@ export async function sendMessage(leadId: string, text: string) {
             }
         });
 
-        // 4. Automatically pause AgentX on human intervention
+        // 4. Automatically pause AgentX on human intervention & bump updatedAt
         await prisma.lead.update({
             where: { id: leadId },
-            data: { aiChatStatus: 'HUMAN_OVERRIDE' }
+            data: { aiChatStatus: 'HUMAN_OVERRIDE', updatedAt: new Date() }
         });
 
         revalidatePath("/inbox");
