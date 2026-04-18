@@ -9,6 +9,7 @@ datasource db {
 
 model SystemSettings {
   id                       String                   @id @default("singleton")
+  tenantId                 String                   @default("org_pahlajani_001")
   clinicName               String                   @default("Pahlajani's Women's Hospital")
   brandColor               String                   @default("#0f172a")
   aiRoutingEnabled         Boolean                  @default(false)
@@ -22,6 +23,7 @@ model SystemSettings {
 
 model Branch {
   id        String   @id @default(cuid())
+  tenantId  String   @default("org_pahlajani_001")
   name      String
   city      String
   isHQ      Boolean  @default(false)
@@ -34,25 +36,88 @@ model Branch {
 }
 
 model User {
-  id                       String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email                    String        @unique
+  id                       String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId                 String          @default("org_pahlajani_001")
+  email                    String          @unique
+  emailVerified            DateTime?
   name                     String?
-  avatarUrl                String?
-  role                     UserRole      @default(AGENT)
-  isActive                 Boolean       @default(true)
-  platformConsentGiven     Boolean       @default(false)
+  image                    String?
+  role                     UserRole        @default(AGENT)
+  isActive                 Boolean         @default(true)
+  platformConsentGiven     Boolean         @default(false)
   platformConsentTimestamp DateTime?
-  createdAt                DateTime      @default(now())
-  updatedAt                DateTime      @updatedAt
-  isOnline                 Boolean       @default(false)
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+  isOnline                 Boolean         @default(false)
   activityLogs             ActivityLog[]
-  ownedLeads               Lead[]        @relation("LeadOwner")
+  ownedLeads               Lead[]          @relation("LeadOwner")
+  accounts                 Account[]
+  sessions                 Session[]
+  Authenticator            Authenticator[]
 
   @@map("users")
 }
 
+model Account {
+  id                String  @id @default(cuid())
+  tenantId          String  @default("org_pahlajani_001")
+  userId            String  @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  tenantId     String   @default("org_pahlajani_001")
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Authenticator {
+  credentialID         String  @unique
+  userId               String  @db.Uuid
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+  @@map("authenticators")
+}
+
 model Lead {
   id                  String            @id @default(cuid())
+  tenantId            String            @default("org_pahlajani_001")
   name                String
   email               String?
   phone               String?
@@ -91,6 +156,7 @@ model Lead {
 
 model AutoNurtureQueue {
   id           String    @id @default(cuid())
+  tenantId     String    @default("org_pahlajani_001")
   leadId       String    @unique
   scheduledAt  DateTime  @default(now())
   nextFollowUp DateTime?
@@ -106,6 +172,7 @@ model AutoNurtureQueue {
 
 model ActivityLog {
   id          String   @id @default(cuid())
+  tenantId    String   @default("org_pahlajani_001")
   leadId      String?
   userId      String?  @db.Uuid
   action      String
@@ -120,6 +187,7 @@ model ActivityLog {
 
 model CallLog {
   id           String        @id @default(cuid())
+  tenantId     String        @default("org_pahlajani_001")
   leadId       String?
   direction    CallDirection
   status       CallStatus    @default(CONNECTED)
