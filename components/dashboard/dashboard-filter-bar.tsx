@@ -44,12 +44,20 @@ export function DashboardFilterBar() {
     router.push(`?${newParams.toString()}`, { scroll: false });
   }, [router, searchParams]);
 
+  const [open, setOpen] = React.useState(false);
+  const [localRange, setLocalRange] = React.useState<{ from: Date | undefined; to?: Date | undefined }>(dateRange);
+
+  React.useEffect(() => {
+    setLocalRange(dateRange);
+  }, [dateRange]);
+
   // Wrap store actions to also update URL
-  const handleSetDateRange = (range: { from: Date | undefined; to?: Date | undefined }) => {
-    setDateRange(range);
+  const applyDateRange = () => {
+    setOpen(false);
+    setDateRange(localRange);
     updateUrl({
-        from: range.from ? range.from.toISOString() : null,
-        to: range.to ? range.to.toISOString() : null
+        from: localRange?.from ? localRange.from.toISOString() : null,
+        to: localRange?.to ? localRange.to.toISOString() : null
     });
   };
 
@@ -63,12 +71,13 @@ export function DashboardFilterBar() {
     { label: "Yesterday", getValue: () => ({ from: startOfDay(subDays(new Date(), 1)), to: endOfDay(subDays(new Date(), 1)) }) },
     { label: "Last 7 Days", getValue: () => ({ from: startOfDay(subDays(new Date(), 6)), to: endOfDay(new Date()) }) },
     { label: "This Month", getValue: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) }) },
+    { label: "Custom Range", getValue: () => ({ from: undefined, to: undefined }) },
   ];
 
   return (
     <div className="flex flex-col md:flex-row items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-[2rem] border border-slate-200/60 dark:border-white/5 shadow-sm relative z-30">
       <div className="flex items-center gap-2 w-full md:w-auto">
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger>
             <Button
               variant={"outline"}
@@ -102,22 +111,28 @@ export function DashboardFilterBar() {
                     key={preset.label}
                     variant="ghost"
                     className="justify-start font-bold text-xs rounded-xl h-9 hover:bg-white dark:hover:bg-white/5 cursor-pointer"
-                    onClick={() => handleSetDateRange(preset.getValue())}
+                    onClick={() => setLocalRange(preset.getValue())}
                   >
                     {preset.label}
                   </Button>
                 ))}
               </div>
-              <div className="p-2">
+              <div className="p-3 flex flex-col items-center">
                 <Calendar
                   initialFocus
                   mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={{ from: dateRange.from, to: dateRange.to }}
-                  onSelect={(range) => handleSetDateRange({ from: range?.from, to: range?.to })}
+                  defaultMonth={localRange?.from}
+                  selected={localRange}
+                  onSelect={(range) => setLocalRange({ from: range?.from, to: range?.to })}
                   numberOfMonths={2}
                   className="rounded-2xl cursor-pointer"
                 />
+                <div className="w-full flex items-center justify-end border-t border-slate-100 pt-3 mt-3 px-2 gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="rounded-xl font-bold text-xs">Cancel</Button>
+                    <Button onClick={applyDateRange} size="sm" className="rounded-xl px-6 font-black uppercase tracking-widest text-[10px]">
+                        Go &rarr;
+                    </Button>
+                </div>
               </div>
             </div>
           </PopoverContent>
