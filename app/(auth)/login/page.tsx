@@ -83,31 +83,30 @@ export default function LoginPage() {
         {/* Logo Section */}
         <div className="flex flex-col items-center mb-10 space-y-4">
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-indigo-500 rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-white rounded-3xl p-5 shadow-sm border border-slate-200/60 ring-1 ring-slate-100">
-                <Image
-                    src="/scalerxlab-logo.png"
-                    alt="ScalerX Lab"
-                    width={180}
-                    height={45}
-                    className="object-contain"
-                    priority
-                />
+            <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 to-orange-500 rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative bg-white rounded-3xl p-5 shadow-sm border border-slate-200/60 ring-1 ring-slate-100 flex items-center justify-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-600 shadow-lg shrink-0">
+                    <span className="text-2xl font-black text-white">PH</span>
+                </div>
+                <div className="flex flex-col text-left">
+                    <span className="text-xl font-black tracking-tighter text-slate-900">Pahlajani's</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-600">Business OS</span>
+                </div>
             </div>
           </div>
           <div className="text-center">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary flex items-center justify-center gap-2">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500 flex items-center justify-center gap-2">
               <Sparkles className="h-3 w-3" />
-              Intelligence Node
+              Customized Build
             </h2>
-            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em] mt-2">Sovereign Business Suite</p>
+            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em] mt-2">BOS version 1.0</p>
           </div>
         </div>
 
         <Card className="surface-layered border-none rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-xl overflow-hidden ring-1 ring-slate-200/50">
           <CardHeader className="space-y-1 pb-10 text-center pt-12">
             <CardTitle className="text-4xl font-black tracking-tighter italic lowercase text-slate-900 px-6 leading-tight">
-              Welcome to Scaler.X Command Center
+              Welcome to Pahlajani's BOS
             </CardTitle>
             <CardDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest pt-3">
               Identify yourself to access the engagement hub
@@ -195,10 +194,7 @@ export default function LoginPage() {
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-16 leading-relaxed flex items-center justify-center gap-2">
                  Protected by ScalerX Sovereign Security.
               </p>
-              <div className="flex items-center justify-center gap-2 opacity-40 hover:opacity-100 transition-opacity pb-4">
-                <div className="h-4 w-4 relative">
-                  <Image src="/scalerxlab-logo.png" alt="ScalerX" fill className="object-contain grayscale" />
-                </div>
+              <div className="flex flex-col items-center justify-center gap-1 opacity-40 hover:opacity-100 transition-opacity pb-4">
                 <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">
                   Powered by <span className="text-slate-400">ScalerX Lab</span>
                 </span>
