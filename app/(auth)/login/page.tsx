@@ -83,19 +83,20 @@ export default function LoginPage() {
         {/* Logo Section */}
         <div className="flex flex-col items-center mb-10 space-y-4">
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 to-orange-500 rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-white rounded-3xl p-5 shadow-sm border border-slate-200/60 ring-1 ring-slate-100 flex items-center justify-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-600 shadow-lg shrink-0">
-                    <span className="text-2xl font-black text-white">PH</span>
-                </div>
-                <div className="flex flex-col text-left">
-                    <span className="text-xl font-black tracking-tighter text-slate-900">Pahlajani's</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-600">Business OS</span>
-                </div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-indigo-500 rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative bg-white rounded-3xl p-6 shadow-sm border border-slate-200/60 ring-1 ring-slate-100">
+                <Image
+                    src="/scalerxlab-logo.png"
+                    alt="Pahlajani's BOS"
+                    width={200}
+                    height={50}
+                    className="object-contain mx-auto"
+                    priority
+                />
             </div>
           </div>
           <div className="text-center">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500 flex items-center justify-center gap-2">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary flex items-center justify-center gap-2">
               <Sparkles className="h-3 w-3" />
               Customized Build
             </h2>
