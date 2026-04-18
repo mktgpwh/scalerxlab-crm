@@ -15,7 +15,8 @@ import {
   LogOut,
   ShieldCheck,
   Radio,
-  PowerOff
+  PowerOff,
+  Receipt
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IntegrationIcon } from "@/components/ui/integration-icon";
@@ -46,6 +47,8 @@ const items = [
   { title: "Command Center", url: "/", icon: Home, label: "Overview" },
   { title: "Sovereign Intelligence", url: "/intelligence", icon: Sparkles, label: "AgentX" },
   { title: "Lead Funnels", url: "/pipeline", icon: LayoutDashboard, label: "Pipelines" },
+  { title: "Billing Terminal", url: "/billing", icon: Receipt, label: "Revenue Node" },
+  { title: "Intelligence Matrix", url: "/matrix", icon: BarChart3, label: "MIS Insights" },
   { title: "Shared Inbox", url: "/inbox", icon: (props: any) => <IntegrationIcon slug="whatsapp" {...props} />, label: "WhatsApp" },
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
   { title: "Connections", url: "/integrations", icon: Puzzle, label: "Expansion Hub" },
