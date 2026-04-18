@@ -138,7 +138,7 @@ export default function BillingTerminal() {
                         {DEPARTMENTS.map(dept => (
                             <TabsContent key={dept.id} value={dept.id}>
                                 <Card className="surface-layered rounded-[3rem] overflow-hidden border-none shadow-sm">
-                                    <CardHeader className="p-10 pb-6 flex flex-row items-center justify-between">
+                                    <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
                                         <div>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", dept.color)}>
@@ -154,7 +154,7 @@ export default function BillingTerminal() {
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Main Hospital Center</p>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-10 pt-4">
+                                    <CardContent className="p-8 pt-2">
                                         <BillingForm 
                                             leadId={selectedPatient?.id} 
                                             department={dept.id} 
