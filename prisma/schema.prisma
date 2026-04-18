@@ -151,6 +151,9 @@ model Lead {
   @@index([branchId])
   @@index([ownerId])
   @@index([category])
+  @@index([status])
+  @@index([createdAt])
+  @@index([intent])
   @@map("leads")
 }
 

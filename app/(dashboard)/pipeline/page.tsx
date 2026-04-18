@@ -52,7 +52,7 @@ export default async function PipelinePage({ searchParams }: PageProps) {
   const categoryFilter = params.category ? { category: params.category as any } : {};
   const branchFilter = params.branchId ? { branchId: params.branchId } : {};
 
-  // Fetch specialized data sets
+  // Fetch specialized data sets — strict select to minimise hydration payload
   const [leads, branches, team] = await Promise.all([
     prisma.lead.findMany({
       where: {
@@ -66,7 +66,22 @@ export default async function PipelinePage({ searchParams }: PageProps) {
         ...categoryFilter,
         ...branchFilter
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        whatsappNumber: true,
+        email: true,
+        source: true,
+        status: true,
+        intent: true,
+        category: true,
+        branchId: true,
+        ownerId: true,
+        aiScore: true,
+        isEscalated: true,
+        createdAt: true,
+        updatedAt: true,
         owner: { select: { id: true, name: true, image: true } },
         branch: { select: { id: true, name: true, city: true } }
       },

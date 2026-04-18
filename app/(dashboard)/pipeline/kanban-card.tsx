@@ -268,11 +268,11 @@ function KanbanCardInner({
   );
 }
 
-// Public export: wrapped in Suspense to isolate from SSR boundary issues
-export function KanbanCard(props: { lead: Lead; isOverlay?: boolean }) {
+// Public export: wrapped in Suspense + React.memo to prevent unnecessary re-renders
+export const KanbanCard = React.memo(function KanbanCard(props: { lead: Lead; isOverlay?: boolean }) {
   return (
     <Suspense fallback={<div className="h-[140px] rounded-[2rem] bg-slate-100/50 animate-pulse" />}>
       <KanbanCardInner {...props} />
     </Suspense>
   );
-}
+});

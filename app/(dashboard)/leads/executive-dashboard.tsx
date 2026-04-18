@@ -60,54 +60,38 @@ function AnalyticsView({
   const [adSpendMode, setAdSpendMode] = useState<'AUTO' | 'MANUAL' | 'META'>('AUTO');
   const [customAdSpend, setCustomAdSpend] = useState<number>(0);
 
-  const totalLeads = leads.length;
-  const hotLeads   = leads.filter(l => l.intent === 'HOT').length;
-  const hotRatio   = totalLeads > 0 ? ((hotLeads / totalLeads) * 100).toFixed(1) : 0;
+  // ─── MEMOIZED ANALYTICS — prevents re-runs on unrelated re-renders ──────────
+  const totalLeads = useMemo(() => leads.length, [leads]);
+  const hotLeads   = useMemo(() => leads.filter(l => l.intent === 'HOT').length, [leads]);
+  const hotRatio   = useMemo(() => totalLeads > 0 ? ((hotLeads / totalLeads) * 100).toFixed(1) : 0, [hotLeads, totalLeads]);
   const displayAdSpend = adSpendMode === 'MANUAL' ? customAdSpend : totalLeads * 200;
 
   // ─── CBIO BUSINESS INTELLIGENCE ENGINE ─────────────────────
-  // Intent-based Revenue Benchmarks
   const IVF_VALUE = 100000;
   const MDT_VALUE = 80000;
-  const ESTIMATED_CONV = 0.25; // 25% for HOT leads
+  const ESTIMATED_CONV = 0.25;
 
-  const hotInfertility = leads.filter(l => l.category === 'INFERTILITY' && l.metadata?.intentLevel === 'HOT').length;
-  const hotMaternity   = leads.filter(l => l.category === 'MATERNITY' && l.metadata?.intentLevel === 'HOT').length;
+  const predictiveROI = useMemo(() => {
+    const hotInfertility = leads.filter(l => l.category === 'INFERTILITY' && l.intent === 'HOT').length;
+    const hotMaternity   = leads.filter(l => l.category === 'MATERNITY'   && l.intent === 'HOT').length;
+    return (hotInfertility * IVF_VALUE * ESTIMATED_CONV) + (hotMaternity * MDT_VALUE * ESTIMATED_CONV);
+  }, [leads]);
 
-  const predictiveROI = (hotInfertility * IVF_VALUE * ESTIMATED_CONV) + (hotMaternity * MDT_VALUE * ESTIMATED_CONV);
+  const treatmentData = useMemo(() => [
+    { name: 'IVF',  value: leads.filter(l => l.category === 'INFERTILITY').length },
+    { name: 'MDT',  value: leads.filter(l => l.category === 'MATERNITY').length },
+    { name: 'GYN',  value: leads.filter(l => l.category === 'GYNECOLOGY').length },
+    { name: 'PEDI', value: leads.filter(l => l.category === 'PEDIATRICS').length },
+    { name: 'OTH',  value: leads.filter(l => !l.category || l.category === 'OTHER').length },
+  ].filter(d => d.value > 0), [leads]);
 
-  const ivfLeads      = leads.filter(l => l.category === 'INFERTILITY').length;
-  const maternityLeads = leads.filter(l => l.category === 'MATERNITY').length;
-  const gynoLeads     = leads.filter(l => l.category === 'GYNECOLOGY').length;
-  const pediLeads     = leads.filter(l => l.category === 'PEDIATRICS').length;
-  const otherLeads    = leads.filter(l => !l.category || l.category === 'OTHER').length;
-  
-  const treatmentData = [
-    { name: 'IVF',  value: ivfLeads },
-    { name: 'MDT',  value: maternityLeads },
-    { name: 'GYN',  value: gynoLeads },
-    { name: 'PEDI', value: pediLeads },
-    { name: 'OTH',  value: otherLeads },
-  ].filter(d => d.value > 0);
-
-  const regionalData = [
+  const regionalData = useMemo(() => [
     ...branches.map(branch => ({
       name: branch.name,
       count: leads.filter(l => l.branchId === branch.id).length
     })),
-    {
-      name: "Unallocated",
-      count: leads.filter(l => !l.branchId).length
-    }
-  ].filter(d => d.count > 0);
-
-  const ivfPipelineLeads = leads.filter(l => l.category === 'INFERTILITY');
-  const funnelData = [
-    { stage: 'Raw Intake',    count: ivfPipelineLeads.filter(l => l.status === 'RAW').length },
-    { stage: 'Qualified',     count: ivfPipelineLeads.filter(l => l.status === 'QUALIFIED').length },
-    { stage: 'Clinic Visited',count: ivfPipelineLeads.filter(l => l.status === 'VISITED').length },
-    { stage: 'Enrolled',      count: ivfPipelineLeads.filter(l => l.status === 'WON').length },
-  ];
+    { name: "Unallocated", count: leads.filter(l => !l.branchId).length }
+  ].filter(d => d.count > 0), [leads, branches]);
 
   useEffect(() => {
     fetch(`/api/executive-insight`)
@@ -529,7 +513,7 @@ export function ExecutiveDashboard({
   );
 }
 
-function KpiCard({ title, value, subValue, icon, color, progress, estimated }: any) {
+const KpiCard = React.memo(function KpiCard({ title, value, subValue, icon, color, progress, estimated }: any) {
     const colorMap: any = {
         blue: "text-blue-500 bg-blue-500/10 ring-blue-500/20",
         rose: "text-rose-500 bg-rose-500/10 ring-rose-500/20",
@@ -569,7 +553,7 @@ function KpiCard({ title, value, subValue, icon, color, progress, estimated }: a
             )}
         </Card>
     );
-}
+});
 
 const STATUS_STYLES: Record<string, string> = {
   RAW:               "bg-slate-100 text-slate-600 ring-slate-200/50",

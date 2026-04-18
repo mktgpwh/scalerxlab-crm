@@ -54,7 +54,7 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
     select: { id: true, name: true, role: true }
   }) : [];
 
-  // Enforce Visibility Architecture
+  // Enforce Visibility Architecture — strict select to minimise hydration payload
   const leads = await prisma.lead.findMany({
     where: {
       ...(isAdmin ? {} : { ownerId: profile.id }),
@@ -62,20 +62,24 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
       ...categoryFilter,
       ...branchFilter
     },
-    include: {
-        owner: {
-            select: {
-                id: true,
-                name: true,
-                image: true
-            }
-        },
-        branch: {
-            select: {
-                id: true,
-                name: true
-            }
-        }
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      whatsappNumber: true,
+      email: true,
+      source: true,
+      status: true,
+      intent: true,
+      category: true,
+      branchId: true,
+      ownerId: true,
+      aiScore: true,
+      isEscalated: true,
+      createdAt: true,
+      updatedAt: true,
+      owner: { select: { id: true, name: true, image: true } },
+      branch: { select: { id: true, name: true } }
     },
     orderBy: { createdAt: "desc" },
   });
