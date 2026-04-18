@@ -1,37 +1,15 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
-import { UserRole } from "@prisma/client";
 import Credentials from "next-auth/providers/credentials";
 import { comparePassword } from "@/lib/utils/password";
+import authConfig from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = (user as any).role;
-        token.branchId = (user as any).branchId;
-        token.id = user.id;
-        token.isOnline = (user as any).isOnline || false;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role as UserRole;
-        (session.user as any).branchId = token.branchId as string | null;
-        (session.user as any).isOnline = token.isOnline as boolean;
-      }
-      return session;
-    },
-  },
+  ...authConfig,
   providers: [
+    ...authConfig.providers,
     Credentials({
       name: "Tactical Access",
       credentials: {

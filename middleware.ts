@@ -1,16 +1,18 @@
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import authConfig, { type EdgeUserRole } from "./auth.config";
 import { NextResponse } from "next/server";
-import { UserRole } from "@prisma/client";
+
+// Use lightweight config for Edge Middleware
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
-  const userRole = req.auth?.user?.role as UserRole | undefined;
+  const userRole = req.auth?.user?.role as EdgeUserRole | undefined;
 
   const isPublicRoute = nextUrl.pathname === "/login";
   const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
-  const isApiRoute = nextUrl.pathname.startsWith("/api");
-
+  
   // Allow API auth routes and public routes
   if (isApiAuthRoute || isPublicRoute) {
     return NextResponse.next();
