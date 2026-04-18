@@ -4,12 +4,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model SystemSettings {
   id                       String                   @id @default("singleton")
-  tenantId                 String                   @default("org_pahlajani_001")
   clinicName               String                   @default("Pahlajani's Women's Hospital")
   brandColor               String                   @default("#0f172a")
   aiRoutingEnabled         Boolean                  @default(false)
@@ -17,19 +18,20 @@ model SystemSettings {
   updatedAt                DateTime                 @updatedAt
   leadDistributionStrategy LeadDistributionStrategy @default(MANUAL)
   integrations             Json?                    @default("{}")
+  tenantId                 String                   @default("org_pahlajani_001")
 
   @@map("system_settings")
 }
 
 model Branch {
   id        String   @id @default(cuid())
-  tenantId  String   @default("org_pahlajani_001")
   name      String
   city      String
   isHQ      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   isActive  Boolean  @default(true)
+  tenantId  String   @default("org_pahlajani_001")
   leads     Lead[]
   users     User[]
 
@@ -38,12 +40,8 @@ model Branch {
 
 model User {
   id                       String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId                 String          @default("org_pahlajani_001")
   email                    String          @unique
-  emailVerified            DateTime?
   name                     String?
-  image                    String?
-  password                 String?
   role                     UserRole        @default(SALES_USER)
   isActive                 Boolean         @default(true)
   platformConsentGiven     Boolean         @default(false)
@@ -51,14 +49,17 @@ model User {
   createdAt                DateTime        @default(now())
   updatedAt                DateTime        @updatedAt
   isOnline                 Boolean         @default(false)
-  activityLogs             ActivityLog[]
-  ownedLeads               Lead[]          @relation("LeadOwner")
+  emailVerified            DateTime?
+  image                    String?
+  tenantId                 String          @default("org_pahlajani_001")
+  branchId                 String?
+  password                 String?
   accounts                 Account[]
-  sessions                 Session[]
+  activityLogs             ActivityLog[]
   Authenticator            Authenticator[]
-
-  branchId String?
-  branch   Branch? @relation(fields: [branchId], references: [id])
+  ownedLeads               Lead[]          @relation("LeadOwner")
+  sessions                 Session[]
+  branch                   Branch?         @relation(fields: [branchId], references: [id])
 
   @@index([branchId])
   @@map("users")
@@ -71,15 +72,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -114,49 +114,48 @@ model Authenticator {
   credentialDeviceType String
   credentialBackedUp   Boolean
   transports           String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
   @@map("authenticators")
 }
 
 model Lead {
-  id                  String            @id @default(cuid())
-  tenantId            String            @default("org_pahlajani_001")
-  name                String
-  email               String?
-  phone               String?
-  whatsappNumber      String?
-  source              LeadSource        @default(WEBSITE_FORM)
-  status              LeadStatus        @default(RAW)
-  intent              LeadIntent        @default(UNSCORED)
-  metadata            Json?
-  aiScore             Int?
-  aiScoredAt          DateTime?
-  aiNotes             String?
-  assignedAt          DateTime?
-  consentFlag         Boolean           @default(false)
-  consentTimestamp    DateTime?
-  consentMethod       String?
-  dataRetentionExpiry DateTime?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  branchId            String?
-  isAutoAssigned      Boolean           @default(false)
-  category            TreatmentCategory @default(OTHER)
-  ownerId             String?           @db.Uuid
-  aiChatStatus        AiChatStatus      @default(AGENTX_ACTIVE)
-  isEscalated         Boolean           @default(false)
-  isUnderAITriage     Boolean           @default(false)
-  aiLeadScore         String?
+  id                    String            @id @default(cuid())
+  name                  String
+  email                 String?
+  phone                 String?
+  whatsappNumber        String?
+  source                LeadSource        @default(WEBSITE_FORM)
+  status                LeadStatus        @default(RAW)
+  intent                LeadIntent        @default(UNSCORED)
+  metadata              Json?
+  aiScore               Int?
+  aiScoredAt            DateTime?
+  aiNotes               String?
+  assignedAt            DateTime?
+  consentFlag           Boolean           @default(false)
+  consentTimestamp      DateTime?
+  consentMethod         String?
+  dataRetentionExpiry   DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  branchId              String?
+  isAutoAssigned        Boolean           @default(false)
+  category              TreatmentCategory @default(OTHER)
+  ownerId               String?           @db.Uuid
+  aiChatStatus          AiChatStatus      @default(AGENTX_ACTIVE)
+  isEscalated           Boolean           @default(false)
+  tenantId              String            @default("org_pahlajani_001")
+  aiLeadScore           String?
   aiSuggestedDepartment String?
-  activityLogs        ActivityLog[]
-  autoNurtureQueue    AutoNurtureQueue?
-  callLogs            CallLog[]
-  branch              Branch?           @relation(fields: [branchId], references: [id])
-  owner               User?             @relation("LeadOwner", fields: [ownerId], references: [id])
-  invoices            Invoice[]
+  isUnderAITriage       Boolean           @default(false)
+  activityLogs          ActivityLog[]
+  autoNurtureQueue      AutoNurtureQueue?
+  callLogs              CallLog[]
+  invoices              Invoice[]
+  branch                Branch?           @relation(fields: [branchId], references: [id])
+  owner                 User?             @relation("LeadOwner", fields: [ownerId], references: [id])
 
   @@index([branchId])
   @@index([ownerId])
@@ -169,7 +168,6 @@ model Lead {
 
 model AutoNurtureQueue {
   id           String    @id @default(cuid())
-  tenantId     String    @default("org_pahlajani_001")
   leadId       String    @unique
   scheduledAt  DateTime  @default(now())
   nextFollowUp DateTime?
@@ -177,6 +175,7 @@ model AutoNurtureQueue {
   isResolved   Boolean   @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  tenantId     String    @default("org_pahlajani_001")
   lead         Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([isResolved])
@@ -185,13 +184,13 @@ model AutoNurtureQueue {
 
 model ActivityLog {
   id          String   @id @default(cuid())
-  tenantId    String   @default("org_pahlajani_001")
   leadId      String?
   userId      String?  @db.Uuid
   action      String
   description String?
   metadata    Json?
   createdAt   DateTime @default(now())
+  tenantId    String   @default("org_pahlajani_001")
   lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
   user        User?    @relation(fields: [userId], references: [id])
 
@@ -200,7 +199,6 @@ model ActivityLog {
 
 model CallLog {
   id           String        @id @default(cuid())
-  tenantId     String        @default("org_pahlajani_001")
   leadId       String?
   direction    CallDirection
   status       CallStatus    @default(CONNECTED)
@@ -212,10 +210,91 @@ model CallLog {
   receiverId   String
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  tenantId     String        @default("org_pahlajani_001")
   lead         Lead?         @relation(fields: [leadId], references: [id])
 
   @@index([leadId])
   @@map("call_logs")
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  tenantId       String        @default("org_pahlajani_001")
+  leadId         String
+  invoiceNumber  String        @unique
+  department     BillingDept
+  subTotal       Float
+  tax            Float         @default(0)
+  totalAmount    Float
+  status         InvoiceStatus @default(UNPAID)
+  paymentLinkId  String?
+  paymentLinkUrl String?
+  issuedAt       DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  createdBy      String?       @db.Uuid
+  items          InvoiceItem[]
+  lead           Lead          @relation(fields: [leadId], references: [id])
+  payments       Payment[]
+
+  @@index([leadId])
+  @@index([invoiceNumber])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id        String  @id @default(cuid())
+  invoiceId String
+  itemName  String
+  quantity  Int     @default(1)
+  unitPrice Float
+  tax       Float   @default(0)
+  total     Float
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id               String      @id @default(cuid())
+  tenantId         String      @default("org_pahlajani_001")
+  invoiceId        String
+  amount           Float
+  paymentMode      PaymentMode
+  upiTransactionId String?     @unique
+  externalId       String?
+  createdAt        DateTime    @default(now())
+  createdBy        String?     @db.Uuid
+  invoice          Invoice     @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+view DailyRevenueSummary {
+  day          DateTime    @db.Timestamp(6)
+  department   BillingDept
+  tenantId     String
+  totalRevenue Float
+
+  @@unique([day, department, tenantId])
+}
+
+view LeadConversionStats {
+  source         LeadSource
+  tenantId       String
+  rawCount       Int
+  wonCount       Int
+  conversionRate Float
+
+  @@unique([source, tenantId])
+}
+
+view SourcePerformance {
+  source      LeadSource
+  tenantId    String
+  totalBilled Float
+
+  @@unique([source, tenantId])
 }
 
 enum Industry {
@@ -325,87 +404,4 @@ enum PaymentMode {
   UPI
   CARD
   INSURANCE
-}
-
-model Invoice {
-  id             String        @id @default(cuid())
-  tenantId       String        @default("org_pahlajani_001")
-  leadId         String
-  invoiceNumber  String        @unique
-  department     BillingDept
-  subTotal       Float
-  tax            Float         @default(0)
-  totalAmount    Float
-  status         InvoiceStatus @default(UNPAID)
-  paymentLinkId  String?
-  paymentLinkUrl String?
-  issuedAt       DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  createdBy      String?       @db.Uuid
-
-  lead     Lead          @relation(fields: [leadId], references: [id])
-  items    InvoiceItem[]
-  payments Payment[]
-
-  @@index([leadId])
-  @@index([invoiceNumber])
-  @@map("invoices")
-}
-
-model InvoiceItem {
-  id        String @id @default(cuid())
-  invoiceId String
-  itemName  String
-  quantity  Int    @default(1)
-  unitPrice Float
-  tax       Float  @default(0)
-  total     Float
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@map("invoice_items")
-}
-
-model Payment {
-  id               String      @id @default(cuid())
-  tenantId         String      @default("org_pahlajani_001")
-  invoiceId        String
-  amount           Float
-  paymentMode      PaymentMode
-  upiTransactionId String?     @unique
-  externalId       String?
-  createdAt        DateTime    @default(now())
-  createdBy        String?     @db.Uuid
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id])
-
-  @@index([invoiceId])
-  @@map("payments")
-}
-
-view DailyRevenueSummary {
-  day          DateTime
-  department   BillingDept
-  tenantId     String
-  totalRevenue Float
-
-  @@unique([day, department, tenantId])
-}
-
-view LeadConversionStats {
-  source         LeadSource
-  tenantId       String
-  rawCount       Int
-  wonCount       Int
-  conversionRate Float
-
-  @@unique([source, tenantId])
-}
-
-view SourcePerformance {
-  source      LeadSource
-  tenantId    String
-  totalBilled Float
-
-  @@unique([source, tenantId])
 }
