@@ -30,6 +30,14 @@ export function PipelineFilterBar() {
     to: toStr ? new Date(toStr) : undefined
   }), [fromStr, toStr]);
 
+  const [open, setOpen] = React.useState(false);
+  const [localRange, setLocalRange] = React.useState<CalendarRange | undefined>(dateRange);
+
+  // Sync local state when external URL changes (e.g. reset)
+  React.useEffect(() => {
+    setLocalRange(dateRange);
+  }, [dateRange]);
+
   const updateUrl = React.useCallback((params: Record<string, string | null>) => {
     const newParams = new URLSearchParams(searchParams.toString());
     Object.entries(params).forEach(([key, value]) => {
@@ -39,10 +47,11 @@ export function PipelineFilterBar() {
     router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
   }, [router, searchParams, pathname]);
 
-  const handleSetDateRange = (range: CalendarRange | undefined) => {
+  const applyDateRange = () => {
+    setOpen(false);
     updateUrl({
-      from: range?.from ? range.from.toISOString() : null,
-      to: range?.to ? range.to.toISOString() : null
+      from: localRange?.from ? localRange.from.toISOString() : null,
+      to: localRange?.to ? localRange.to.toISOString() : null
     });
   };
 
@@ -60,8 +69,8 @@ export function PipelineFilterBar() {
   return (
     <div className="flex flex-col md:flex-row items-center gap-4 p-4">
       <div className="flex items-center gap-2">
-        <Popover>
-          <PopoverTrigger>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
             <Button
               variant={"outline"}
               className={cn(
@@ -94,22 +103,30 @@ export function PipelineFilterBar() {
                     key={preset.label}
                     variant="ghost"
                     className="justify-start font-bold text-xs rounded-xl h-9 hover:bg-white"
-                    onClick={() => handleSetDateRange(preset.getValue())}
+                    onClick={() => {
+                        setLocalRange(preset.getValue());
+                    }}
                   >
                     {preset.label}
                   </Button>
                 ))}
               </div>
-              <div className="p-2">
+              <div className="p-3 flex flex-col items-center">
                 <Calendar
                   initialFocus
                   mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={dateRange}
-                  onSelect={handleSetDateRange}
+                  defaultMonth={localRange?.from}
+                  selected={localRange}
+                  onSelect={setLocalRange}
                   numberOfMonths={2}
                   className="rounded-2xl"
                 />
+                <div className="w-full flex items-center justify-end border-t border-slate-100 pt-3 mt-3 px-2 gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="rounded-xl font-bold text-xs">Cancel</Button>
+                    <Button onClick={applyDateRange} size="sm" className="rounded-xl px-6 font-black uppercase tracking-widest text-[10px]">
+                        Go &rarr;
+                    </Button>
+                </div>
               </div>
             </div>
           </PopoverContent>
