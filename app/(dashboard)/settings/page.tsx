@@ -15,6 +15,7 @@ import {
   MapPin
 } from "lucide-react";
 import { ManageCenters } from "./manage-centers";
+import { ReclassifyLeadsCard } from "@/components/settings/reclassify-leads-card";
 import { 
   Dialog, 
   DialogContent, 
@@ -109,7 +110,7 @@ export default async function SettingsPage() {
            </Card>
         </TabsContent>
 
-        <TabsContent value="compliance" className="mt-8">
+        <TabsContent value="compliance" className="mt-8 space-y-6">
             <Card className="surface-layered rounded-[3rem] overflow-hidden border-none bg-emerald-500/5">
                 <CardHeader className="p-12 pb-6">
                     <div className="flex items-center gap-2 mb-2">
@@ -130,6 +131,19 @@ export default async function SettingsPage() {
                             </div>
                         </div>
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* AI Sentinel Re-Classification */}
+            <Card className="surface-layered rounded-[3rem] overflow-hidden border-none">
+                <CardHeader className="p-12 pb-6">
+                    <CardTitle className="text-2xl font-black tracking-tight italic">AI Lead Intelligence</CardTitle>
+                    <CardDescription className="text-sm font-medium">
+                        Retroactively re-classify all captured leads using inbound-only message analysis.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="p-12 pt-0">
+                    <ReclassifyLeadsCard />
                 </CardContent>
             </Card>
         </TabsContent>
