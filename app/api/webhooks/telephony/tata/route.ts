@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import { prisma } from "@/lib/prisma";
+import { assignIncomingLead } from "@/lib/routing/lead-assignment";
 import { createClient } from "@supabase/supabase-js";
 
 /**
@@ -36,6 +37,8 @@ export async function POST(req: Request) {
           status: "RAW"
         }
       });
+      // Auto-distribute the lead
+      await assignIncomingLead(lead.id);
     }
 
     // AI Routing check

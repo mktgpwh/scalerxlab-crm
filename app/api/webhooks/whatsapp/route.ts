@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
+import { assignIncomingLead } from "@/lib/routing/lead-assignment";
 
 /**
  * WHATSAPP WEBHOOK ENGINE
@@ -100,6 +101,8 @@ export async function POST(req: NextRequest) {
 
         // 3. Proactive Intelligence
         if (textBody) {
+            // Distribute lead immediately after creation
+            await assignIncomingLead(lead.id);
             await generateProactiveDraft({
                 leadId: lead.id,
                 messageText: textBody,

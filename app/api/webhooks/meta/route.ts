@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
-import { distributeLead } from "@/lib/leads/distributor";
+import { assignIncomingLead } from "@/lib/routing/lead-assignment";
 
 /**
  * META WEBHOOK ENGINE
@@ -146,6 +146,11 @@ async function processMetaMessage(
                 }
             });
             console.log(`✨ [TRACE] New Lead Created: ${lead.id}`);
+
+            // 🚀 Trigger Autonomous Distribution
+            await assignIncomingLead(lead.id);
+            // Refresh state
+            lead = await prisma.lead.findUnique({ where: { id: lead.id } });
 
             // 🚀 IDENTITY ENRICHMENT (Asynchronous but tracked)
             const enrichment = await fetchMetaUserProfile(senderId, sourceLabel.includes('INSTAGRAM') ? 'instagram' : 'facebook');

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { analyzeClinicalConversation } from "@/lib/ai/sentinel";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 // Increase max duration for long-running batch jobs (Vercel Pro allows up to 300s)
@@ -24,16 +24,15 @@ const BATCH_SIZE = 5; // Process 5 leads concurrently to avoid rate-limiting Gro
 export async function POST(req: NextRequest) {
   try {
     // ── Auth guard: Super Admin only ───────────────────────────
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const profile = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: session.user.id },
       select: { role: true }
     });
 
-    if (profile?.role !== "SUPER_ADMIN" && profile?.role !== "ORG_ADMIN") {
+    if (profile?.role !== "SUPER_ADMIN" && profile?.role !== "SALES_ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 

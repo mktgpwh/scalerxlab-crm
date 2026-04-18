@@ -31,6 +31,7 @@ model Branch {
   updatedAt DateTime @updatedAt
   isActive  Boolean  @default(true)
   leads     Lead[]
+  users     User[]
 
   @@map("branches")
 }
@@ -42,7 +43,8 @@ model User {
   emailVerified            DateTime?
   name                     String?
   image                    String?
-  role                     UserRole        @default(AGENT)
+  password                 String?
+  role                     UserRole        @default(SALES_USER)
   isActive                 Boolean         @default(true)
   platformConsentGiven     Boolean         @default(false)
   platformConsentTimestamp DateTime?
@@ -55,6 +57,10 @@ model User {
   sessions                 Session[]
   Authenticator            Authenticator[]
 
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  @@index([branchId])
   @@map("users")
 }
 
@@ -142,6 +148,9 @@ model Lead {
   ownerId             String?           @db.Uuid
   aiChatStatus        AiChatStatus      @default(AGENTX_ACTIVE)
   isEscalated         Boolean           @default(false)
+  isUnderAITriage     Boolean           @default(false)
+  aiLeadScore         String?
+  aiSuggestedDepartment String?
   activityLogs        ActivityLog[]
   autoNurtureQueue    AutoNurtureQueue?
   callLogs            CallLog[]
@@ -230,13 +239,10 @@ enum OrgPlan {
 
 enum UserRole {
   SUPER_ADMIN
-  ORG_ADMIN
-  MANAGER
-  AGENT
-  VIEWER
-  DOCTOR
-  COUNSELOR
-  TELESALES
+  SALES_ADMIN
+  SALES_USER
+  FRONT_DESK
+  COUNSELLOR
   FIELD_SALES
 }
 
@@ -335,6 +341,7 @@ model Invoice {
   paymentLinkUrl String?
   issuedAt       DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  createdBy      String?       @db.Uuid
 
   lead     Lead          @relation(fields: [leadId], references: [id])
   items    InvoiceItem[]
@@ -346,15 +353,15 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id          String  @id @default(cuid())
-  invoiceId   String
-  itemName    String
-  quantity    Int     @default(1)
-  unitPrice   Float
-  tax         Float   @default(0)
-  total       Float
-  
-  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  id        String @id @default(cuid())
+  invoiceId String
+  itemName  String
+  quantity  Int    @default(1)
+  unitPrice Float
+  tax       Float  @default(0)
+  total     Float
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@map("invoice_items")
 }
@@ -368,6 +375,7 @@ model Payment {
   upiTransactionId String?     @unique
   externalId       String?
   createdAt        DateTime    @default(now())
+  createdBy        String?     @db.Uuid
 
   invoice Invoice @relation(fields: [invoiceId], references: [id])
 

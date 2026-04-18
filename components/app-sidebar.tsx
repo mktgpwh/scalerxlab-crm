@@ -20,10 +20,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IntegrationIcon } from "@/components/ui/integration-icon";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { toggleUserPresence } from "@/app/(dashboard)/settings/team/actions";
+import { toggleUserPresence } from "@/app/(dashboard)/settings/users/actions";
 import { toast } from "sonner";
 import {
   Sidebar,
@@ -39,7 +38,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
 
@@ -53,41 +52,29 @@ const items = [
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
   { title: "Connections", url: "/integrations", icon: Puzzle, label: "Expansion Hub" },
   { title: "Activity Logs", url: "/activity", icon: History },
+  { title: "Personnel Matrix", url: "/settings/users", icon: Users, label: "Command Roster" },
   { title: "Security & Compliance", url: "/security", icon: ShieldCheck, label: "Privacy Vault" },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
-  const [role, setRole] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const user = session?.user as any;
+  const role = user?.role;
+  const userId = user?.id;
+
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [isPresenceLoading, setIsPresenceLoading] = useState(false);
 
   useEffect(() => {
-    async function getProfile() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        setUserId(session.user.id);
-        const { data, error } = await supabase
-          .from("users")
-          .select("role, isOnline")
-          .eq("id", session.user.id)
-          .single();
-        
-        if (data && !error) {
-          setRole(data.role);
-          setIsOnline(data.isOnline);
-        }
-      }
+    if (user) {
+      setIsOnline(user.isOnline || false);
     }
-    getProfile();
-  }, [supabase]);
+  }, [user]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
+    await signOut({ callbackUrl: "/login" });
   };
 
   const handleTogglePresence = async () => {
@@ -107,24 +94,30 @@ export function AppSidebar() {
   };
 
   // Filter items based on role
+  // Filter items based on new strict strict roles
   const filteredItems = items.filter((item) => {
-    const isOperationalRole = ["AGENT", "TELESALES", "FIELD_SALES", "COUNSELOR"].includes(role || "");
-    
-    // Non-admin roles restricted from specific high-level system components
-    if (isOperationalRole) {
-      if (["Connections", "Sovereign Intelligence", "Security & Compliance"].includes(item.title)) {
-        return false;
-      }
-    }
-    
-    // Counsellor specifically doesn't need telephony call management or Command Center
-    if (role === "COUNSELOR") {
-      if (["Command Center", "Call Management"].includes(item.title)) {
-        return false;
-      }
+    // 1. Super Admin / Sales Admin see everything
+    if (role === "SUPER_ADMIN" || role === "SALES_ADMIN") return true;
+
+    // 2. Front Desk restrictive view
+    if (role === "FRONT_DESK") {
+      return ["Command Center", "Lead Funnels", "Billing Terminal"].includes(item.title);
     }
 
-    return true;
+    // 3. Counsellor (restricted from high-level, telephony, and command center)
+    if (role === "COUNSELLOR") {
+      return ["Lead Funnels", "Billing Terminal", "Shared Inbox", "Activity Logs"].includes(item.title);
+    }
+
+    // 4. Sales Users & Field Sales (General operational view)
+    if (role === "SALES_USER" || role === "FIELD_SALES") {
+      if (["Connections", "Sovereign Intelligence", "Security & Compliance", "Intelligence Matrix", "Personnel Matrix"].includes(item.title)) {
+        return false;
+      }
+      return true;
+    }
+
+    return false; // Default: hide everything if role is unrecognized
   });
 
   return (
@@ -229,9 +222,9 @@ export function AppSidebar() {
 
           <SidebarMenuItem>
             <SidebarMenuButton 
-              render={<Link href="/settings" />}
-              isActive={pathname === "/settings"}
-              className={cn("h-10 rounded-xl px-3 transition-all cursor-pointer", pathname === "/settings" ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900")}
+              render={<Link href="/settings/users" />}
+              isActive={pathname.startsWith("/settings/users")}
+              className={cn("h-10 rounded-xl px-3 transition-all cursor-pointer", pathname.startsWith("/settings/users") ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900")}
             >
               <Settings className="h-4 w-4" />
               <span className="font-bold text-[11px] uppercase tracking-widest group-data-[collapsible=icon]:hidden">System Settings</span>

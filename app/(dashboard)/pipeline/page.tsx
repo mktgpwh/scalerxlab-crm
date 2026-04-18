@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getPrismaDateFilter } from "@/lib/utils/date-filters";
 import { SpecialityFunnelGrid } from "@/components/pipeline/speciality-funnel-grid";
@@ -29,15 +29,14 @@ const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
 
 export default async function PipelinePage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const session = await auth();
 
-  if (!user) {
+  if (!session?.user) {
     redirect("/login");
   }
 
   const profile = await prisma.user.findUnique({
-    where: { id: user.id },
+    where: { id: session.user.id },
     select: { id: true, role: true }
   });
 
@@ -45,7 +44,7 @@ export default async function PipelinePage({ searchParams }: PageProps) {
     redirect("/login");
   }
 
-  const isAdmin = profile.role === "ORG_ADMIN" || profile.role === "SUPER_ADMIN";
+  const isAdmin = profile.role === "SALES_ADMIN" || profile.role === "SUPER_ADMIN";
 
   // localized filters for this page (independent of Command Center)
   const dateFilter = getPrismaDateFilter(params.from, params.to);

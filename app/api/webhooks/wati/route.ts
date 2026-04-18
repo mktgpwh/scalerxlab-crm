@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { processWithAgentX } from "@/lib/ai/agentx";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
-import { distributeLead } from "@/lib/leads/distributor";
+import { assignIncomingLead } from "@/lib/routing/lead-assignment";
 
 export const dynamic = 'force-dynamic';
 
@@ -37,13 +37,18 @@ export async function POST(req: Request) {
           whatsappNumber: cleanWaId,
           source: "WHATSAPP",
           status: "RAW",
-          aiChatStatus: "AGENTX_ACTIVE",
-        },
+          },
       });
-
-      // Distribute lead immediately after creation
-      await distributeLead(lead.id);
     }
+
+    // 1b. Trigger Assignment for Ownerless Leads
+    if (lead && !lead.ownerId) {
+      await assignIncomingLead(lead.id);
+      // Refresh lead state after potential triage update
+      lead = await prisma.lead.findUnique({ where: { id: lead.id } }) as any;
+    }
+
+    if (!lead) return NextResponse.json({ error: "Lead processing failure" }, { status: 500 });
 
     // WATI Direction detection
     const isOutgoing = eventType === "sentMessage" || eventType === "repliedMessage" || eventType === "sent" || payload.direction === "outbound";

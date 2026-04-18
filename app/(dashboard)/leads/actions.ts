@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { LeadStatus, LeadIntent, LeadSource, TreatmentCategory } from "@prisma/client";
 
 const leadSchema = z.object({
@@ -22,12 +22,11 @@ const leadSchema = z.object({
 
 export async function createLeadAction(data: z.infer<typeof leadSchema>) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Unauthorized");
+    const session = await auth();
+    if (!session?.user) throw new Error("Unauthorized");
 
     const profile = await prisma.user.findUnique({
-        where: { id: user.id },
+        where: { id: session.user.id },
         select: { id: true, role: true }
     });
 
@@ -41,7 +40,7 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
     }
 
     // RBAC: If not Admin, force ownership to current user
-    const finalOwnerId = (profile?.role === "ORG_ADMIN" || profile?.role === "SUPER_ADMIN") 
+    const finalOwnerId = (profile?.role === "SALES_ADMIN" || profile?.role === "SUPER_ADMIN") 
         ? data.ownerId 
         : profile?.id;
 
@@ -69,16 +68,15 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
 
 export async function bulkImportLeadsAction(leads: any[], globalBranchId?: string) {
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Unauthorized");
+        const session = await auth();
+        if (!session?.user) throw new Error("Unauthorized");
 
         const profile = await prisma.user.findUnique({
-            where: { id: user.id },
+            where: { id: session.user.id },
             select: { id: true, role: true }
         });
 
-        const isAdmin = profile?.role === "ORG_ADMIN" || profile?.role === "SUPER_ADMIN";
+        const isAdmin = profile?.role === "SALES_ADMIN" || profile?.role === "SUPER_ADMIN";
 
         // 1. Filter out invalid rows (missing phone)
         const validLeads = leads.filter(l => l.phone && l.phone.length >= 10);

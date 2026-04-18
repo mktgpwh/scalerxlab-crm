@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 // Each batch is ~1000 rows; max DB insert time should be well within 30s
@@ -21,17 +21,16 @@ const VALID_SOURCES = [
 export async function POST(req: NextRequest) {
   try {
     // ── Auth guard ─────────────────────────────────────────────
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const profile = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: session.user.id },
       select: { id: true, role: true }
     });
     if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const isAdmin = profile.role === "SUPER_ADMIN" || profile.role === "ORG_ADMIN";
+    const isAdmin = profile.role === "SUPER_ADMIN" || profile.role === "SALES_ADMIN";
 
     // ── Parse body ─────────────────────────────────────────────
     const { rows, defaultBranchId } = await req.json() as {

@@ -16,15 +16,6 @@ import {
 } from "lucide-react";
 import { ManageCenters } from "./manage-centers";
 import { ReclassifyLeadsCard } from "@/components/settings/reclassify-leads-card";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { AddUserForm } from "./team/add-user-form";
 
 export default async function SettingsPage() {
   const clinicName = process.env.NEXT_PUBLIC_CLINIC_NAME || "ScalerX Lab";
@@ -64,10 +55,6 @@ export default async function SettingsPage() {
           <TabsTrigger value="compliance" className="rounded-2xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
             <ShieldCheck className="w-4 h-4 mr-2" />
             Compliance
-          </TabsTrigger>
-          <TabsTrigger value="team" className="rounded-2xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-            <Users className="w-4 h-4 mr-2" />
-            Team
           </TabsTrigger>
           <TabsTrigger value="locations" className="rounded-2xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">
             <MapPin className="w-4 h-4 mr-2" />
@@ -172,59 +159,6 @@ export default async function SettingsPage() {
             </Card>
         </TabsContent>
 
-        <TabsContent value="team" className="mt-8 space-y-6">
-            <Card className="surface-layered rounded-[3rem] overflow-hidden border-none">
-                <CardHeader className="p-12 pb-6">
-                    <CardTitle className="text-2xl font-black tracking-tight italic">Team Roster</CardTitle>
-                    <CardDescription className="text-sm font-medium">Active members assigned to this Command Node.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-12 pt-0 space-y-4">
-                    {users.map((member, i) => (
-                       <div key={member.id} className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-white/5 ring-1 ring-slate-200/50 dark:ring-white/5">
-                          <div className="flex items-center gap-4">
-                             <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary uppercase">
-                                {member.name?.[0] || member.email[0]}
-                             </div>
-                             <div>
-                                <p className="text-sm font-black">{member.name || "System Node"}</p>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{member.role.replace('_', ' ')}</p>
-                             </div>
-                          </div>
-                          <Badge className="text-[9px] font-black bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-200 border-none uppercase">
-                             {member.isActive ? "ACTIVE" : "INACTIVE"}
-                          </Badge>
-                       </div>
-                    ))}
-                    <div className="flex items-center justify-center pt-4">
-                       <Dialog>
-                          <DialogTrigger 
-                              render={
-                                 <Button variant="outline" className="rounded-full border-dashed border-slate-300 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-primary hover:border-primary">
-                                    <Users className="h-4 w-4 mr-2" />
-                                    Invite Team Member
-                                 </Button>
-                              }
-                           />
-                          <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-white/95 backdrop-blur-xl">
-                              <div className="p-8 pt-10 text-center bg-slate-50/50 border-b border-slate-100">
-                                  <DialogHeader>
-                                      <DialogTitle className="text-3xl font-black tracking-tighter italic lowercase text-slate-900">
-                                          Create System Node
-                                      </DialogTitle>
-                                      <DialogDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest pt-2">
-                                          Securely provision a new clinical or administrative identity
-                                      </DialogDescription>
-                                  </DialogHeader>
-                              </div>
-                              <div className="p-8 pb-10">
-                                  <AddUserForm />
-                              </div>
-                          </DialogContent>
-                       </Dialog>
-                    </div>
-                </CardContent>
-            </Card>
-        </TabsContent>
         <TabsContent value="locations" className="mt-8">
             <ManageCenters initialBranches={branches as any[]} />
         </TabsContent>

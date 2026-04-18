@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scoreLead } from "@/lib/ai/intent-scorer";
 import { createClient } from "@supabase/supabase-js";
-import { distributeLead } from "@/lib/leads/distributor";
+import { assignIncomingLead } from "@/lib/routing/lead-assignment";
 
 export const dynamic = 'force-dynamic';
 
@@ -68,8 +68,8 @@ export async function POST(req: Request) {
       },
     });
 
-    // 🚀 Trigger Intelligent Distribution
-    await distributeLead(lead.id);
+    // 🚀 Trigger Autonomous Distribution
+    await assignIncomingLead(lead.id);
 
     // AI Scoring
     try {

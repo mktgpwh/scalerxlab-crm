@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ExecutiveDashboard } from "./leads/executive-dashboard";
 import { AgentHub } from "./leads/agent-hub";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getPrismaDateFilter } from "@/lib/utils/date-filters";
 
@@ -18,16 +18,15 @@ interface PageProps {
 
 export default async function CommandCenterPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const session = await auth();
 
-  if (!user) {
+  if (!session?.user) {
     redirect("/login");
   }
 
   // Get user profile/role
   const profile = await prisma.user.findUnique({
-    where: { id: user.id },
+    where: { id: session.user.id },
     select: { id: true, role: true }
   });
 
@@ -35,7 +34,7 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
     redirect("/login");
   }
 
-  const isAdmin = profile.role === "ORG_ADMIN" || profile.role === "SUPER_ADMIN";
+  const isAdmin = profile.role === "SALES_ADMIN" || profile.role === "SUPER_ADMIN";
 
   // Build Prisma Filters
   const dateFilter = getPrismaDateFilter(params.from, params.to);
@@ -127,7 +126,7 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
 
   const dailyLeadsSeries = Object.entries(dailyCounts).map(([day, count]) => ({ day, count }));
 
-  const isOperationalRole = ["AGENT", "TELESALES", "FIELD_SALES", "COUNSELOR"].includes(profile.role);
+  const isOperationalRole = ["SALES_USER", "FIELD_SALES", "COUNSELLOR", "FRONT_DESK"].includes(profile.role);
 
   if (isOperationalRole) {
     return (

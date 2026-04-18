@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { sendInvoiceNotification } from "@/lib/notifications/wati";
 import { generateUPIIntent } from "@/lib/payments/upi";
+import { auth } from "@/auth";
 
 /**
  * Searches for patients (Leads) by name or phone
@@ -19,7 +20,7 @@ export async function searchPatients(query: string) {
                     { phone: { contains: query } },
                     { whatsappNumber: { contains: query } }
                 ]
-            },
+            } as any,
             take: 10,
             select: {
                 id: true,
@@ -51,6 +52,8 @@ export async function createInvoiceAction(params: {
     items: InvoiceItemInput[];
 }) {
     try {
+        const session = await auth();
+        const userId = session?.user?.id;
         const { leadId, department, items } = params;
 
         // 1. Calculate Totals
@@ -66,7 +69,7 @@ export async function createInvoiceAction(params: {
 
         // 3. Create Records Atomically
         const invoice = await prisma.$transaction(async (tx) => {
-            const inv = await tx.invoice.create({
+            const inv = await (tx.invoice.create as any)({
                 data: {
                     leadId,
                     department,
@@ -75,6 +78,7 @@ export async function createInvoiceAction(params: {
                     tax: totalTax,
                     totalAmount,
                     status: "UNPAID",
+                    createdBy: userId,
                 },
                 include: {
                     lead: true
@@ -96,6 +100,7 @@ export async function createInvoiceAction(params: {
             await tx.activityLog.create({
                 data: {
                     leadId,
+                    userId,
                     action: "INVOICE_GENERATED",
                     description: `Generated ${department} invoice ${invoiceNumber} for ₹${totalAmount.toFixed(2)}`,
                     metadata: { invoiceId: inv.id, department }
@@ -103,7 +108,7 @@ export async function createInvoiceAction(params: {
             });
 
             return inv;
-        });
+        }) as any;
 
         // 4. Generate UPI Payment Info
         const upiLink = generateUPIIntent({
