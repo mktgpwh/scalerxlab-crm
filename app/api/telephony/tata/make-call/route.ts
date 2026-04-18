@@ -17,10 +17,14 @@ export async function POST(req: Request) {
 
     const lead = await prisma.lead.findUnique({ where: { id: leadId } });
 
+    if (!lead) {
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    }
+
     const targetPhone = lead.phone || lead.whatsappNumber;
 
-    if (!lead || !targetPhone) {
-      return NextResponse.json({ error: "Lead not found or has no phone" }, { status: 404 });
+    if (!targetPhone) {
+      return NextResponse.json({ error: "Lead has no phone or whatsapp number" }, { status: 404 });
     }
 
     // DPDPA Consent Check
