@@ -102,3 +102,80 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+/**
+ * PATCH /api/admin/users
+ * Update an existing clinical or administrative node.
+ */
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (session?.user?.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { id, name, email, password, role, branchId, isActive } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing Target ID" }, { status: 400 });
+    }
+
+    const updateData: any = {
+      name,
+      email,
+      role: role as UserRole,
+      branchId: branchId || null,
+      isActive,
+      updatedAt: new Date(),
+    };
+
+    if (password && password.length >= 8) {
+      updateData.password = await hashPassword(password);
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return NextResponse.json({ success: true, user });
+  } catch (error: any) {
+    console.error("💥 [USER_UPDATE_FATAL]", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/admin/users
+ * Decommission a clinical node.
+ */
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (session?.user?.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing Target ID" }, { status: 400 });
+    }
+
+    // Prevent self-deletion
+    if (id === session.user.id) {
+      return NextResponse.json({ error: "Cannot decommission self" }, { status: 400 });
+    }
+
+    await prisma.user.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("💥 [USER_DELETE_FATAL]", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
