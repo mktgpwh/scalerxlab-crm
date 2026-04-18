@@ -67,7 +67,7 @@ export default async function PipelinePage({ searchParams }: PageProps) {
         ...branchFilter
       },
       include: {
-        owner: { select: { id: true, name: true, avatarUrl: true } },
+        owner: { select: { id: true, name: true, image: true } },
         branch: { select: { id: true, name: true, city: true } }
       },
       orderBy: { createdAt: "desc" },

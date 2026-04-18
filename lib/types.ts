@@ -21,7 +21,7 @@ export interface Lead {
   owner?: {
     id: string;
     name: string;
-    avatarUrl: string | null;
+    image: string | null;
   };
   branch?: {
     id: string;

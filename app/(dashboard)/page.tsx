@@ -67,7 +67,7 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
             select: {
                 id: true,
                 name: true,
-                avatarUrl: true
+                image: true
             }
         },
         branch: {
