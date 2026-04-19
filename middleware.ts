@@ -12,9 +12,10 @@ export default auth((req) => {
 
   const isPublicRoute = nextUrl.pathname === "/login";
   const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
+  const isWebhookRoute = nextUrl.pathname.startsWith("/api/webhooks");
   
-  // Allow API auth routes and public routes
-  if (isApiAuthRoute || isPublicRoute) {
+  // Allow API auth, webhooks, and public routes
+  if (isApiAuthRoute || isPublicRoute || isWebhookRoute) {
     return NextResponse.next();
   }
 

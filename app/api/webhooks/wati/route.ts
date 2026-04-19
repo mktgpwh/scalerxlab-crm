@@ -12,12 +12,23 @@ export async function POST(req: Request) {
     console.log("[WATI_WEBHOOK] Incoming Payload:", JSON.stringify(payload, null, 2));
 
     // WATI payload format: typically includes sender/waId and text/message
-    const waId = payload.waId || payload.sender || payload.from;
-    const messageText = payload.text || payload.message || payload.body || payload.customText;
+    // Robust extraction strategy for waId
+    const waId = payload.waId || payload.sender || payload.from || payload.senderNumber;
+    
+    // Robust extraction strategy for messageText
+    const messageText = payload.text || payload.message || payload.body || payload.customText || payload.answer || "";
+    
+    // Detection for event type
     const eventType = payload.eventType || payload.event_type || payload.type || "message";
 
-    if (!waId || !messageText) {
-      return NextResponse.json({ error: "Missing sender or message in payload" }, { status: 400 });
+    if (!waId) {
+      console.warn("[WATI_WEBHOOK] Payload missing waId or sender identifier.");
+      return NextResponse.json({ error: "Missing identity identifier in payload" }, { status: 400 });
+    }
+
+    // Special handling for payloads that are just status updates (e.g. read receipts)
+    if (eventType === "read" || eventType === "delivered" || (!messageText && eventType !== "sentMessage")) {
+       return NextResponse.json({ success: true, detail: "Status update acknowledged" });
     }
 
     // Ensure waId is numeric
