@@ -122,19 +122,19 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-xl border border-slate-200/50 dark:border-white/5 overflow-hidden ring-1 ring-slate-100">
-      <div className="p-8 pb-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 flex items-center justify-between">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-none overflow-hidden">
+      <div className="p-10 pb-6 bg-slate-50/50 dark:bg-white/5 flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-black tracking-tighter italic lowercase text-slate-900 dark:text-white">
+          <h3 className="text-2xl font-black tracking-tighter italic lowercase text-zinc-900 dark:text-white">
             {isEdit ? "/update.identity" : "/provision.node"}
           </h3>
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
             {isEdit ? "Modifying existing matrix node" : "Onboarding new tactical node"}
           </p>
         </div>
         {onCancel && (
-          <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-xl">
-            <X className="h-4 w-4" />
+          <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-xl hover:bg-zinc-200/50">
+            <X className="h-5 w-5 text-zinc-400" />
           </Button>
         )}
       </div>
@@ -237,7 +237,7 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-16 rounded-[1.25rem] bg-slate-900 hover:bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-lg group transition-all"
+              className="w-full h-16 rounded-[1.25rem] bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 group transition-all"
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

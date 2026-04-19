@@ -95,8 +95,8 @@ export function UserTable({ users, selectedUserId, onEdit }: UserTableProps) {
                   className={cn(
                     "rounded-xl transition-all duration-300",
                     selectedUserId === user.id 
-                      ? "bg-primary text-white shadow-lg shadow-primary/20 scale-110" 
-                      : "text-slate-300 hover:text-primary hover:bg-primary/10"
+                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-110" 
+                      : "text-slate-300 hover:text-indigo-600 hover:bg-indigo-50"
                   )}
                 >
                   <Edit3 className="h-4 w-4" />
