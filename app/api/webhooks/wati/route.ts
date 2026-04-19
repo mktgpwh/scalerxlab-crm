@@ -26,9 +26,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing identity identifier in payload" }, { status: 400 });
     }
 
-    // Special handling for payloads that are just status updates (e.g. read receipts)
-    if (eventType === "read" || eventType === "delivered" || (!messageText && eventType !== "sentMessage")) {
+    // Special handling for media and status updates
+    const isMedia = ["image", "video", "audio", "document", "sticker", "location", "contact", "voice"].includes(eventType);
+    
+    // Status updates (read/delivered) should still be acknowledged silently
+    if ((eventType === "read" || eventType === "delivered") && !isMedia) {
        return NextResponse.json({ success: true, detail: "Status update acknowledged" });
+    }
+
+    // If it's a valid message but has no text (e.g. captionless image), assign a placeholder for database safety
+    let processedMessageText = messageText;
+    if (!processedMessageText && (eventType === "message" || isMedia)) {
+       processedMessageText = `[Patient sent an ${eventType === "message" ? "attachment" : eventType}]`;
+    }
+
+    // Final guard: If we still have no text and it's not a sentient event, return early
+    if (!waId || (!processedMessageText && eventType !== "sentMessage")) {
+      return NextResponse.json({ error: "No message context found" }, { status: 400 });
     }
 
     // Ensure waId is numeric
@@ -70,7 +84,7 @@ export async function POST(req: Request) {
     const duplicate = await prisma.activityLog.findFirst({
       where: {
         leadId: lead.id,
-        description: messageText,
+        description: processedMessageText,
         createdAt: { gte: timeThreshold }
       }
     });
@@ -85,9 +99,9 @@ export async function POST(req: Request) {
       data: {
         leadId: lead.id,
         action: actionType,
-        description: messageText,
+        description: processedMessageText,
         metadata: {
-          messageText,
+          messageText: processedMessageText,
           rawPayload: payload,
           eventType,
           isOutgoing
@@ -113,12 +127,12 @@ export async function POST(req: Request) {
     // 4. AgentX Handoff (Only for incoming messages)
     if (!isOutgoing) {
       // Run Proactive Scoring (Heat Mapping)
-      await generateProactiveDraft({ leadId: lead.id, messageText });
+      await generateProactiveDraft({ leadId: lead.id, messageText: processedMessageText });
 
       if (lead.aiChatStatus === "AGENTX_ACTIVE") {
-          console.log(`[AGENTX_HANDOFF] Processing message for Lead ${lead.id}: "${messageText}"`);
+          console.log(`[AGENTX_HANDOFF] Processing message for Lead ${lead.id}: "${processedMessageText}"`);
           // Awaiting here is usually safe for short AI calls, Next.js serverless limits allow up to 10s or 60s
-          await processWithAgentX(lead.id, messageText, cleanWaId);
+          await processWithAgentX(lead.id, processedMessageText, cleanWaId);
       }
     }
 

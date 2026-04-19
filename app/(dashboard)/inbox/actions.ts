@@ -27,8 +27,22 @@ export async function fetchInboxThreads() {
             },
             include: {
                 activityLogs: {
+                    where: {
+                        action: {
+                            in: [
+                                "MESSAGE_RECEIVED", 
+                                "CLINIC_MESSAGE_SENT", 
+                                "AGENTX_REPLY",
+                                "AGENTX_FOLLOWUP_SENT",
+                                "WHATSAPP_MESSAGE_SENT",
+                                "WHATSAPP_MESSAGE_RECEIVED",
+                                "INSTAGRAM_DM_RECEIVED",
+                                "FACEBOOK_MSG_RECEIVED"
+                            ]
+                        }
+                    },
                     orderBy: { createdAt: 'desc' },
-                    take: 50 // Fetch recent history for preview and chat window
+                    take: 50 // Fetch recent chat history
                 }
             },
             orderBy: {
