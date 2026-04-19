@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
 import { assignIncomingLead } from "@/lib/routing/lead-assignment";
+import { evaluateLead } from "@/lib/ai/scoring";
 
 /**
  * META WEBHOOK ENGINE
@@ -146,6 +147,9 @@ async function processMetaMessage(
                 }
             });
             console.log(`✨ [TRACE] New Lead Created: ${lead.id}`);
+            
+            // 🚀 STRATEGIC AI SCORING (24/7 Gatekeeper)
+            await evaluateLead(lead.id, text);
 
             // 🚀 Trigger Autonomous Distribution
             await assignIncomingLead(lead.id);

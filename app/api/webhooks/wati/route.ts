@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { processWithAgentX } from "@/lib/ai/agentx";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
 import { assignIncomingLead } from "@/lib/routing/lead-assignment";
+import { evaluateLead } from "@/lib/ai/scoring";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,10 @@ export async function POST(req: Request) {
     
     // Detection for event type
     const eventType = payload.eventType || payload.event_type || payload.type || "message";
+
+    // WATI Direction detection
+    const isOutgoing = eventType === "sentMessage" || eventType === "repliedMessage" || eventType === "sent" || payload.direction === "outbound";
+    const actionType = isOutgoing ? "CLINIC_MESSAGE_SENT" : "MESSAGE_RECEIVED";
 
     if (!waId) {
       console.warn("[WATI_WEBHOOK] Payload missing waId or sender identifier.");
@@ -66,18 +71,23 @@ export async function POST(req: Request) {
       });
     }
 
-    // 1b. Trigger Assignment for Ownerless Leads
+    // 1b. Strategic AI Scoring (24/7 Gatekeeper)
+    if (lead && !isOutgoing) {
+        await evaluateLead(lead.id, processedMessageText);
+        // Refresh lead state to get the new aiLeadScore
+        lead = await prisma.lead.findUnique({ where: { id: lead.id } }) as any;
+    }
+
+    // 1c. Trigger Quality-Gated Assignment for Ownerless Leads
     if (lead && !lead.ownerId) {
       await assignIncomingLead(lead.id);
-      // Refresh lead state after potential triage update
+      // Refresh lead state after potential routing update
       lead = await prisma.lead.findUnique({ where: { id: lead.id } }) as any;
     }
 
     if (!lead) return NextResponse.json({ error: "Lead processing failure" }, { status: 500 });
 
-    // WATI Direction detection
-    const isOutgoing = eventType === "sentMessage" || eventType === "repliedMessage" || eventType === "sent" || payload.direction === "outbound";
-    const actionType = isOutgoing ? "CLINIC_MESSAGE_SENT" : "MESSAGE_RECEIVED";
+    if (!lead) return NextResponse.json({ error: "Lead processing failure" }, { status: 500 });
 
     // Deduplication check: ignore if the exact same message was logged within the last 30 seconds
     const timeThreshold = new Date(Date.now() - 30000);

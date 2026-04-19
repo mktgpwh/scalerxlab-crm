@@ -9,7 +9,21 @@ export async function assignIncomingLead(leadId: string) {
   try {
     console.log(`📡 [ROUTING_ENGINE] Optimizing assignment for Lead: ${leadId}`);
 
-    // 1. Identify Target Pool: Online SALES_USER nodes
+    // 1. Fetch Lead Details for Quality Gating
+    const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+    const score = lead?.aiLeadScore || "UNSCORED";
+
+    // 2. QUALITY GATE: Protect human nodes from COLD leads
+    if (score === "COLD" || score === "UNQUALIFIED") {
+        console.warn(`❄️ [ROUTING_ENGINE] Shunting COLD lead ${leadId} to AI Triage pool.`);
+        await prisma.lead.update({
+            where: { id: leadId },
+            data: { isUnderAITriage: true, isAutoAssigned: true }
+        });
+        return null;
+    }
+
+    // 3. Identify Target Pool: Online SALES_USER nodes
     const operationalPool = await prisma.user.findMany({
       where: {
         role: "SALES_USER",
