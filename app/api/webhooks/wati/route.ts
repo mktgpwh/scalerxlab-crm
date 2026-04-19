@@ -125,7 +125,7 @@ export async function POST(req: Request) {
     });
 
     // 4. AgentX Handoff (Only for incoming messages)
-    if (!isOutgoing) {
+    if (!isOutgoing && !isMedia) {
       // Run Proactive Scoring (Heat Mapping)
       await generateProactiveDraft({ leadId: lead.id, messageText: processedMessageText });
 
@@ -134,6 +134,8 @@ export async function POST(req: Request) {
           // Awaiting here is usually safe for short AI calls, Next.js serverless limits allow up to 10s or 60s
           await processWithAgentX(lead.id, processedMessageText, cleanWaId);
       }
+    } else if (!isOutgoing && isMedia) {
+      console.log(`[WATI_WEBHOOK] Media captured for Lead ${lead.id}. Skipping AI processing.`);
     }
 
     return NextResponse.json({ success: true, leadId: lead.id });
