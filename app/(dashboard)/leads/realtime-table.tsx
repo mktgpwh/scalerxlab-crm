@@ -186,7 +186,7 @@ export function RealtimeLeadsTable({
                 </TableCell>
                 <TableCell className="text-center">
                   {lead.aiScore ? (
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs ring-2 ring-slate-100">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white font-semibold text-xs ring-2 ring-slate-100">
                       {lead.aiScore}
                     </span>
                   ) : (
@@ -202,7 +202,7 @@ export function RealtimeLeadsTable({
                           variant="ghost"
                           disabled={!lead.consentFlag}
                           className={cn(
-                            "h-8 w-8 rounded-lg transition-all duration-200 cursor-pointer",
+                            "h-8 w-8 rounded-xl transition-all duration-200 cursor-pointer",
                             lead.consentFlag 
                               ? "text-blue-600 bg-blue-50/50 hover:bg-blue-600 hover:text-white hover:scale-110 shadow-sm" 
                               : "text-gray-300 pointer-events-none"
@@ -212,7 +212,7 @@ export function RealtimeLeadsTable({
                           <Phone className="h-4 w-4 fill-current" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent className="text-[10px] uppercase font-black">
+                      <TooltipContent className="text-[10px] uppercase font-semibold tracking-tight">
                         {lead.consentFlag ? "One-Click Call" : "Blocked"}
                       </TooltipContent>
                     </Tooltip>
@@ -224,7 +224,7 @@ export function RealtimeLeadsTable({
                           variant="ghost"
                           disabled={!lead.consentFlag}
                           className={cn(
-                            "h-8 w-8 rounded-lg transition-all",
+                            "h-8 w-8 rounded-xl transition-all",
                             lead.consentFlag ? "hover:bg-green-50" : "text-gray-300 pointer-events-none"
                           )}
                           onClick={(e) => {
@@ -235,7 +235,7 @@ export function RealtimeLeadsTable({
                           <WhatsAppIcon className="h-4 w-4 shrink-0 transition-opacity" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent className="text-[10px] uppercase font-black">
+                      <TooltipContent className="text-[10px] uppercase font-semibold tracking-tight">
                         {lead.consentFlag ? "AI Smart Drafts" : "Blocked"}
                       </TooltipContent>
                     </Tooltip>
@@ -245,12 +245,12 @@ export function RealtimeLeadsTable({
                   {lead.consentFlag ? (
                     <div className="flex items-center justify-center gap-1.5 text-emerald-600">
                       <Zap className="h-3 w-3 fill-emerald-600" />
-                      <span className="text-[10px] font-bold uppercase">Safe</span>
+                      <span className="text-[10px] font-semibold uppercase">Safe</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-1.5 text-rose-500 animate-pulse">
                       <ShieldAlert className="h-3 w-3" />
-                      <span className="text-[10px] font-black uppercase">Blocked</span>
+                      <span className="text-[10px] font-semibold tracking-tight uppercase">Blocked</span>
                     </div>
                   )}
                 </TableCell>

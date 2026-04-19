@@ -101,7 +101,7 @@ export default function MatrixDashboard() {
                 <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-bold text-primary uppercase tracking-[0.15em]">Sovereignty Analytics</span>
+                        <span className="text-[10px] font-semibold text-primary uppercase tracking-[0.15em]">Sovereignty Analytics</span>
                     </div>
                     <h2 className="text-4xl font-semibold tracking-tight text-foreground">
                         Intelligence Matrix
@@ -122,7 +122,7 @@ export default function MatrixDashboard() {
                             onClick={() => setRange(btn.id)}
                             variant={range === btn.id ? "secondary" : "ghost"}
                             className={cn(
-                                "h-8 px-5 rounded-lg text-[11px] font-semibold transition-all",
+                                "h-8 px-5 rounded-xl text-[11px] font-semibold transition-all",
                                 range === btn.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
                             )}
                         >
@@ -140,7 +140,7 @@ export default function MatrixDashboard() {
                     { label: "Revenue Leaks", value: data?.leaks?.totalCount || 0, sub: "Qualified leads pending billing", icon: ShieldAlert, color: "text-rose-500", bg: "bg-rose-500/10" },
                     { label: "Lead Velocity", value: data?.conversion?.reduce((acc: number, c: any) => acc + c.raw, 0) || 0, sub: "New clinical intake", icon: Users, color: "text-violet-500", bg: "bg-violet-500/10" },
                 ].map((stat, i) => (
-                    <Card key={i} className="bg-card border-border/50 rounded-2xl p-6 group transition-all hover:bg-muted/30">
+                    <Card key={i} className="bg-card border-border/50 rounded-xl p-6 group transition-all hover:bg-muted/30">
                         <div className="flex items-start justify-between">
                             <div className={cn("p-2.5 rounded-xl", stat.bg)}>
                                 <stat.icon className={cn("h-5 w-5", stat.color)} />
@@ -148,7 +148,7 @@ export default function MatrixDashboard() {
                             <ArrowUpRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
                         </div>
                         <div className="mt-5">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
                             <p className="text-3xl font-semibold tracking-tight text-foreground mt-1">{stat.value}</p>
                             <div className="flex items-center gap-1.5 mt-2">
                                 <span className="text-[10px] font-semibold text-emerald-500">↑</span>
@@ -163,7 +163,7 @@ export default function MatrixDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 md:px-0">
                 
                 {/* 1. Daily Growth Chart (Line/Area) */}
-                <Card className="lg:col-span-8 bg-card border-border/50 rounded-2xl p-8 overflow-hidden relative">
+                <Card className="lg:col-span-8 bg-card border-border/50 rounded-xl p-8 overflow-hidden relative">
                     <div className="flex items-center justify-between mb-10">
                         <div className="space-y-1">
                             <h3 className="text-lg font-semibold tracking-tight">Revenue Trajectory</h3>
@@ -214,7 +214,7 @@ export default function MatrixDashboard() {
                 </Card>
 
                 {/* 2. Departmental Distribution (Pie) */}
-                <Card className="lg:col-span-4 bg-card border-border/50 rounded-2xl p-8 flex flex-col">
+                <Card className="lg:col-span-4 bg-card border-border/50 rounded-xl p-8 flex flex-col">
                     <div className="text-center mb-10">
                         <h3 className="text-lg font-semibold tracking-tight">Revenue Distribution</h3>
                         <p className="text-xs text-muted-foreground">Clinical contribution split</p>
@@ -241,7 +241,7 @@ export default function MatrixDashboard() {
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</p>
                             <p className="text-2xl font-semibold tracking-tight">₹{(totalRevenue/1000).toFixed(0)}k</p>
                         </div>
                     </div>
@@ -259,13 +259,13 @@ export default function MatrixDashboard() {
                 </Card>
 
                 {/* 3. Source Strategy (Conversion Funnel) */}
-                <Card className="lg:col-span-7 bg-card border-border/50 rounded-2xl p-8">
+                <Card className="lg:col-span-7 bg-card border-border/50 rounded-xl p-8">
                     <div className="flex items-center justify-between mb-10">
                         <div className="space-y-1">
                             <h3 className="text-lg font-semibold tracking-tight">Conversion Efficiency</h3>
                             <p className="text-xs text-muted-foreground">Yield analysis per acquisition source</p>
                         </div>
-                        <Badge variant="secondary" className="bg-muted text-muted-foreground font-medium px-3 h-8 rounded-lg border-none">
+                        <Badge variant="secondary" className="bg-muted text-muted-foreground font-medium px-3 h-8 rounded-xl border-none">
                             Omnichannel
                         </Badge>
                     </div>
@@ -290,7 +290,7 @@ export default function MatrixDashboard() {
                 </Card>
 
                 {/* 4. Revenue Leak Details */}
-                <Card className="lg:col-span-5 bg-card border-border/50 rounded-2xl p-8 bg-indigo-50/50 dark:bg-indigo-950/20">
+                <Card className="lg:col-span-5 bg-card border-border/50 rounded-xl p-8 bg-indigo-50/50 dark:bg-indigo-950/20">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/50">

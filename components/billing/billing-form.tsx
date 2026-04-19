@@ -84,11 +84,11 @@ export function BillingForm({ leadId, department, onSuccess }: BillingFormProps)
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-4">
-                <div className="grid grid-cols-12 gap-3 px-4">
-                    <div className="col-span-5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Description / Service</div>
-                    <div className="col-span-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Qty</div>
-                    <div className="col-span-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Price (₹)</div>
-                    <div className="col-span-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Tax (%)</div>
+                <div className="grid grid-cols-12 gap-3 px-4 py-3 bg-muted/50 rounded-xl border-b border-dashed border-border/50">
+                    <div className="col-span-5 text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-500">Service Identifier</div>
+                    <div className="col-span-2 text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-500 text-center">Qty</div>
+                    <div className="col-span-2 text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-500">Unit Price</div>
+                    <div className="col-span-2 text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-500 text-center">Audit Tax</div>
                     <div className="col-span-1"></div>
                 </div>
 
@@ -100,7 +100,7 @@ export function BillingForm({ leadId, department, onSuccess }: BillingFormProps)
                                     placeholder="Enter Service..."
                                     value={item.itemName}
                                     onChange={(e) => updateItem(item.id, "itemName", e.target.value)}
-                                    className="h-10 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-bold text-[11px] focus-visible:ring-primary/30"
+                                    className="h-10 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold text-[11px] focus-visible:ring-primary/30"
                                 />
                             </div>
                             <div className="col-span-2">
@@ -108,7 +108,7 @@ export function BillingForm({ leadId, department, onSuccess }: BillingFormProps)
                                     type="number"
                                     value={item.quantity}
                                     onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value) || 0)}
-                                    className="h-10 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-bold text-[11px] text-center focus-visible:ring-primary/30"
+                                    className="h-10 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold text-[11px] text-center focus-visible:ring-primary/30"
                                 />
                             </div>
                             <div className="col-span-2">
@@ -116,7 +116,7 @@ export function BillingForm({ leadId, department, onSuccess }: BillingFormProps)
                                     type="number"
                                     value={item.unitPrice}
                                     onChange={(e) => updateItem(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
-                                    className="h-10 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-bold text-[11px] focus-visible:ring-primary/30"
+                                    className="h-10 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold text-[11px] focus-visible:ring-primary/30"
                                 />
                             </div>
                             <div className="col-span-2">
@@ -124,7 +124,7 @@ export function BillingForm({ leadId, department, onSuccess }: BillingFormProps)
                                     type="number"
                                     value={item.tax}
                                     onChange={(e) => updateItem(item.id, "tax", parseFloat(e.target.value) || 0)}
-                                    className="h-10 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-bold text-[11px] text-center focus-visible:ring-primary/30"
+                                    className="h-10 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold text-[11px] text-center focus-visible:ring-primary/30"
                                 />
                             </div>
                             <div className="col-span-1 flex justify-center">
@@ -144,7 +144,7 @@ export function BillingForm({ leadId, department, onSuccess }: BillingFormProps)
                 <Button
                     variant="outline"
                     onClick={addItem}
-                    className="h-10 w-full rounded-xl border-dashed border-slate-200 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-primary hover:border-primary transition-all bg-slate-50/50"
+                    className="h-10 w-full rounded-xl border-dashed border-border/50 text-[9px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 hover:text-primary hover:border-primary transition-all bg-slate-50/50"
                 >
                     <Plus className="h-3.5 w-3.5 mr-2" />
                     Add New Line Item
@@ -152,29 +152,29 @@ export function BillingForm({ leadId, department, onSuccess }: BillingFormProps)
             </div>
 
             {/* Calculations and Action */}
-            <div className="pt-6 border-t border-slate-100 flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="pt-6 border-t border-border/50 flex flex-col lg:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-8 w-full lg:w-auto">
                     <div className="space-y-1">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block">Subtotal</span>
-                        <span className="text-xs font-black text-slate-600">₹{subTotal.toLocaleString()}</span>
+                        <span className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 block">Subtotal</span>
+                        <span className="text-xs font-semibold tracking-tight text-slate-600">₹{subTotal.toLocaleString()}</span>
                     </div>
                     <div className="space-y-1">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block">Total Tax</span>
-                        <span className="text-xs font-black text-slate-600">₹{totalTax.toLocaleString()}</span>
+                        <span className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 block">Total Tax</span>
+                        <span className="text-xs font-semibold tracking-tight text-slate-600">₹{totalTax.toLocaleString()}</span>
                     </div>
                     <div className="h-8 w-px bg-slate-100 mx-2" />
                     <div className="space-y-0.5">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-primary block underline decoration-primary/20 underline-offset-4">Grand Total</span>
+                        <span className="text-[9px] font-semibold tracking-tight uppercase tracking-widest text-primary block underline decoration-primary/20 underline-offset-4">Grand Total</span>
                         <div className="flex items-center gap-1 text-primary">
-                            <IndianRupee className="h-3.5 w-3.5 font-bold" />
-                            <span className="text-xl font-black tracking-tighter">{grandTotal.toLocaleString()}</span>
+                            <IndianRupee className="h-3.5 w-3.5 font-semibold" />
+                            <span className="text-xl font-semibold tracking-tight tracking-tighter">{grandTotal.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="w-full lg:w-auto flex flex-col gap-2">
                     {!leadId && (
-                        <p className="text-[8px] font-black uppercase tracking-widest text-rose-500 text-center animate-pulse">
+                        <p className="text-[8px] font-semibold tracking-tight uppercase tracking-widest text-rose-500 text-center animate-pulse">
                             ⚠️ Select Patient Node to Proceed
                         </p>
                     )}
@@ -182,7 +182,7 @@ export function BillingForm({ leadId, department, onSuccess }: BillingFormProps)
                         onClick={handleSubmit}
                         disabled={loading || subTotal === 0 || !leadId}
                         className={cn(
-                            "h-14 px-10 rounded-2xl transition-all font-black uppercase tracking-widest text-[10px] shadow-xl",
+                            "h-14 px-10 rounded-xl transition-all font-semibold tracking-tight uppercase tracking-widest text-[10px] shadow-xl",
                             !leadId 
                                 ? "bg-slate-100 text-slate-400" 
                                 : "bg-primary text-white shadow-primary/20 hover:scale-[1.02] hover:shadow-primary/30 active:scale-[0.98]"

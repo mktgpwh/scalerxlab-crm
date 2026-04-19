@@ -65,34 +65,34 @@ export function ManageCenters({ initialBranches }: ManageCentersProps) {
 
     return (
         <div className="space-y-8 mt-8">
-            <Card className="surface-layered rounded-[3rem] overflow-hidden border-none bg-slate-50/50">
+            <Card className="surface-layered rounded-xl overflow-hidden border-none bg-slate-50/50">
                 <CardHeader className="p-10 pb-6">
-                    <CardTitle className="text-xl font-black italic">Provision New Center</CardTitle>
-                    <CardDescription className="text-xs uppercase font-bold tracking-widest text-slate-400">Expand the clinical location matrix</CardDescription>
+                    <CardTitle className="text-xl font-semibold tracking-tight ">Provision New Center</CardTitle>
+                    <CardDescription className="text-xs uppercase font-semibold tracking-widest text-slate-400">Expand the clinical location matrix</CardDescription>
                 </CardHeader>
                 <CardContent className="p-10 pt-0">
                     <form onSubmit={handleAdd} className="flex flex-col md:flex-row gap-6 items-end">
                         <div className="flex-1 space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-slate-400 ml-1">Center Name</Label>
+                            <Label className="text-[10px] font-semibold tracking-tight uppercase text-slate-400 ml-1">Center Name</Label>
                             <Input 
                                 placeholder="e.g. Bilaspur Clinic" 
                                 value={name} 
                                 onChange={(e) => setName(e.target.value)}
-                                className="h-12 rounded-2xl bg-white border-none shadow-sm font-bold ring-1 ring-slate-100" 
+                                className="h-12 rounded-xl bg-white border-none shadow-sm font-semibold ring-1 ring-slate-100" 
                             />
                         </div>
                         <div className="flex-1 space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-slate-400 ml-1">City Node</Label>
+                            <Label className="text-[10px] font-semibold tracking-tight uppercase text-slate-400 ml-1">City Node</Label>
                             <Input 
                                 placeholder="e.g. Bilaspur" 
                                 value={city} 
                                 onChange={(e) => setCity(e.target.value)}
-                                className="h-12 rounded-2xl bg-white border-none shadow-sm font-bold ring-1 ring-slate-100" 
+                                className="h-12 rounded-xl bg-white border-none shadow-sm font-semibold ring-1 ring-slate-100" 
                             />
                         </div>
                         <Button 
                             disabled={loading || !name || !city}
-                            className="h-12 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-200 transition-all"
+                            className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold tracking-tight uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-200 transition-all"
                         >
                             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="w-4 h-4 mr-2" /> Provision</>}
                         </Button>
@@ -105,26 +105,26 @@ export function ManageCenters({ initialBranches }: ManageCentersProps) {
                     <div 
                         key={branch.id} 
                         className={cn(
-                            "group relative overflow-hidden p-6 rounded-[2rem] border transition-all duration-500",
+                            "group relative overflow-hidden p-6 rounded-xl border transition-all duration-500",
                             branch.isActive 
-                                ? "bg-white border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1" 
-                                : "bg-slate-50 border-slate-200/50 opacity-60 grayscale"
+                                ? "bg-white border-border/50 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1" 
+                                : "bg-slate-50 border-border/50 opacity-60 grayscale"
                         )}
                     >
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-4">
                                 <div className={cn(
-                                    "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500",
+                                    "h-12 w-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500",
                                     branch.isHQ ? "bg-amber-100 text-amber-600" : "bg-indigo-50 text-indigo-500"
                                 )}>
                                     {branch.isHQ ? <Building2 className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-black text-slate-900 italic tracking-tight">{branch.name}</h3>
-                                        {branch.isHQ && <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">HQ / Main Node</Badge>}
+                                        <h3 className="font-semibold tracking-tight text-slate-900  tracking-tight">{branch.name}</h3>
+                                        {branch.isHQ && <Badge className="bg-amber-100 text-amber-700 border-none font-semibold tracking-tight text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">HQ / Main Node</Badge>}
                                     </div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{branch.city} Network</p>
+                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1">{branch.city} Network</p>
                                 </div>
                             </div>
 
@@ -153,7 +153,7 @@ export function ManageCenters({ initialBranches }: ManageCentersProps) {
                                  )} />
                              </div>
                              <span className={cn(
-                                 "text-[9px] font-black uppercase tracking-[0.2em]",
+                                 "text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em]",
                                  branch.isActive ? "text-emerald-500" : "text-slate-400"
                              )}>
                                  {branch.isActive ? "Live" : "Offline / Disabled"}

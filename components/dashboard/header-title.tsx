@@ -22,10 +22,10 @@ export function HeaderTitle({ clinicName }: { clinicName: string }) {
 
   return (
     <div className="flex flex-col">
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">
+      <span className="text-[10px] font-semibold tracking-tight uppercase tracking-[0.2em] text-primary/80">
         Active Node / {currentTitle}
       </span>
-      <h1 className="text-sm font-black text-slate-900 dark:text-white lowercase tracking-tighter italic">
+      <h1 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white lowercase tracking-tighter ">
         {clinicName.toLowerCase()} hub
       </h1>
     </div>

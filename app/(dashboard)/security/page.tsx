@@ -163,19 +163,19 @@ export default function SecurityPage() {
   return (
     <div className="space-y-10 pb-16">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-10 ring-1 ring-white/10">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-10 ring-1 ring-white/10">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(99,102,241,0.15),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.1),transparent_60%)]" />
         <div className="relative z-10">
           <div className="flex items-start justify-between flex-wrap gap-6">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-12 w-12 rounded-2xl bg-white/10 ring-1 ring-white/20 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-xl bg-white/10 ring-1 ring-white/20 flex items-center justify-center">
                   <ShieldCheck className="h-6 w-6 text-emerald-400" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-black tracking-tighter text-white italic lowercase">/security.vault</h1>
-                  <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mt-0.5">Compliance & Privacy Architecture</p>
+                  <h1 className="text-3xl font-semibold tracking-tight tracking-tighter text-white  lowercase">/security.vault</h1>
+                  <p className="text-[10px] font-semibold tracking-tight text-white/40 uppercase tracking-[0.3em] mt-0.5">Compliance & Privacy Architecture</p>
                 </div>
               </div>
               <p className="text-sm text-white/60 font-medium max-w-xl leading-relaxed">
@@ -187,26 +187,26 @@ export default function SecurityPage() {
 
             {/* Stats */}
             <div className="flex items-center gap-4">
-              <div className="text-center px-6 py-4 rounded-2xl bg-white/5 ring-1 ring-white/10">
-                <p className="text-3xl font-black text-white">{activeCount}</p>
-                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mt-0.5">Active</p>
+              <div className="text-center px-6 py-4 rounded-xl bg-white/5 ring-1 ring-white/10">
+                <p className="text-3xl font-semibold tracking-tight text-white">{activeCount}</p>
+                <p className="text-[9px] font-semibold tracking-tight text-white/40 uppercase tracking-widest mt-0.5">Active</p>
               </div>
-              <div className="text-center px-6 py-4 rounded-2xl bg-white/5 ring-1 ring-white/10">
-                <p className="text-3xl font-black text-emerald-400">{totalProtocols}</p>
-                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mt-0.5">Protocols</p>
+              <div className="text-center px-6 py-4 rounded-xl bg-white/5 ring-1 ring-white/10">
+                <p className="text-3xl font-semibold tracking-tight text-emerald-400">{totalProtocols}</p>
+                <p className="text-[9px] font-semibold tracking-tight text-white/40 uppercase tracking-widest mt-0.5">Protocols</p>
               </div>
-              <div className="text-center px-6 py-4 rounded-2xl bg-white/5 ring-1 ring-white/10">
-                <p className="text-3xl font-black text-indigo-400">256</p>
-                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mt-0.5">Bit AES</p>
+              <div className="text-center px-6 py-4 rounded-xl bg-white/5 ring-1 ring-white/10">
+                <p className="text-3xl font-semibold tracking-tight text-indigo-400">256</p>
+                <p className="text-[9px] font-semibold tracking-tight text-white/40 uppercase tracking-widest mt-0.5">Bit AES</p>
               </div>
             </div>
           </div>
 
           {/* Compliance Badges */}
           <div className="flex flex-wrap items-center gap-2 mt-8 pt-6 border-t border-white/10">
-            <span className="text-[9px] font-black text-white/30 uppercase tracking-widest mr-2">Compliance:</span>
+            <span className="text-[9px] font-semibold tracking-tight text-white/30 uppercase tracking-widest mr-2">Compliance:</span>
             {["DPDPA 2023", "AES-256-GCM", "RBAC Enforced", "Consent-First", "PII Protected", "Audit Trail"].map(badge => (
-              <span key={badge} className="px-3 py-1 rounded-full bg-white/10 text-white/70 text-[9px] font-black uppercase tracking-widest ring-1 ring-white/10">
+              <span key={badge} className="px-3 py-1 rounded-full bg-white/10 text-white/70 text-[9px] font-semibold tracking-tight uppercase tracking-widest ring-1 ring-white/10">
                 {badge}
               </span>
             ))}
@@ -225,11 +225,11 @@ export default function SecurityPage() {
                 <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center", iconColorMap[category.color])}>
                   <CatIcon className="h-4 w-4" />
                 </div>
-                <h2 className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
+                <h2 className="text-sm font-semibold tracking-tight uppercase tracking-widest text-slate-700 dark:text-slate-300">
                   {category.category}
                 </h2>
                 <div className="flex-1 h-px bg-slate-100 dark:bg-white/5" />
-                <Badge className="text-[8px] font-black uppercase px-2 border-none bg-slate-100 dark:bg-white/5 text-slate-400">
+                <Badge className="text-[8px] font-semibold tracking-tight uppercase px-2 border-none bg-slate-100 dark:bg-white/5 text-slate-400">
                   {category.items.length} protocols
                 </Badge>
               </div>
@@ -240,7 +240,7 @@ export default function SecurityPage() {
                   <Card
                     key={item.title}
                     className={cn(
-                      "p-6 rounded-[2rem] border bg-gradient-to-br ring-1 shadow-sm transition-all hover:shadow-lg hover:scale-[1.01] group",
+                      "p-6 rounded-xl border bg-gradient-to-br ring-1 shadow-sm transition-all hover:shadow-lg hover:scale-[1.01] group",
                       colorMap[category.color]
                     )}
                   >
@@ -248,12 +248,12 @@ export default function SecurityPage() {
                       <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shrink-0", iconColorMap[category.color])}>
                         <ShieldCheck className="h-4 w-4" />
                       </div>
-                      <Badge className={cn("text-[8px] font-black uppercase tracking-widest ring-1 px-2 py-0.5", badgeColorMap[item.badgeColor])}>
+                      <Badge className={cn("text-[8px] font-semibold tracking-tight uppercase tracking-widest ring-1 px-2 py-0.5", badgeColorMap[item.badgeColor])}>
                         {item.badge}
                       </Badge>
                     </div>
 
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white mb-2 leading-tight">
+                    <h3 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white mb-2 leading-tight">
                       {item.title}
                     </h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4">
@@ -261,7 +261,7 @@ export default function SecurityPage() {
                     </p>
 
                     <div className="pt-4 border-t border-current/10">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 font-mono">
+                      <p className="text-[9px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 font-mono">
                         ⚙ {item.spec}
                       </p>
                     </div>
@@ -274,12 +274,12 @@ export default function SecurityPage() {
       </div>
 
       {/* Footer disclaimer */}
-      <div className="rounded-[1.5rem] bg-slate-50 dark:bg-white/5 ring-1 ring-slate-200/60 dark:ring-white/5 p-6 flex items-start gap-4">
+      <div className="rounded-xl bg-slate-50 dark:bg-white/5 ring-1 ring-slate-200/60 dark:ring-white/5 p-6 flex items-start gap-4">
         <div className="h-8 w-8 rounded-xl bg-slate-200/50 dark:bg-white/10 flex items-center justify-center shrink-0 mt-0.5">
           <BadgeCheck className="h-4 w-4 text-slate-500" />
         </div>
         <div>
-          <p className="text-xs font-black text-slate-700 dark:text-slate-300 mb-1">Security Architecture Audit Statement</p>
+          <p className="text-xs font-semibold tracking-tight text-slate-700 dark:text-slate-300 mb-1">Security Architecture Audit Statement</p>
           <p className="text-[11px] text-slate-500 leading-relaxed">
             This Business Suite is built and maintained by <strong>ScalerX Lab</strong> with a security-first architecture. 
             All protocols listed above are actively enforced at the application, API, and database layer. 

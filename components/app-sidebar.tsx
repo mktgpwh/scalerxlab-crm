@@ -124,7 +124,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border/50 bg-background/80 backdrop-blur-xl shadow-xl">
       <SidebarHeader className="h-16 flex items-center px-4 bg-transparent border-b border-border/40">
         <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push("/")}>
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden bg-background border border-border/60 shadow-sm transition-all group-hover:scale-105 group-hover:-rotate-2 shrink-0 p-1">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-background border border-border/60 shadow-sm transition-all group-hover:scale-105 group-hover:-rotate-2 shrink-0 p-1">
             <Image src="/scalerxlab-logo.png" alt="Pahlajani's" width={28} height={28} className="object-contain w-full h-full" priority />
           </div>
           <div className="flex flex-col gap-0.5 transition-opacity group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none min-w-0 pl-0.5">
@@ -148,7 +148,7 @@ export function AppSidebar() {
                       tooltip={item.title}
                       isActive={isActive}
                       className={cn(
-                        "h-10 transition-all duration-200 rounded-lg group relative overflow-hidden cursor-pointer",
+                        "h-10 transition-all duration-200 rounded-xl group relative overflow-hidden cursor-pointer",
                         isActive 
                           ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary" 
                           : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -205,7 +205,7 @@ export function AppSidebar() {
               onClick={handleTogglePresence}
               disabled={isPresenceLoading}
               className={cn(
-                "h-10 rounded-lg px-3 transition-all cursor-pointer",
+                "h-10 rounded-xl px-3 transition-all cursor-pointer",
                 isOnline 
                   ? "bg-emerald-50/10 text-emerald-500 border border-emerald-500/20 font-semibold" 
                   : "bg-muted/50 text-muted-foreground border border-transparent"
@@ -235,7 +235,7 @@ export function AppSidebar() {
               render={<Link href="/settings/users" />}
               isActive={pathname.startsWith("/settings/users")}
               className={cn(
-                "h-10 rounded-lg px-3 transition-all cursor-pointer", 
+                "h-10 rounded-xl px-3 transition-all cursor-pointer", 
                 pathname.startsWith("/settings/users") 
                   ? "bg-primary/10 text-primary font-semibold shadow-sm" 
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -249,7 +249,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleLogout}
-              className="h-10 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg px-3 transition-all cursor-pointer"
+              className="h-10 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-xl px-3 transition-all cursor-pointer"
             >
               <LogOut className="h-4 w-4" />
               <span className="text-[11px] font-semibold tracking-tight group-data-[collapsible=icon]:hidden">Sign Out</span>

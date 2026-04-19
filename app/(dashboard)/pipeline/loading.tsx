@@ -11,13 +11,13 @@ export default function PipelineLoading() {
          <Skeleton className="h-10 w-56 rounded-full" />
        </div>
        <div className="flex gap-4 px-4 mt-6">
-          <Skeleton className="h-12 w-72 rounded-2xl" />
+          <Skeleton className="h-12 w-72 rounded-xl" />
        </div>
        <div className="flex gap-4 px-4 overflow-x-hidden flex-1 pb-10 mt-6">
-          <Skeleton className="w-[350px] min-h-[500px] rounded-[2rem] shrink-0" />
-          <Skeleton className="w-[350px] min-h-[500px] rounded-[2rem] shrink-0" />
-          <Skeleton className="w-[350px] min-h-[500px] rounded-[2rem] shrink-0" />
-          <Skeleton className="w-[350px] min-h-[500px] rounded-[2rem] shrink-0" />
+          <Skeleton className="w-[350px] min-h-[500px] rounded-xl shrink-0" />
+          <Skeleton className="w-[350px] min-h-[500px] rounded-xl shrink-0" />
+          <Skeleton className="w-[350px] min-h-[500px] rounded-xl shrink-0" />
+          <Skeleton className="w-[350px] min-h-[500px] rounded-xl shrink-0" />
        </div>
     </div>
   );

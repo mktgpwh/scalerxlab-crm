@@ -47,7 +47,7 @@ export function NotificationsListener() {
                 padding: '24px',
                 borderRadius: '1rem'
             },
-            className: "font-black uppercase tracking-tighter",
+            className: "font-semibold tracking-tight uppercase tracking-tighter",
           });
         })
         .on('broadcast', { event: 'HOT_LEAD' }, (payload: any) => {
@@ -56,7 +56,7 @@ export function NotificationsListener() {
             duration: 10000,
             icon: <Flame className="w-5 h-5 text-white animate-pulse" />,
             style: { backgroundColor: '#ef4444', color: '#ffffff', border: 'none', boxShadow: '0 0 40px rgba(239, 68, 68, 0.4)' },
-            className: "font-black uppercase tracking-widest",
+            className: "font-semibold tracking-tight uppercase tracking-widest",
           });
         })
         .on('broadcast', { event: 'CALL_INCOMING' }, (payload: any) => {
@@ -76,7 +76,7 @@ export function NotificationsListener() {
               padding: '16px',
               borderRadius: '1rem'
             },
-            className: "font-black uppercase tracking-tight",
+            className: "font-semibold tracking-tight uppercase tracking-tight",
           });
         })
         .subscribe();

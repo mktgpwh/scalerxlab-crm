@@ -75,7 +75,7 @@ export function PipelineFilterBar() {
             <Button
               variant={"outline"}
               className={cn(
-                "h-11 justify-start text-left font-bold rounded-2xl border-slate-200/60 dark:border-white/10 bg-white dark:bg-slate-900 px-4 min-w-[260px]",
+                "h-11 justify-start text-left font-semibold rounded-xl border-border/50 dark:border-white/10 bg-white dark:bg-slate-900 px-4 min-w-[260px]",
                 !dateRange.from && "text-muted-foreground"
               )}
             >
@@ -95,15 +95,15 @@ export function PipelineFilterBar() {
               <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 rounded-3xl shadow-2xl z-[100] bg-white" align="start">
+          <PopoverContent className="w-auto p-0 rounded-xl shadow-2xl z-[100] bg-white" align="start">
             <div className="flex flex-col md:flex-row">
-              <div className="p-4 border-r border-slate-100 flex flex-col gap-2 bg-slate-50/50">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-2">Presets</span>
+              <div className="p-4 border-r border-border/50 flex flex-col gap-2 bg-slate-50/50">
+                <span className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 mb-2 px-2">Presets</span>
                 {presets.map((preset) => (
                   <Button
                     key={preset.label}
                     variant="ghost"
-                    className="justify-start font-bold text-xs rounded-xl h-9 hover:bg-white"
+                    className="justify-start font-semibold text-xs rounded-xl h-9 hover:bg-white"
                     onClick={() => {
                         setLocalRange(preset.getValue());
                     }}
@@ -120,11 +120,11 @@ export function PipelineFilterBar() {
                   selected={localRange?.from ? localRange : undefined}
                   onSelect={(range) => setLocalRange(range as any)}
                   numberOfMonths={2}
-                  className="rounded-2xl"
+                  className="rounded-xl"
                 />
-                <div className="w-full flex items-center justify-end border-t border-slate-100 pt-3 mt-3 px-2 gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="rounded-xl font-bold text-xs">Cancel</Button>
-                    <Button onClick={applyDateRange} size="sm" className="rounded-xl px-6 font-black uppercase tracking-widest text-[10px]">
+                <div className="w-full flex items-center justify-end border-t border-border/50 pt-3 mt-3 px-2 gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="rounded-xl font-semibold text-xs">Cancel</Button>
+                    <Button onClick={applyDateRange} size="sm" className="rounded-xl px-6 font-semibold tracking-tight uppercase tracking-widest text-[10px]">
                         Go &rarr;
                     </Button>
                 </div>
@@ -140,7 +140,7 @@ export function PipelineFilterBar() {
         <select 
           value={category || ""} 
           onChange={(e) => handleSetCategory(e.target.value || null)}
-          className="h-11 px-6 rounded-2xl bg-white border border-slate-200/60 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="h-11 px-6 rounded-xl bg-white border border-border/50 text-[10px] font-semibold tracking-tight uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
           <option value="">Global Entry (All)</option>
           <option value="MATERNITY">MDT / Maternity</option>
@@ -154,7 +154,7 @@ export function PipelineFilterBar() {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => router.push(pathname)}
-                className="h-8 rounded-full text-[10px] font-black uppercase text-rose-500 hover:bg-rose-50 px-4"
+                className="h-8 rounded-full text-[10px] font-semibold tracking-tight uppercase text-rose-500 hover:bg-rose-50 px-4"
             >
                 <X className="h-3 w-3 mr-1" /> Reset Filters
             </Button>

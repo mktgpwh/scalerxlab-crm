@@ -48,11 +48,11 @@ export function FunnelCard({
   const convRate = data.total > 0 ? ((data.won / data.total) * 100).toFixed(1) : "0.0";
 
   return (
-    <Card className={cn("relative overflow-hidden border p-6 rounded-[2.5rem] bg-gradient-to-br transition-all hover:shadow-xl", colors[color])}>
+    <Card className={cn("relative overflow-hidden border p-6 rounded-xl bg-gradient-to-br transition-all hover:shadow-xl", colors[color])}>
       <div className="relative z-10 flex flex-col h-full">
         <div className="flex items-center justify-between mb-6">
-            <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 leading-tight">{label}</h4>
-            <div className={cn("px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter bg-white/50 border border-current")}>
+            <h4 className="text-xs font-semibold tracking-tight uppercase tracking-widest text-slate-900 leading-tight">{label}</h4>
+            <div className={cn("px-2 py-1 rounded-xl text-[9px] font-semibold tracking-tight uppercase tracking-tighter bg-white/50 border border-current")}>
                 {convRate}% Conv.
             </div>
         </div>
@@ -74,9 +74,9 @@ function Step({ label, count, percentage, colorClass, icon }: { label: string, c
             <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
                     <span className="opacity-60">{icon}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-tight opacity-70">{label}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-tight opacity-70">{label}</span>
                 </div>
-                <span className="text-[10px] font-black">{count}</span>
+                <span className="text-[10px] font-semibold tracking-tight">{count}</span>
             </div>
             <div className="h-2 w-full bg-slate-100/50 rounded-full overflow-hidden backdrop-blur-sm border border-white/20">
                 <div 

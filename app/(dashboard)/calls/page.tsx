@@ -130,21 +130,21 @@ export default function CallManagementPage() {
            <div className="h-8 w-px bg-slate-200 dark:bg-white/10 hidden md:block" />
            <div className="space-y-1">
               <div className="flex items-center gap-3">
-                 <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white lowercase italic">
+                 <h1 className="text-3xl font-semibold tracking-tight tracking-tight text-slate-900 dark:text-white lowercase ">
                    /telephony.hub
                  </h1>
               </div>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest pl-1">
+              <p className="text-slate-500 text-[10px] font-semibold tracking-tight uppercase tracking-widest pl-1">
                  Managing टाटा स्मार्टफ्लो for <span className="text-slate-900 dark:text-slate-300">Pahlajani's Hub</span>
               </p>
            </div>
         </div>
 
         {/* AI Toggle Card */}
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl ring-1 ring-slate-200 dark:ring-white/5 shadow-2xl shadow-primary/5 flex items-center gap-6 min-w-[320px]">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl ring-1 ring-slate-200 dark:ring-white/5 shadow-2xl shadow-primary/5 flex items-center gap-6 min-w-[320px]">
            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Voice Routing</span>
-              <span className="text-sm font-black text-slate-900 dark:text-white leading-none">
+              <span className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Voice Routing</span>
+              <span className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white leading-none">
                 {isAiRouting ? "AI Orchestrator" : "Human Front-Desk"}
               </span>
            </div>
@@ -177,80 +177,80 @@ export default function CallManagementPage() {
       {/* Stats Command Center */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
          {/* Live Calls */}
-         <Card className="rounded-[2.5rem] border-none shadow-sm dark:bg-slate-900/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden group">
+         <Card className="rounded-xl border-none shadow-sm dark:bg-slate-900/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden group">
             <CardContent className="p-7 relative">
                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                   <Activity className="w-24 h-24 text-primary" />
                </div>
                <div className="space-y-4">
-                  <div className="p-3 bg-emerald-500/10 rounded-2xl w-fit">
+                  <div className="p-3 bg-emerald-500/10 rounded-xl w-fit">
                      <Zap className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div className="space-y-1">
-                     <h3 className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+                     <h3 className="text-5xl font-semibold tracking-tight tracking-tighter text-slate-900 dark:text-white">
                         {liveCalls}
                      </h3>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Live Active Calls</p>
+                     <p className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Live Active Calls</p>
                   </div>
                </div>
             </CardContent>
          </Card>
 
          {/* Qualified Inbound */}
-         <Card className="rounded-[2.5rem] border-none shadow-sm dark:bg-slate-900/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden group">
+         <Card className="rounded-xl border-none shadow-sm dark:bg-slate-900/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden group">
             <CardContent className="p-7 relative">
                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                   <CheckCircle2 className="w-24 h-24 text-primary" />
                </div>
                <div className="space-y-4">
-                  <div className="p-3 bg-primary/10 rounded-2xl w-fit">
+                  <div className="p-3 bg-primary/10 rounded-xl w-fit">
                      <TrendingUp className="w-5 h-5 text-primary" />
                   </div>
                   <div className="space-y-1">
-                     <h3 className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+                     <h3 className="text-5xl font-semibold tracking-tight tracking-tighter text-slate-900 dark:text-white">
                         {stats.qualified}
                      </h3>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Qualified Leads (24h)</p>
+                     <p className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Qualified Leads (24h)</p>
                   </div>
                </div>
             </CardContent>
          </Card>
 
          {/* Missed Calls */}
-         <Card className="rounded-[2.5rem] border-none shadow-sm dark:bg-slate-900/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden group">
+         <Card className="rounded-xl border-none shadow-sm dark:bg-slate-900/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden group">
             <CardContent className="p-7 relative">
                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                   <PhoneMissed className="w-24 h-24 text-rose-500" />
                </div>
                <div className="space-y-4">
-                  <div className="p-3 bg-rose-500/10 rounded-2xl w-fit">
+                  <div className="p-3 bg-rose-500/10 rounded-xl w-fit">
                      <PhoneMissed className="w-5 h-5 text-rose-500" />
                   </div>
                   <div className="space-y-1">
-                     <h3 className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+                     <h3 className="text-5xl font-semibold tracking-tight tracking-tighter text-slate-900 dark:text-white">
                         {stats.missed}
                      </h3>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Missed Today</p>
+                     <p className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Missed Today</p>
                   </div>
                </div>
             </CardContent>
          </Card>
 
          {/* Total Volume */}
-         <Card className="rounded-[2.5rem] border-none shadow-sm dark:bg-slate-900/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden group">
+         <Card className="rounded-xl border-none shadow-sm dark:bg-slate-900/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden group">
             <CardContent className="p-7">
                <div className="space-y-6">
-                  <div className="p-3 bg-slate-100 dark:bg-white/5 rounded-2xl w-fit">
+                  <div className="p-3 bg-slate-100 dark:bg-white/5 rounded-xl w-fit">
                      <History className="w-5 h-5 text-slate-500" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                      <div className="space-y-1">
-                        <span className="text-2xl font-black text-slate-900 dark:text-white">{stats.inbound}</span>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Inbound</p>
+                        <span className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{stats.inbound}</span>
+                        <p className="text-[9px] font-semibold tracking-tight uppercase tracking-widest text-emerald-500">Inbound</p>
                      </div>
-                     <div className="space-y-1 border-l border-slate-100 dark:border-white/5 pl-4">
-                        <span className="text-2xl font-black text-slate-900 dark:text-white">{stats.outbound}</span>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-primary">Outbound</p>
+                     <div className="space-y-1 border-l border-border/50 dark:border-white/5 pl-4">
+                        <span className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{stats.outbound}</span>
+                        <p className="text-[9px] font-semibold tracking-tight uppercase tracking-widest text-primary">Outbound</p>
                      </div>
                   </div>
                </div>
@@ -261,37 +261,37 @@ export default function CallManagementPage() {
       {/* Call Registry Section */}
       <Tabs defaultValue="all" className="w-full">
          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
-            <TabsList className="bg-white dark:bg-white/5 p-1.5 rounded-2xl h-12 ring-1 ring-slate-200 dark:ring-white/10 shadow-sm">
-                <TabsTrigger value="all" className="rounded-xl px-6 font-bold data-[state=active]:bg-primary data-[state=active]:text-white">All Registry</TabsTrigger>
-                <TabsTrigger value="missed" className="rounded-xl px-6 font-bold data-[state=active]:bg-rose-500 data-[state=active]:text-white">Dropped</TabsTrigger>
-                <TabsTrigger value="ai" className="rounded-xl px-6 font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-white inline-flex gap-2">
+            <TabsList className="bg-white dark:bg-white/5 p-1.5 rounded-xl h-12 ring-1 ring-slate-200 dark:ring-white/10 shadow-sm">
+                <TabsTrigger value="all" className="rounded-xl px-6 font-semibold data-[state=active]:bg-primary data-[state=active]:text-white">All Registry</TabsTrigger>
+                <TabsTrigger value="missed" className="rounded-xl px-6 font-semibold data-[state=active]:bg-rose-500 data-[state=active]:text-white">Dropped</TabsTrigger>
+                <TabsTrigger value="ai" className="rounded-xl px-6 font-semibold data-[state=active]:bg-emerald-500 data-[state=active]:text-white inline-flex gap-2">
                     <Sparkles className="w-3.5 h-3.5" />
                     AI Handled
                 </TabsTrigger>
             </TabsList>
 
             <div className="flex items-center gap-3">
-                <Button variant="outline" className="rounded-2xl border-slate-200 dark:border-white/10 font-black uppercase text-[10px] h-11 px-6 tracking-widest">
+                <Button variant="outline" className="rounded-xl border-border/50 dark:border-white/10 font-semibold tracking-tight uppercase text-[10px] h-11 px-6 tracking-widest">
                     Export DVR
                 </Button>
-                <Button className="rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase text-[10px] h-11 px-6 tracking-widest shadow-xl">
+                <Button className="rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold tracking-tight uppercase text-[10px] h-11 px-6 tracking-widest shadow-xl">
                     Refresh Feed
                 </Button>
             </div>
          </div>
 
          <TabsContent value="all" className="mt-0">
-            <Card className="rounded-[2.5rem] border-none shadow-2xl shadow-slate-200/50 dark:shadow-none ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden">
+            <Card className="rounded-xl border-none shadow-2xl shadow-slate-200/50 dark:shadow-none ring-1 ring-slate-100 dark:ring-white/5 overflow-hidden">
                <div className="overflow-x-auto">
                   <table className="w-full">
                      <thead>
-                        <tr className="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
-                           <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Direction</th>
-                           <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Caller Node</th>
-                           <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Duration</th>
-                           <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Handler</th>
-                           <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                           <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Recording</th>
+                        <tr className="bg-slate-50 dark:bg-white/5 border-b border-border/50 dark:border-white/5">
+                           <th className="px-8 py-5 text-left text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Direction</th>
+                           <th className="px-8 py-5 text-left text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Caller Node</th>
+                           <th className="px-8 py-5 text-left text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Duration</th>
+                           <th className="px-8 py-5 text-left text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Handler</th>
+                           <th className="px-8 py-5 text-left text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Status</th>
+                           <th className="px-8 py-5 text-right text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">Recording</th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-slate-50 dark:divide-white/5">
@@ -306,7 +306,7 @@ export default function CallManagementPage() {
                                <td colSpan={6} className="px-8 py-24 text-center">
                                   <div className="flex flex-col items-center justify-center opacity-20 grayscale scale-75">
                                       <Image src="/scalerxlab-logo.png" alt="ScalerX" width={120} height={30} className="object-contain mb-4" />
-                                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                                      <p className="text-[10px] font-semibold tracking-tight uppercase tracking-[0.3em] text-slate-500">
                                          Awaiting Voice Signals...
                                       </p>
                                   </div>
@@ -318,21 +318,21 @@ export default function CallManagementPage() {
                                     {log.direction === "INBOUND" ? (
                                         <div className="flex items-center gap-2 text-emerald-500">
                                             <PhoneIncoming className="w-3.5 h-3.5" />
-                                            <span className="text-[10px] font-black uppercase">Inbound</span>
+                                            <span className="text-[10px] font-semibold tracking-tight uppercase">Inbound</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-2 text-primary">
                                             <PhoneOutgoing className="w-3.5 h-3.5" />
-                                            <span className="text-[10px] font-black uppercase">Outbound</span>
+                                            <span className="text-[10px] font-semibold tracking-tight uppercase">Outbound</span>
                                         </div>
                                     )}
                                 </td>
                                 <td className="px-8 py-5">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-black text-slate-900 dark:text-white leading-tight">
+                                        <span className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white leading-tight">
                                             {log.lead?.name || "Anonymous Caller"}
                                         </span>
-                                        <span className="text-[10px] font-bold text-slate-400 leading-none mt-1">
+                                        <span className="text-[10px] font-semibold text-slate-400 leading-none mt-1">
                                             +91 {log.callerId}
                                         </span>
                                     </div>
@@ -342,12 +342,12 @@ export default function CallManagementPage() {
                                 </td>
                                 <td className="px-8 py-5">
                                     {log.isAiHandled ? (
-                                        <Badge className="bg-emerald-500/10 text-emerald-500 border-none inline-flex gap-1.5 items-center px-3 py-1 text-[9px] font-black uppercase tracking-widest">
+                                        <Badge className="bg-emerald-500/10 text-emerald-500 border-none inline-flex gap-1.5 items-center px-3 py-1 text-[9px] font-semibold tracking-tight uppercase tracking-widest">
                                             <Sparkles className="w-2.5 h-2.5" />
                                             AgentX Voice
                                         </Badge>
                                     ) : (
-                                        <Badge className="bg-slate-100 dark:bg-white/10 text-slate-500 border-none inline-flex gap-1.5 items-center px-3 py-1 text-[9px] font-black uppercase tracking-widest">
+                                        <Badge className="bg-slate-100 dark:bg-white/10 text-slate-500 border-none inline-flex gap-1.5 items-center px-3 py-1 text-[9px] font-semibold tracking-tight uppercase tracking-widest">
                                             <Activity className="w-2.5 h-2.5" />
                                             Medical Agent
                                         </Badge>
@@ -357,17 +357,17 @@ export default function CallManagementPage() {
                                     {log.isQualified ? (
                                         <div className="flex items-center gap-1.5 text-emerald-500">
                                             <CheckCircle2 className="w-3.5 h-3.5" />
-                                            <span className="text-[10px] font-black uppercase">Qualified</span>
+                                            <span className="text-[10px] font-semibold tracking-tight uppercase">Qualified</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-1.5 text-slate-400">
                                             <Activity className="w-3.5 h-3.5" />
-                                            <span className="text-[10px] font-black uppercase">In Review</span>
+                                            <span className="text-[10px] font-semibold tracking-tight uppercase">In Review</span>
                                         </div>
                                     )}
                                 </td>
                                 <td className="px-8 py-5 text-right">
-                                    <Button variant="ghost" size="sm" className="h-8 rounded-lg text-primary font-black uppercase text-[10px] hover:bg-primary/10">
+                                    <Button variant="ghost" size="sm" className="h-8 rounded-xl text-primary font-semibold tracking-tight uppercase text-[10px] hover:bg-primary/10">
                                         Play DVR
                                     </Button>
                                 </td>

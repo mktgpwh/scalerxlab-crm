@@ -30,11 +30,11 @@ export function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      className="bg-slate-100/50 flex flex-col w-[85vw] max-w-80 shrink-0 snap-center rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+      className="bg-slate-100/50 flex flex-col w-[85vw] max-w-80 shrink-0 snap-center rounded-xl border border-border/50 shadow-sm overflow-hidden"
     >
-      <div className="flex items-center justify-between p-4 bg-white/50 border-b border-slate-200">
+      <div className="flex items-center justify-between p-4 bg-white/50 border-b border-border/50">
         <h3 className="font-semibold text-sm tracking-tight text-slate-900">{title}</h3>
-        <Badge variant="secondary" className="rounded-full px-2 py-0 h-5 text-[10px] font-bold">
+        <Badge variant="secondary" className="rounded-full px-2 py-0 h-5 text-[10px] font-semibold">
           {leads.length}
         </Badge>
       </div>

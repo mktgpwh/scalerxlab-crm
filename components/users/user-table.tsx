@@ -14,12 +14,12 @@ export function UserTable({ users, selectedUserId, onEdit }: UserTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="border-b border-slate-100 dark:border-white/5 bg-slate-50/30 dark:bg-white/5">
-            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Identity</th>
-            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Designation</th>
-            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Allocation</th>
-            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
-            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Actions</th>
+          <tr className="border-b border-border/50 dark:border-white/5 bg-slate-50/30 dark:bg-white/5">
+            <th className="px-8 py-5 text-[10px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-400">Identity</th>
+            <th className="px-8 py-5 text-[10px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-400">Designation</th>
+            <th className="px-8 py-5 text-[10px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-400">Allocation</th>
+            <th className="px-8 py-5 text-[10px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-400">Status</th>
+            <th className="px-8 py-5 text-[10px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-400 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -36,7 +36,7 @@ export function UserTable({ users, selectedUserId, onEdit }: UserTableProps) {
               <td className="px-8 py-6">
                 <div className="flex items-center gap-5">
                   <div className={cn(
-                    "h-12 w-12 rounded-[1rem] flex items-center justify-center text-xs font-black border transition-all duration-500 shadow-sm",
+                    "h-12 w-12 rounded-[1rem] flex items-center justify-center text-xs font-semibold tracking-tight border transition-all duration-500 shadow-sm",
                     user.role === "SUPER_ADMIN" 
                       ? "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/50" 
                       : "bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-950/30 dark:border-indigo-900/50",
@@ -45,8 +45,8 @@ export function UserTable({ users, selectedUserId, onEdit }: UserTableProps) {
                     {user.name?.[0] || user.email[0].toUpperCase()}
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-black text-sm text-slate-900 dark:text-white tracking-tighter">{user.name || "Unknown Identity"}</span>
-                    <span className="text-[11px] text-slate-400 font-bold flex items-center gap-1.5 uppercase tracking-wider">
+                    <span className="font-semibold tracking-tight text-sm text-slate-900 dark:text-white tracking-tighter">{user.name || "Unknown Identity"}</span>
+                    <span className="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5 uppercase tracking-wider">
                       {user.email}
                     </span>
                   </div>
@@ -55,10 +55,10 @@ export function UserTable({ users, selectedUserId, onEdit }: UserTableProps) {
               <td className="px-8 py-6">
                 <div className="flex items-center gap-2">
                   <span className={cn(
-                    "text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-lg border",
+                    "text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em] px-3 py-1 rounded-xl border",
                     user.role === "SUPER_ADMIN" 
                       ? "text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/50" 
-                      : "text-slate-500 bg-slate-50 border-slate-100 dark:bg-white/5 dark:border-white/10"
+                      : "text-slate-500 bg-slate-50 border-border/50 dark:bg-white/5 dark:border-white/10"
                   )}>
                     {user.role.replace("_", " ")}
                   </span>
@@ -67,23 +67,23 @@ export function UserTable({ users, selectedUserId, onEdit }: UserTableProps) {
               <td className="px-8 py-6">
                  {user.branch ? (
                     <div className="flex flex-col">
-                        <span className="text-[11px] font-black text-slate-900 dark:text-white tracking-tighter">{user.branch.name}</span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{user.branch.city}</span>
+                        <span className="text-[11px] font-semibold tracking-tight text-slate-900 dark:text-white tracking-tighter">{user.branch.name}</span>
+                        <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">{user.branch.city}</span>
                     </div>
                  ) : (
-                    <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest italic">Global Node</span>
+                    <span className="text-[10px] font-semibold text-slate-300 dark:text-slate-600 uppercase tracking-widest ">Global Node</span>
                  )}
               </td>
               <td className="px-8 py-6">
                 {user.isOnline ? (
                   <div className="flex items-center gap-2 text-emerald-500">
                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">Active</span>
+                    <span className="text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em]">Active</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 text-slate-300 dark:text-slate-700">
                     <div className="h-2 w-2 rounded-full bg-current" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">Offline</span>
+                    <span className="text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em]">Offline</span>
                   </div>
                 )}
               </td>

@@ -130,8 +130,8 @@ export default function IntegrationHubPage() {
         <div className="space-y-12 pb-20">
             {/* Header */}
             <div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Mission Infrastructure</span>
-                <h2 className="text-4xl font-black tracking-tighter italic lowercase text-slate-900 dark:text-white">
+                <span className="text-[10px] font-semibold tracking-tight uppercase tracking-[0.3em] text-primary">Mission Infrastructure</span>
+                <h2 className="text-4xl font-semibold tracking-tight tracking-tighter  lowercase text-slate-900 dark:text-white">
                     /integration.marketplace
                 </h2>
                 <p className="text-sm font-medium text-slate-500 mt-2 max-w-2xl">
@@ -142,7 +142,7 @@ export default function IntegrationHubPage() {
             {/* Category Groups */}
             {categories.map((category) => (
                 <div key={category} className="space-y-6">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 pl-2 border-l-2 border-slate-200 dark:border-white/10 uppercase">
+                    <h3 className="text-[10px] font-semibold tracking-tight uppercase tracking-[0.4em] text-slate-400 pl-2 border-l-2 border-border/50 dark:border-white/10 uppercase">
                         {category}
                     </h3>
                     
@@ -150,11 +150,11 @@ export default function IntegrationHubPage() {
                         {PROVIDERS.filter(p => p.category === category).map((provider) => (
                             <Card 
                                 key={provider.id}
-                                className="group relative surface-layered border-none rounded-[2.5rem] p-8 transition-all hover:ring-2 hover:ring-primary/20 cursor-pointer overflow-hidden shadow-sm"
+                                className="group relative surface-layered border-none rounded-xl p-8 transition-all hover:ring-2 hover:ring-primary/20 cursor-pointer overflow-hidden shadow-sm"
                                 onClick={() => setSelectedProvider(provider)}
                             >
                                 <div className="absolute top-0 right-0 p-4">
-                                    <Badge className="bg-slate-100 dark:bg-white/5 text-slate-500 text-[9px] font-black border-none uppercase tracking-widest">
+                                    <Badge className="bg-slate-100 dark:bg-white/5 text-slate-500 text-[9px] font-semibold tracking-tight border-none uppercase tracking-widest">
                                         Not Linked
                                     </Badge>
                                 </div>
@@ -166,8 +166,8 @@ export default function IntegrationHubPage() {
                                         className="group-hover:scale-110 transition-transform duration-500" 
                                     />
                                     <div className="flex flex-col">
-                                        <h4 className="font-black text-lg tracking-tight text-slate-900 dark:text-white leading-none mb-1">{provider.title}</h4>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Provider Node</span>
+                                        <h4 className="font-semibold tracking-tight text-lg tracking-tight text-slate-900 dark:text-white leading-none mb-1">{provider.title}</h4>
+                                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest leading-none">Provider Node</span>
                                     </div>
                                 </div>
 
@@ -175,8 +175,8 @@ export default function IntegrationHubPage() {
                                     {provider.desc}
                                 </p>
 
-                                <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-white/5">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Operational</span>
+                                <div className="flex items-center justify-between pt-6 border-t border-border/50 dark:border-white/5">
+                                    <span className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-300">Operational</span>
                                     <Zap className="h-4 w-4 text-slate-200 group-hover:text-primary transition-colors" />
                                 </div>
                             </Card>
@@ -187,12 +187,12 @@ export default function IntegrationHubPage() {
 
             {/* Config Modal */}
             <Dialog open={!!selectedProvider} onOpenChange={(open) => !open && setSelectedProvider(null)}>
-                <DialogContent className="sm:max-w-[450px] rounded-[3rem] p-10 border-none bg-white/95 backdrop-blur-3xl shadow-2xl">
+                <DialogContent className="sm:max-w-[450px] rounded-xl p-10 border-none bg-white/95 backdrop-blur-3xl shadow-2xl">
                     <DialogHeader className="mb-8">
                         <div className="flex items-center gap-4 mb-4">
                             <IntegrationIcon slug={selectedProvider?.id} size={48} />
                             <div className="flex flex-col text-left">
-                                <DialogTitle className="text-2xl font-black tracking-tighter">Connect {selectedProvider?.title}</DialogTitle>
+                                <DialogTitle className="text-2xl font-semibold tracking-tight tracking-tighter">Connect {selectedProvider?.title}</DialogTitle>
                                 <DialogDescription className="text-xs font-medium text-slate-400">
                                     Enter bare-minimum credentials (ABC Model)
                                 </DialogDescription>
@@ -203,20 +203,20 @@ export default function IntegrationHubPage() {
                     <div className="space-y-6">
                         {selectedProvider?.fields.map((field: any) => (
                             <div key={field.id} className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">{field.label}</Label>
+                                <Label className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-500 ml-1">{field.label}</Label>
                                 <Input 
                                     type={field.type}
                                     placeholder={field.placeholder}
-                                    className="h-14 rounded-2xl bg-slate-50/50 border-slate-200/60 focus:ring-primary/20 transition-all font-bold placeholder:font-medium placeholder:text-slate-300"
+                                    className="h-14 rounded-xl bg-slate-50/50 border-border/50 focus:ring-primary/20 transition-all font-semibold placeholder:font-medium placeholder:text-slate-300"
                                     onChange={(e) => setFormData((prev: any) => ({ ...prev, [field.id]: e.target.value }))}
                                 />
                             </div>
                         ))}
 
-                        <div className="flex items-center justify-between p-6 rounded-3xl bg-slate-50 border border-slate-100 mt-4">
+                        <div className="flex items-center justify-between p-6 rounded-xl bg-slate-50 border border-border/50 mt-4">
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Enable Node</span>
-                                <span className="text-[9px] font-medium text-slate-400 pr-4 italic">Active immediately upon verification</span>
+                                <span className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-900">Enable Node</span>
+                                <span className="text-[9px] font-medium text-slate-400 pr-4 ">Active immediately upon verification</span>
                             </div>
                             <Switch checked={true} />
                         </div>
@@ -224,7 +224,7 @@ export default function IntegrationHubPage() {
 
                     <DialogFooter className="mt-10">
                         <Button 
-                            className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-slate-900 hover:bg-black text-white gap-3 shadow-xl shadow-slate-200"
+                            className="w-full h-14 rounded-xl font-semibold tracking-tight uppercase tracking-widest bg-slate-900 hover:bg-black text-white gap-3 shadow-xl shadow-slate-200"
                             onClick={handleSave}
                             disabled={loading}
                         >

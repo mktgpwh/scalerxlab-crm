@@ -104,15 +104,15 @@ function AnalyticsView({
   return (
     <div className="space-y-8">
       {/* AI Insight Node */}
-      <Card className="relative overflow-hidden border-none rounded-[2rem] bg-gradient-to-br from-slate-900 to-black shadow-2xl p-8">
+      <Card className="relative overflow-hidden border-none rounded-xl bg-gradient-to-br from-slate-900 to-black shadow-2xl p-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
         <div className="relative z-10 flex gap-6 items-start">
-          <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0">
+          <div className="h-12 w-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0">
             {insightLoading ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <BrainCircuit className="h-6 w-6 text-emerald-400" />}
           </div>
           <div className="space-y-2 flex-1">
-            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-400">Tactical Node | Llama-3</h3>
-            <p className="text-sm md:text-base font-medium text-slate-200 leading-relaxed italic">
+            <h3 className="text-xs font-semibold tracking-tight uppercase tracking-widest text-emerald-400">Tactical Node | Llama-3</h3>
+            <p className="text-sm md:text-base font-medium text-slate-200 leading-relaxed ">
               {insightLoading ? "Vectorizing clinical pipeline data..." : `"${insight}"`}
             </p>
           </div>
@@ -133,7 +133,7 @@ function AnalyticsView({
                 />
              </div>
            } />
-           <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0 overflow-hidden bg-slate-900 border-slate-700 rounded-[2.5rem]">
+           <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0 overflow-hidden bg-slate-900 border-slate-700 rounded-xl">
                <DialogHeader className="p-6 pb-0">
                   <DialogTitle className="text-white">Daily Acquisition Trajectory</DialogTitle>
                   <DialogDescription className="text-slate-400 text-xs">Trailing 30-day signal capture analysis.</DialogDescription>
@@ -215,11 +215,11 @@ function AnalyticsView({
 
       <div className="grid grid-cols-1 gap-8">
         {/* [PHASE 5]: PROMOTED Acquisition Trend - Full Width */}
-        <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col h-[400px]">
+        <Card className="surface-layered border-none rounded-xl md:rounded-xl p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col h-[400px]">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-indigo-500" />
-              <h4 className="text-xl font-black italic tracking-tighter">Clinical Signal Volume</h4>
+              <h4 className="text-xl font-semibold tracking-tight  tracking-tighter">Clinical Signal Volume</h4>
             </div>
             <div className="flex items-center gap-4">
                <Button 
@@ -230,8 +230,8 @@ function AnalyticsView({
                >
                  <Download className="h-4 w-4 text-slate-400" />
                </Button>
-               <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase tracking-widest px-3 py-1 hidden sm:flex">Live Acquisition Trajectory</Badge>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trailing 30 Days</p>
+               <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-semibold tracking-tight uppercase tracking-widest px-3 py-1 hidden sm:flex">Live Acquisition Trajectory</Badge>
+               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Trailing 30 Days</p>
             </div>
           </div>
           <div className="flex-1 w-full">
@@ -258,11 +258,11 @@ function AnalyticsView({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
            {/* [PHASE 5]: Regional Intelligence Matrix */}
-           <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col h-[400px]">
+           <Card className="surface-layered border-none rounded-xl md:rounded-xl p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col h-[400px]">
              <div className="flex items-center justify-between mb-8">
                <div className="flex items-center gap-2">
                  <MapPin className="h-5 w-5 text-emerald-500" />
-                 <h4 className="text-lg font-black italic tracking-tight">Branch Intelligence</h4>
+                 <h4 className="text-lg font-semibold tracking-tight  tracking-tight">Branch Intelligence</h4>
                </div>
                <div className="flex items-center gap-3">
                  <Button 
@@ -273,7 +273,7 @@ function AnalyticsView({
                   >
                     <Download className="h-4 w-4 text-slate-400" />
                   </Button>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Regional Performance</p>
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Regional Performance</p>
                </div>
              </div>
              <div className="flex-1 w-full">
@@ -297,11 +297,11 @@ function AnalyticsView({
            </Card>
 
            {/* Speciality Distribution Chart (Pie) */}
-           <Card className="surface-layered border-none rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col justify-between h-[400px]">
+           <Card className="surface-layered border-none rounded-xl md:rounded-xl p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 flex flex-col justify-between h-[400px]">
              <div className="flex items-center justify-between mb-8">
                <div className="flex items-center gap-2">
                  <Users className="h-5 w-5 text-indigo-500" />
-                 <h4 className="text-lg font-black italic tracking-tight">Speciality Distribution</h4>
+                 <h4 className="text-lg font-semibold tracking-tight  tracking-tight">Speciality Distribution</h4>
                </div>
                <div className="flex items-center gap-3">
                   <Button 
@@ -312,7 +312,7 @@ function AnalyticsView({
                   >
                     <Download className="h-4 w-4 text-slate-400" />
                   </Button>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Departmental Flow</p>
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Departmental Flow</p>
                </div>
              </div>
              <div className="flex-1 w-full">
@@ -337,8 +337,8 @@ function AnalyticsView({
                 {treatmentData.map((item: any, idx: number) => (
                    <div key={idx} className="flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
-                      <span className="text-[10px] font-black uppercase tracking-tight text-slate-500">{item.name}</span>
-                      <span className="text-[11px] font-black">{item.value}</span>
+                      <span className="text-[10px] font-semibold tracking-tight uppercase tracking-tight text-slate-500">{item.name}</span>
+                      <span className="text-[11px] font-semibold tracking-tight">{item.value}</span>
                    </div>
                 ))}
              </div>
@@ -349,52 +349,52 @@ function AnalyticsView({
          {/* Security & Compliance Section */}
          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
             {/* DPDPA Sovereignty Card */}
-            <Card className="surface-layered border-none rounded-[2.5rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 relative overflow-hidden group">
+            <Card className="surface-layered border-none rounded-xl p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 relative overflow-hidden group">
                <div className="flex items-center justify-between mb-6">
-                  <Badge className="bg-emerald-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full border-none shadow-lg shadow-emerald-500/20">
+                  <Badge className="bg-emerald-500 text-white text-[10px] font-semibold tracking-tight uppercase px-3 py-1 rounded-full border-none shadow-lg shadow-emerald-500/20">
                     Verified
                   </Badge>
                   <ShieldCheck className="h-6 w-6 text-emerald-500 opacity-20 group-hover:opacity-100 transition-opacity" />
                </div>
                
                <div className="space-y-2">
-                  <h4 className="text-2xl font-black italic tracking-tight text-slate-900 dark:text-white">DPDPA Sovereignty</h4>
-                  <p className="text-sm font-bold text-slate-500">European & Indian Data Privacy Compliance Status.</p>
+                  <h4 className="text-2xl font-semibold tracking-tight  tracking-tight text-slate-900 dark:text-white">DPDPA Sovereignty</h4>
+                  <p className="text-sm font-semibold text-slate-500">European & Indian Data Privacy Compliance Status.</p>
                </div>
 
-               <div className="mt-8 p-4 rounded-3xl bg-emerald-50/50 border border-emerald-100/50 flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+               <div className="mt-8 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100/50 flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl bg-white flex items-center justify-center shadow-sm">
                      <ShieldCheck className="h-6 w-6 text-emerald-500" />
                   </div>
                   <div>
-                     <p className="text-[11px] font-black uppercase tracking-tight text-slate-900">Active Audit Log</p>
+                     <p className="text-[11px] font-semibold tracking-tight uppercase tracking-tight text-slate-900">Active Audit Log</p>
                      <p className="text-[10px] font-medium text-slate-500 leading-tight">System is currently recording all PII access and WhatsApp engagement events for regulatory auditing.</p>
                   </div>
                </div>
             </Card>
 
             {/* AES-256-GCM Encryption Card */}
-            <Card className="surface-layered border-none rounded-[2.5rem] p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 relative overflow-hidden group">
+            <Card className="surface-layered border-none rounded-xl p-8 md:p-10 shadow-sm ring-1 ring-slate-200/50 relative overflow-hidden group">
                <div className="flex items-center justify-between mb-6">
-                  <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-sm">
+                  <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-sm">
                      <Shield className="h-5 w-5" />
                   </div>
-                  <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] font-black px-3 py-1 rounded-full">
+                  <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] font-semibold tracking-tight px-3 py-1 rounded-full">
                      ACTIVE
                   </Badge>
                </div>
 
                <div className="space-y-4">
-                  <h4 className="text-2xl font-black italic tracking-tight text-slate-900 dark:text-white">AES-256-GCM Encryption</h4>
+                  <h4 className="text-2xl font-semibold tracking-tight  tracking-tight text-slate-900 dark:text-white">AES-256-GCM Encryption</h4>
                   <p className="text-sm font-medium text-slate-500 leading-relaxed">
                      All integration tokens (WATI, Tata Smartflo, Meta) are encrypted using AES-256-GCM before being stored in the database. Plain-text credentials are never persisted.
                   </p>
                </div>
 
-               <div className="mt-10 pt-6 border-t border-slate-100 flex items-center gap-4">
+               <div className="mt-10 pt-6 border-t border-border/50 flex items-center gap-4">
                   <div className="flex items-center gap-2">
                      <Settings className="h-3 w-3 text-slate-400 animate-spin-slow" />
-                     <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">256-Bit Key • GCM Mode • Random IV Per Token</span>
+                     <span className="text-[9px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-400">256-Bit Key • GCM Mode • Random IV Per Token</span>
                   </div>
                </div>
             </Card>
@@ -469,9 +469,9 @@ export function ExecutiveDashboard({
   return (
     <div className="space-y-8 pb-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100 dark:border-white/5">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-border/50 dark:border-white/5">
         <div className="flex items-center gap-5">
-          <div className="h-14 w-14 rounded-2xl bg-white shadow-xl shadow-slate-200 tracking-tight flex items-center justify-center p-1.5 shrink-0 border border-slate-100 overflow-hidden">
+          <div className="h-14 w-14 rounded-xl bg-white shadow-xl shadow-slate-200 tracking-tight flex items-center justify-center p-1.5 shrink-0 border border-border/50 overflow-hidden">
              <Image src="/scalerxlab-logo.png" alt="Hub Logo" width={50} height={50} className="object-contain w-full h-full" priority />
           </div>
           <div className="h-10 w-px bg-slate-200 dark:bg-white/10 hidden md:block" />
@@ -481,19 +481,19 @@ export function ExecutiveDashboard({
               <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
             </div>
             <div>
-              <h2 className="text-3xl md:text-4xl font-black tracking-tighter italic lowercase text-slate-900 dark:text-white">/intelligence.hub</h2>
-              <p className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mt-0.5">Sovereign Analytics Matrix</p>
+              <h2 className="text-3xl md:text-4xl font-semibold tracking-tight tracking-tighter  lowercase text-slate-900 dark:text-white">/intelligence.hub</h2>
+              <p className="text-[10px] md:text-[11px] font-semibold tracking-tight text-slate-400 uppercase tracking-[0.3em] mt-0.5">Sovereign Analytics Matrix</p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
            <Button 
-            className="rounded-2xl bg-slate-900 text-white hover:bg-black px-6 py-5 flex items-center gap-2 shadow-xl shadow-slate-900/10 group"
+            className="rounded-xl bg-slate-900 text-white hover:bg-black px-6 py-5 flex items-center gap-2 shadow-xl shadow-slate-900/10 group"
             onClick={() => exportToCSV(globalFilteredLeads, 'full_leads_audit')}
            >
              <Download className="h-4 w-4 group-hover:-translate-y-1 transition-transform" />
-             <span className="text-xs font-black uppercase tracking-widest">Export All Filtered</span>
+             <span className="text-xs font-semibold tracking-tight uppercase tracking-widest">Export All Filtered</span>
            </Button>
         </div>
       </div>
@@ -522,24 +522,24 @@ const KpiCard = React.memo(function KpiCard({ title, value, subValue, icon, colo
     };
 
     return (
-        <Card className="surface-layered border-none rounded-[2.5rem] p-8 shadow-sm ring-1 ring-slate-200/50 overflow-hidden relative group transition-all hover:shadow-2xl hover:ring-primary/30 hover:scale-[1.01] cursor-pointer">
+        <Card className="surface-layered border-none rounded-xl p-8 shadow-sm ring-1 ring-slate-200/50 overflow-hidden relative group transition-all hover:shadow-2xl hover:ring-primary/30 hover:scale-[1.01] cursor-pointer">
             <div className="flex justify-between items-start mb-6">
-                <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500", colorMap[color])}>
+                <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500", colorMap[color])}>
                     {icon}
                 </div>
                 {estimated && (
-                    <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-slate-100 text-slate-400">Estimated</span>
+                    <span className="text-[9px] font-semibold tracking-tight uppercase tracking-widest px-2 py-1 rounded-full bg-slate-100 text-slate-400">Estimated</span>
                 )}
             </div>
             
             <div className="space-y-1">
-                <h3 className={cn("text-3xl font-black tracking-tighter italic transition-all group-hover:tracking-tight", 
+                <h3 className={cn("text-3xl font-semibold tracking-tight tracking-tighter  transition-all group-hover:tracking-tight", 
                     color === 'rose' ? "text-rose-500" : color === 'emerald' ? "text-emerald-500" : "text-slate-900")}>
                     {value}
                 </h3>
                 <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{title}</p>
-                    <p className="text-[10px] font-black text-slate-500">{subValue}</p>
+                    <p className="text-[10px] font-semibold tracking-tight text-slate-400 uppercase tracking-[0.2em]">{title}</p>
+                    <p className="text-[10px] font-semibold tracking-tight text-slate-500">{subValue}</p>
                 </div>
             </div>
 

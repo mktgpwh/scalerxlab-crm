@@ -75,14 +75,14 @@ export function DashboardFilterBar() {
   ];
 
   return (
-    <div className="flex flex-col md:flex-row items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-[2rem] border border-slate-200/60 dark:border-white/5 shadow-sm relative z-30">
+    <div className="flex flex-col md:flex-row items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-border/50 dark:border-white/5 shadow-sm relative z-30">
       <div className="flex items-center gap-2 w-full md:w-auto">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger>
             <Button
               variant={"outline"}
               className={cn(
-                "h-11 justify-start text-left font-bold rounded-2xl border-slate-200/60 dark:border-white/10 bg-white dark:bg-slate-900 px-4 min-w-[260px]",
+                "h-11 justify-start text-left font-semibold rounded-xl border-border/50 dark:border-white/10 bg-white dark:bg-slate-900 px-4 min-w-[260px]",
                 !dateRange && "text-muted-foreground"
               )}
             >
@@ -102,15 +102,15 @@ export function DashboardFilterBar() {
               <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 rounded-3xl border-slate-200/60 dark:border-white/10 shadow-2xl z-[100] bg-white dark:bg-slate-950" align="start">
+          <PopoverContent className="w-auto p-0 rounded-xl border-border/50 dark:border-white/10 shadow-2xl z-[100] bg-white dark:bg-slate-950" align="start">
             <div className="flex flex-col md:flex-row">
-              <div className="p-4 border-r border-slate-100 dark:border-white/5 flex flex-col gap-2 bg-slate-50/50 dark:bg-slate-900/50">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-2">Presets</span>
+              <div className="p-4 border-r border-border/50 dark:border-white/5 flex flex-col gap-2 bg-slate-50/50 dark:bg-slate-900/50">
+                <span className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 mb-2 px-2">Presets</span>
                 {presets.map((preset) => (
                   <Button
                     key={preset.label}
                     variant="ghost"
-                    className="justify-start font-bold text-xs rounded-xl h-9 hover:bg-white dark:hover:bg-white/5 cursor-pointer"
+                    className="justify-start font-semibold text-xs rounded-xl h-9 hover:bg-white dark:hover:bg-white/5 cursor-pointer"
                     onClick={() => setLocalRange(preset.getValue())}
                   >
                     {preset.label}
@@ -125,11 +125,11 @@ export function DashboardFilterBar() {
                   selected={localRange?.from ? localRange : undefined}
                   onSelect={(range) => setLocalRange(range as any)}
                   numberOfMonths={2}
-                  className="rounded-2xl cursor-pointer"
+                  className="rounded-xl cursor-pointer"
                 />
-                <div className="w-full flex items-center justify-end border-t border-slate-100 pt-3 mt-3 px-2 gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="rounded-xl font-bold text-xs">Cancel</Button>
-                    <Button onClick={applyDateRange} size="sm" className="rounded-xl px-6 font-black uppercase tracking-widest text-[10px]">
+                <div className="w-full flex items-center justify-end border-t border-border/50 pt-3 mt-3 px-2 gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="rounded-xl font-semibold text-xs">Cancel</Button>
+                    <Button onClick={applyDateRange} size="sm" className="rounded-xl px-6 font-semibold tracking-tight uppercase tracking-widest text-[10px]">
                         Go &rarr;
                     </Button>
                 </div>
@@ -146,7 +146,7 @@ export function DashboardFilterBar() {
         <select 
           value={category || ""} 
           onChange={(e) => handleSetCategory(e.target.value || null)}
-          className="h-11 px-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/10 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+          className="h-11 px-6 rounded-xl bg-white dark:bg-slate-900 border border-border/50 dark:border-white/10 text-[10px] font-semibold tracking-tight uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
         >
           <option value="">All Categories</option>
           <option value="MATERNITY">Maternity</option>
@@ -161,7 +161,7 @@ export function DashboardFilterBar() {
                 variant="ghost" 
                 size="sm" 
                 onClick={resetFilters}
-                className="h-8 rounded-full text-[10px] font-black uppercase text-rose-500 hover:bg-rose-50 px-4"
+                className="h-8 rounded-full text-[10px] font-semibold tracking-tight uppercase text-rose-500 hover:bg-rose-50 px-4"
             >
                 <X className="h-3 w-3 mr-1" /> Reset
             </Button>

@@ -85,11 +85,11 @@ function ProgressBar({ progress }: { progress: ImportProgress }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4 text-[#243467] animate-pulse" />
-          <span className="text-xs font-black uppercase tracking-widest text-[#243467]">
+          <span className="text-xs font-semibold tracking-tight uppercase tracking-widest text-[#243467]">
             Streaming Import Active
           </span>
         </div>
-        <span className="text-xs font-black text-slate-900">
+        <span className="text-xs font-semibold tracking-tight text-slate-900">
           {pct.toFixed(1)}%
         </span>
       </div>
@@ -110,9 +110,9 @@ function ProgressBar({ progress }: { progress: ImportProgress }) {
           { label: "Total", value: progress.totalRows.toLocaleString(), color: "text-slate-500" },
           { label: "ETA", value: remaining !== null ? `${remaining}s` : "calc…", color: "text-amber-600" },
         ].map((s) => (
-          <div key={s.label} className="text-center p-3 rounded-2xl bg-slate-50 border border-slate-100">
-            <p className={cn("text-lg font-black tracking-tight", s.color)}>{s.value}</p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{s.label}</p>
+          <div key={s.label} className="text-center p-3 rounded-xl bg-slate-50 border border-border/50">
+            <p className={cn("text-lg font-semibold tracking-tight tracking-tight", s.color)}>{s.value}</p>
+            <p className="text-[9px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
@@ -120,7 +120,7 @@ function ProgressBar({ progress }: { progress: ImportProgress }) {
       {progress.errorBatches > 0 && (
         <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200/60">
           <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
-          <p className="text-[11px] font-bold text-amber-700">
+          <p className="text-[11px] font-semibold text-amber-700">
             {progress.errorBatches} batch(es) failed — will retry automatically on next run.
           </p>
         </div>
@@ -363,18 +363,18 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
     <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) resetState(); }}>
       <DialogTrigger
         render={
-          <Button variant="outline" className="h-10 px-4 rounded-xl border-slate-200/60 bg-white/50 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
+          <Button variant="outline" className="h-10 px-4 rounded-xl border-border/50 bg-white/50 text-slate-600 text-[10px] font-semibold tracking-tight uppercase tracking-widest hover:bg-slate-50 transition-all">
             <Upload className="h-3.5 w-3.5 mr-2" />
             Bulk Migration
           </Button>
         }
       />
 
-      <DialogContent className="sm:max-w-[720px] rounded-[3rem] border-none shadow-2xl p-0 overflow-hidden bg-white/98 backdrop-blur-xl">
+      <DialogContent className="sm:max-w-[720px] rounded-xl border-none shadow-2xl p-0 overflow-hidden bg-white/98 backdrop-blur-xl">
         {/* Header */}
-        <div className="p-8 pt-10 text-center bg-gradient-to-b from-[#243467]/5 to-transparent border-b border-slate-100/50">
+        <div className="p-8 pt-10 text-center bg-gradient-to-b from-[#243467]/5 to-transparent border-b border-border/50/50">
           <div className={cn(
-            "h-14 w-14 rounded-[1.5rem] flex items-center justify-center mx-auto mb-5 transition-all",
+            "h-14 w-14 rounded-xl flex items-center justify-center mx-auto mb-5 transition-all",
             step === "UPLOAD" && "bg-slate-100 text-slate-500",
             step === "MAP" && "bg-amber-500/10 text-amber-500",
             step === "PREVIEW" && "bg-[#243467]/10 text-[#243467]",
@@ -388,14 +388,14 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
             {step === "SUCCESS" && <CheckCircle2 className="h-7 w-7" />}
           </div>
           <DialogHeader>
-            <DialogTitle className="text-3xl font-black tracking-tighter italic lowercase text-slate-900 text-center">
+            <DialogTitle className="text-3xl font-semibold tracking-tight tracking-tighter  lowercase text-slate-900 text-center">
               {step === "UPLOAD" && "Batch Ingestion Engine"}
               {step === "MAP" && "Field Alignment"}
               {step === "PREVIEW" && "Ready to Stream"}
               {step === "IMPORTING" && "Streaming Import…"}
               {step === "SUCCESS" && "Import Complete"}
             </DialogTitle>
-            <DialogDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center pt-1">
+            <DialogDescription className="text-slate-400 text-[10px] font-semibold uppercase tracking-widest text-center pt-1">
               {step === "UPLOAD" && "Stream 500,000+ rows without timeouts — chunk-by-chunk ingestion"}
               {step === "MAP" && "Align your spreadsheet columns with the platform schema"}
               {step === "PREVIEW" && `${totalRows.toLocaleString()} rows detected · ${Math.ceil(totalRows / CHUNK_SIZE)} batches of ${CHUNK_SIZE}`}
@@ -413,24 +413,24 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
             <div className="space-y-6">
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-slate-200 rounded-[2rem] p-16 flex flex-col items-center justify-center cursor-pointer hover:border-[#243467]/40 hover:bg-[#243467]/[0.02] transition-all group"
+                className="border-2 border-dashed border-border/50 rounded-xl p-16 flex flex-col items-center justify-center cursor-pointer hover:border-[#243467]/40 hover:bg-[#243467]/[0.02] transition-all group"
               >
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv,.xlsx,.xls" className="hidden" />
                 <div className="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <Upload className="h-6 w-6 text-slate-400 group-hover:text-[#243467]" />
                 </div>
-                <p className="text-sm font-black text-slate-900 italic tracking-tight">Drop signal payload here</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">CSV / XLSX · No row limit</p>
+                <p className="text-sm font-semibold tracking-tight text-slate-900  tracking-tight">Drop signal payload here</p>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-1">CSV / XLSX · No row limit</p>
               </div>
               <div className="flex items-center justify-center">
-                <Button variant="ghost" onClick={() => generateCsvTemplate()} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#243467]">
+                <Button variant="ghost" onClick={() => generateCsvTemplate()} className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 hover:text-[#243467]">
                   <Download className="h-3.5 w-3.5 mr-2" /> Download Template
                 </Button>
               </div>
               {error && (
-                <div className="flex items-center gap-2 p-4 rounded-2xl bg-rose-50 border border-rose-200/60 text-rose-600">
+                <div className="flex items-center gap-2 p-4 rounded-xl bg-rose-50 border border-rose-200/60 text-rose-600">
                   <AlertCircle className="h-4 w-4 shrink-0" />
-                  <p className="text-xs font-bold">{error}</p>
+                  <p className="text-xs font-semibold">{error}</p>
                 </div>
               )}
             </div>
@@ -447,35 +447,35 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
                 { id: "branchId", label: "Branch / Center ID", required: false },
               ].map(field => (
                 <div key={field.id} className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                  <label className="text-[10px] font-semibold tracking-tight uppercase text-slate-400 tracking-wider">
                     {field.label} {field.required && <span className="text-rose-500">*</span>}
                   </label>
                   <Select
                     value={(mapping as any)[field.id] || ""}
                     onValueChange={(val) => setMapping(prev => ({ ...prev, [field.id]: (val === "__none__" || !val) ? "" : val }))}
                   >
-                    <SelectTrigger className="h-12 rounded-2xl bg-slate-50 border-none ring-1 ring-slate-100 font-bold text-xs focus:ring-[#243467]/20">
+                    <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold text-xs focus:ring-[#243467]/20">
                       <SelectValue placeholder={`Map ${field.id} column…`} />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-none shadow-xl">
-                      <SelectItem value="__none__" className="text-[10px] font-bold uppercase py-2.5">— Ignore —</SelectItem>
+                    <SelectContent className="rounded-xl border-none shadow-xl">
+                      <SelectItem value="__none__" className="text-[10px] font-semibold uppercase py-2.5">— Ignore —</SelectItem>
                       {headers.map(h => (
-                        <SelectItem key={h} value={h} className="text-[10px] font-bold uppercase py-2.5">{h}</SelectItem>
+                        <SelectItem key={h} value={h} className="text-[10px] font-semibold uppercase py-2.5">{h}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               ))}
 
-              <div className="pt-4 border-t border-dashed border-slate-100 space-y-2">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Default Branch (fallback)</Label>
+              <div className="pt-4 border-t border-dashed border-border/50 space-y-2">
+                <Label className="text-[10px] font-semibold tracking-tight uppercase text-slate-400 tracking-wider">Default Branch (fallback)</Label>
                 <Select value={defaultBranchId} onValueChange={(val) => setDefaultBranchId(val || "")}>
-                  <SelectTrigger className="h-12 rounded-2xl bg-[#243467]/5 border-none ring-1 ring-[#243467]/20 font-bold text-xs text-[#243467]">
+                  <SelectTrigger className="h-12 rounded-xl bg-[#243467]/5 border-none ring-1 ring-[#243467]/20 font-semibold text-xs text-[#243467]">
                     <SelectValue placeholder="Assign entire file to branch…" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-xl z-[100]">
+                  <SelectContent className="rounded-xl border-none shadow-xl z-[100]">
                     {branches.map(b => (
-                      <SelectItem key={b.id} value={b.id} className="text-[10px] font-black uppercase py-3 px-4">{b.name}</SelectItem>
+                      <SelectItem key={b.id} value={b.id} className="text-[10px] font-semibold tracking-tight uppercase py-3 px-4">{b.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -484,7 +484,7 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
               <Button
                 disabled={!mapping.name || !mapping.phone}
                 onClick={() => setStep("PREVIEW")}
-                className="w-full h-14 rounded-2xl bg-[#243467] hover:bg-[#1a2850] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#243467]/20"
+                className="w-full h-14 rounded-xl bg-[#243467] hover:bg-[#1a2850] text-white text-[10px] font-semibold tracking-tight uppercase tracking-widest shadow-lg shadow-[#243467]/20"
               >
                 Confirm Alignment →
               </Button>
@@ -495,33 +495,33 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
           {step === "PREVIEW" && (
             <div className="space-y-6">
               {/* File info banner */}
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-[#243467]/5 border border-[#243467]/10">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-[#243467]/5 border border-[#243467]/10">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
                     <FileType className="h-5 w-5 text-[#243467]" />
                   </div>
                   <div>
-                    <p className="text-xs font-black text-slate-900">{file?.name}</p>
-                    <p className="text-[9px] text-slate-500 font-bold uppercase">
+                    <p className="text-xs font-semibold tracking-tight text-slate-900">{file?.name}</p>
+                    <p className="text-[9px] text-slate-500 font-semibold uppercase">
                       {totalRows.toLocaleString()} rows · {Math.ceil(totalRows / CHUNK_SIZE)} batches of {CHUNK_SIZE}
                     </p>
                   </div>
                 </div>
-                <Button variant="link" onClick={() => setStep("MAP")} className="text-[10px] font-black uppercase tracking-widest text-[#243467]">
+                <Button variant="link" onClick={() => setStep("MAP")} className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-[#243467]">
                   Adjust Mapping
                 </Button>
               </div>
 
               {/* Default branch */}
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Default Branch</Label>
+                <Label className="text-[10px] font-semibold tracking-tight uppercase text-slate-400 tracking-wider">Default Branch</Label>
                 <Select value={defaultBranchId} onValueChange={(val) => setDefaultBranchId(val || "")}>
-                  <SelectTrigger className="h-11 rounded-2xl bg-slate-50 border-none ring-1 ring-slate-100 font-bold text-xs">
+                  <SelectTrigger className="h-11 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold text-xs">
                     <SelectValue placeholder="Select fallback branch…" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-xl z-[100]">
+                  <SelectContent className="rounded-xl border-none shadow-xl z-[100]">
                     {branches.map(b => (
-                      <SelectItem key={b.id} value={b.id} className="text-[10px] font-black uppercase py-3 px-4">{b.name}</SelectItem>
+                      <SelectItem key={b.id} value={b.id} className="text-[10px] font-semibold tracking-tight uppercase py-3 px-4">{b.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -529,15 +529,15 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
 
               {/* Preview table */}
               <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <p className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">
                   Preview (first {Math.min(validPreview.length, 8)} valid rows)
                 </p>
-                <div className="rounded-2xl border border-slate-100 overflow-hidden">
+                <div className="rounded-xl border border-border/50 overflow-hidden">
                   <table className="w-full text-left">
                     <thead className="bg-slate-50">
                       <tr>
                         {["Name", "Phone", "Category", "Branch"].map(h => (
-                          <th key={h} className="px-4 py-2 text-[9px] font-black uppercase text-slate-400">{h}</th>
+                          <th key={h} className="px-4 py-2 text-[9px] font-semibold tracking-tight uppercase text-slate-400">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -546,10 +546,10 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
                         const branch = branches.find(b => b.id === row.branchId);
                         return (
                           <tr key={i} className="border-t border-slate-50">
-                            <td className="px-4 py-2.5 text-[10px] font-bold text-slate-800 truncate max-w-[140px]">{row.name}</td>
+                            <td className="px-4 py-2.5 text-[10px] font-semibold text-slate-800 truncate max-w-[140px]">{row.name}</td>
                             <td className="px-4 py-2.5 text-[10px] font-mono text-slate-500">{row.phone}</td>
-                            <td className="px-4 py-2.5 text-[10px] font-black uppercase text-[#243467]">{row.category}</td>
-                            <td className="px-4 py-2.5 text-[10px] font-bold text-slate-400">{branch?.name ?? "—"}</td>
+                            <td className="px-4 py-2.5 text-[10px] font-semibold tracking-tight uppercase text-[#243467]">{row.category}</td>
+                            <td className="px-4 py-2.5 text-[10px] font-semibold text-slate-400">{branch?.name ?? "—"}</td>
                           </tr>
                         );
                       })}
@@ -557,7 +557,7 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
                   </table>
                 </div>
                 {totalRows > 8 && (
-                  <p className="text-[9px] text-slate-400 text-center italic font-bold uppercase">
+                  <p className="text-[9px] text-slate-400 text-center  font-semibold uppercase">
                     + {(totalRows - 8).toLocaleString()} more rows will stream in batches
                   </p>
                 )}
@@ -579,30 +579,30 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
                   { label: "Inserted", value: progress.insertedRows.toLocaleString(), color: "text-emerald-600" },
                   { label: "Batches", value: progress.batchesDone, color: "text-[#243467]" },
                 ].map(s => (
-                  <div key={s.label} className="bg-slate-50 p-6 rounded-[2rem] text-center border border-slate-100">
-                    <p className={cn("text-3xl font-black tracking-tighter italic", s.color)}>{s.value}</p>
-                    <p className="text-[10px] font-black uppercase text-slate-400 mt-1">{s.label}</p>
+                  <div key={s.label} className="bg-slate-50 p-6 rounded-xl text-center border border-border/50">
+                    <p className={cn("text-3xl font-semibold tracking-tight tracking-tighter ", s.color)}>{s.value}</p>
+                    <p className="text-[10px] font-semibold tracking-tight uppercase text-slate-400 mt-1">{s.label}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-[2.5rem] flex items-center gap-6">
+              <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl flex items-center gap-6">
                 <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-200">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-emerald-900 uppercase tracking-tight">Streaming Complete</h4>
-                  <p className="text-[11px] text-emerald-700 font-bold opacity-80 mt-0.5">
+                  <h4 className="text-sm font-semibold tracking-tight text-emerald-900 uppercase tracking-tight">Streaming Complete</h4>
+                  <p className="text-[11px] text-emerald-700 font-semibold opacity-80 mt-0.5">
                     All batches processed. Matrix state is now synchronized.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-3">
-                <Button onClick={() => { setOpen(false); resetState(); }} variant="outline" className="flex-1 h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest">
+                <Button onClick={() => { setOpen(false); resetState(); }} variant="outline" className="flex-1 h-12 rounded-xl font-semibold tracking-tight text-[10px] uppercase tracking-widest">
                   <RefreshCw className="h-4 w-4 mr-2" /> Close
                 </Button>
-                <Button onClick={() => { useDashboardStore.getState().resetFilters(); setOpen(false); resetState(); }} className="flex-1 h-12 rounded-2xl bg-[#243467] hover:bg-[#1a2850] text-white font-black text-[10px] uppercase tracking-widest shadow-lg">
+                <Button onClick={() => { useDashboardStore.getState().resetFilters(); setOpen(false); resetState(); }} className="flex-1 h-12 rounded-xl bg-[#243467] hover:bg-[#1a2850] text-white font-semibold tracking-tight text-[10px] uppercase tracking-widest shadow-lg">
                   View Matrix
                 </Button>
               </div>
@@ -612,11 +612,11 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
 
         {/* Footer */}
         {(step === "PREVIEW") && (
-          <DialogFooter className="p-6 bg-slate-50/80 border-t border-slate-100">
+          <DialogFooter className="p-6 bg-slate-50/80 border-t border-border/50">
             <Button
               onClick={startStreamingImport}
               disabled={!mapping.name || !mapping.phone || (!defaultBranchId && mappedPreview.every(r => !r.branchId))}
-              className="w-full h-14 rounded-[2rem] bg-[#243467] hover:bg-[#1a2850] text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#243467]/20"
+              className="w-full h-14 rounded-xl bg-[#243467] hover:bg-[#1a2850] text-white text-[11px] font-semibold tracking-tight uppercase tracking-[0.2em] shadow-xl shadow-[#243467]/20"
             >
               <Zap className="h-4 w-4 fill-white mr-2" />
               Initiate Streaming Import ({totalRows.toLocaleString()} rows)
@@ -625,8 +625,8 @@ export function BulkImportDialog({ userRole, branches }: BulkImportDialogProps) 
         )}
 
         {(step === "UPLOAD" || step === "MAP") && file && (
-          <DialogFooter className="p-6 bg-slate-50/80 border-t border-slate-100">
-            <Button variant="ghost" onClick={resetState} className="text-[10px] font-black uppercase text-rose-500 hover:bg-rose-50">
+          <DialogFooter className="p-6 bg-slate-50/80 border-t border-border/50">
+            <Button variant="ghost" onClick={resetState} className="text-[10px] font-semibold tracking-tight uppercase text-rose-500 hover:bg-rose-50">
               Clear Payload
             </Button>
           </DialogFooter>

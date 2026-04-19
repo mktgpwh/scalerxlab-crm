@@ -83,9 +83,9 @@ export default function LoginPage() {
         {/* Logo Section */}
         <div className="flex flex-col items-center mb-10 space-y-4">
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-indigo-500 rounded-3xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-white rounded-3xl p-6 shadow-sm border border-slate-200/60 ring-1 ring-slate-100 flex flex-col items-center justify-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0 p-1 ring-1 ring-slate-100">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-indigo-500 rounded-xl blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative bg-white rounded-xl p-6 shadow-sm border border-border/50 ring-1 ring-slate-100 flex flex-col items-center justify-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white shadow-sm shrink-0 p-1 ring-1 ring-slate-100">
                     <Image
                         src="/scalerxlab-logo.png"
                         alt="Pahlajani's"
@@ -96,33 +96,33 @@ export default function LoginPage() {
                     />
                 </div>
                 <div className="flex flex-col text-center">
-                    <span className="text-2xl font-black tracking-tighter text-slate-900">Pahlajani's</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Business OS</span>
+                    <span className="text-2xl font-semibold tracking-tight tracking-tighter text-slate-900">Pahlajani's</span>
+                    <span className="text-[10px] font-semibold tracking-tight uppercase tracking-[0.3em] text-primary">Business OS</span>
                 </div>
             </div>
           </div>
           <div className="text-center">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary flex items-center justify-center gap-2">
+            <h2 className="text-[10px] font-semibold tracking-tight uppercase tracking-[0.4em] text-primary flex items-center justify-center gap-2">
               <Sparkles className="h-3 w-3" />
               Customized Build
             </h2>
-            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em] mt-2">BOS version 1.0</p>
+            <p className="text-slate-400 text-[9px] font-semibold uppercase tracking-[0.2em] mt-2">BOS version 1.0</p>
           </div>
         </div>
 
-        <Card className="surface-layered border-none rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-xl overflow-hidden ring-1 ring-slate-200/50">
+        <Card className="surface-layered border-none rounded-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-xl overflow-hidden ring-1 ring-slate-200/50">
           <CardHeader className="space-y-1 pb-10 text-center pt-12">
-            <CardTitle className="text-4xl font-black tracking-tighter italic lowercase text-slate-900 px-6 leading-tight">
+            <CardTitle className="text-4xl font-semibold tracking-tight tracking-tighter  lowercase text-slate-900 px-6 leading-tight">
               Welcome to Pahlajani's BOS
             </CardTitle>
-            <CardDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest pt-3">
+            <CardDescription className="text-slate-400 text-[10px] font-semibold uppercase tracking-widest pt-3">
               Identify yourself to access the engagement hub
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 px-12 pb-12">
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Tactical Identifier</Label>
+                <Label className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 ml-1">Tactical Identifier</Label>
                 <div className="relative group">
                   <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-primary transition-colors" />
                   <Input
@@ -131,16 +131,16 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-14 pl-14 rounded-2xl bg-slate-50/50 border-slate-200/60 ring-1 ring-slate-100 text-sm font-semibold focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-slate-400 text-slate-900 shadow-sm"
+                    className="h-14 pl-14 rounded-xl bg-slate-50/50 border-border/50 ring-1 ring-slate-100 text-sm font-semibold focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-slate-400 text-slate-900 shadow-sm"
                   />
                 </div>
               </div>
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Access Key</Label>
+                  <Label className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 ml-1">Access Key</Label>
                   <Link
                     href="/forgot-password"
-                    className="text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-colors"
+                    className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-primary/60 hover:text-primary transition-colors"
                   >
                     Key Recovery?
                   </Link>
@@ -153,7 +153,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-14 pl-14 pr-14 rounded-2xl bg-slate-50/50 border-slate-200/60 ring-1 ring-slate-100 text-sm font-semibold focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-slate-400 text-slate-900 shadow-sm"
+                    className="h-14 pl-14 pr-14 rounded-xl bg-slate-50/50 border-border/50 ring-1 ring-slate-100 text-sm font-semibold focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-slate-400 text-slate-900 shadow-sm"
                   />
                   <button
                     type="button"
@@ -168,14 +168,14 @@ export default function LoginPage() {
               <div className="flex items-center space-x-3 pt-1 ml-1">
                 <div 
                     className={cn(
-                        "w-5 h-5 rounded-lg border flex items-center justify-center transition-all cursor-pointer shadow-sm",
-                        rememberMe ? "bg-primary border-primary" : "border-slate-200 bg-white"
+                        "w-5 h-5 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-sm",
+                        rememberMe ? "bg-primary border-primary" : "border-border/50 bg-white"
                     )}
                     onClick={() => setRememberMe(!rememberMe)}
                 >
                     {rememberMe && <ShieldCheck className="h-3.5 w-3.5 text-white" />}
                 </div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer select-none" onClick={() => setRememberMe(!rememberMe)}>
+                <label className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-500 cursor-pointer select-none" onClick={() => setRememberMe(!rememberMe)}>
                   Maintain Persistent Link
                 </label>
               </div>
@@ -183,7 +183,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-16 rounded-[1.25rem] bg-slate-900 hover:bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-[0_12px_24px_-6px_rgba(0,0,0,0.15)] group transition-all"
+                className="w-full h-16 rounded-[1.25rem] bg-slate-900 hover:bg-black text-white text-[11px] font-semibold tracking-tight uppercase tracking-[0.2em] shadow-[0_12px_24px_-6px_rgba(0,0,0,0.15)] group transition-all"
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -198,11 +198,11 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="pb-12 pt-0 flex flex-col space-y-4">
              <div className="h-px w-20 bg-slate-100 mx-auto" />
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center px-16 leading-relaxed flex items-center justify-center gap-2">
+              <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest text-center px-16 leading-relaxed flex items-center justify-center gap-2">
                  Protected by ScalerX Sovereign Security.
               </p>
               <div className="flex flex-col items-center justify-center gap-1 opacity-40 hover:opacity-100 transition-opacity pb-4">
-                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">
+                <span className="text-[8px] font-semibold tracking-tight uppercase tracking-[0.2em] text-slate-500">
                   Powered by <span className="text-slate-400">ScalerX Lab</span>
                 </span>
               </div>

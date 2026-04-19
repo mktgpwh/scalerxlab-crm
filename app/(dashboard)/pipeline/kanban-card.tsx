@@ -123,7 +123,7 @@ function KanbanCardInner({
       <div
         ref={setNodeRef}
         style={style}
-        className="opacity-30 h-[140px] rounded-[2.5rem] border-2 border-dashed border-slate-300 bg-slate-50/50"
+        className="opacity-30 h-[140px] rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/50"
       />
     );
   }
@@ -145,7 +145,7 @@ function KanbanCardInner({
             openLead();
         }}
         className={cn(
-          "cursor-pointer active:scale-[0.98] transition-all duration-300 border-slate-200/60 dark:border-white/5 rounded-[2rem] shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/40 bg-white dark:bg-slate-950 group",
+          "cursor-pointer active:scale-[0.98] transition-all duration-300 border-border/50 dark:border-white/5 rounded-xl shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/40 bg-white dark:bg-slate-950 group",
           isOverlay && "ring-4 ring-primary shadow-2xl rotate-2",
           lead.intent === 'HOT' && "shadow-[0_0_20px_rgba(244,63,94,0.1)] border-rose-500/30"
         )}
@@ -153,10 +153,10 @@ function KanbanCardInner({
         <CardContent className="p-5 space-y-4">
           <div className="flex items-start justify-between">
             <div className="flex flex-col gap-0.5">
-                <span className="text-base font-black text-slate-900 dark:text-white leading-tight tracking-tight">
+                <span className="text-base font-semibold tracking-tight text-slate-900 dark:text-white leading-tight tracking-tight">
                     {lead.name}
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                <span className="text-[9px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">
                     ID-{lead.id.slice(-6).toUpperCase()}
                 </span>
             </div>
@@ -169,14 +169,14 @@ function KanbanCardInner({
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge className={cn("text-[8px] font-black uppercase tracking-[0.2em] px-2 h-5 ring-1", getIntentBadgeContext(lead.intent))}>
+            <Badge className={cn("text-[8px] font-semibold tracking-tight uppercase tracking-[0.2em] px-2 h-5 ring-1", getIntentBadgeContext(lead.intent))}>
               {lead.intent}
             </Badge>
-            <Badge variant="outline" className="text-[9px] font-bold py-0 h-5 border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 text-slate-500">
+            <Badge variant="outline" className="text-[9px] font-semibold py-0 h-5 border-border/50 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 text-slate-500">
                {lead.source?.replace('_', ' ')}
             </Badge>
             {lead.category && lead.category !== 'OTHER' && (
-              <Badge className={cn("text-[8px] font-black uppercase px-2 h-5 border-none", CATEGORY_COLORS[lead.category])}>
+              <Badge className={cn("text-[8px] font-semibold tracking-tight uppercase px-2 h-5 border-none", CATEGORY_COLORS[lead.category])}>
                 {lead.category.slice(0, 3)}
               </Badge>
             )}
@@ -194,7 +194,7 @@ function KanbanCardInner({
                             <Phone className="h-3.5 w-3.5" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent className="text-[10px] font-black uppercase">
+                    <TooltipContent className="text-[10px] font-semibold tracking-tight uppercase">
                         Call via Tata Smartflo
                     </TooltipContent>
                 </Tooltip>
@@ -213,7 +213,7 @@ function KanbanCardInner({
                             <WhatsAppIcon className="h-3.5 w-3.5" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent className="text-[10px] font-black uppercase">
+                    <TooltipContent className="text-[10px] font-semibold tracking-tight uppercase">
                         WhatsApp / AI Smart Drafts
                     </TooltipContent>
                 </Tooltip>
@@ -232,13 +232,13 @@ function KanbanCardInner({
                             <Mail className="h-3.5 w-3.5" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent className="text-[10px] font-black uppercase">Email Node</TooltipContent>
+                    <TooltipContent className="text-[10px] font-semibold tracking-tight uppercase">Email Node</TooltipContent>
                 </Tooltip>
              </div>
 
              <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold text-slate-400 uppercase">AI Score</span>
-                <span className={`text-[11px] font-black ${lead.aiScore && lead.aiScore > 70 ? "text-emerald-500" : "text-slate-900 dark:text-white"}`}>
+                <span className="text-[9px] font-semibold text-slate-400 uppercase">AI Score</span>
+                <span className={`text-[11px] font-semibold tracking-tight ${lead.aiScore && lead.aiScore > 70 ? "text-emerald-500" : "text-slate-900 dark:text-white"}`}>
                     {lead.aiScore || "0"}%
                 </span>
              </div>
@@ -249,7 +249,7 @@ function KanbanCardInner({
             {lead.consentFlag ? (
                 <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tight">DPDPA Verified</span>
+                    <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-tight">DPDPA Verified</span>
                 </div>
             ) : (
                 <div className="flex items-center gap-1.5 opacity-40">
@@ -258,7 +258,7 @@ function KanbanCardInner({
                 </div>
             )}
             
-            <span className="text-[9px] font-bold text-slate-300">
+            <span className="text-[9px] font-semibold text-slate-300">
                 {mounted ? new Date(lead.createdAt).toLocaleDateString() : "---"}
             </span>
           </div>
@@ -271,7 +271,7 @@ function KanbanCardInner({
 // Public export: wrapped in Suspense + React.memo to prevent unnecessary re-renders
 export const KanbanCard = React.memo(function KanbanCard(props: { lead: Lead; isOverlay?: boolean }) {
   return (
-    <Suspense fallback={<div className="h-[140px] rounded-[2rem] bg-slate-100/50 animate-pulse" />}>
+    <Suspense fallback={<div className="h-[140px] rounded-xl bg-slate-100/50 animate-pulse" />}>
       <KanbanCardInner {...props} />
     </Suspense>
   );

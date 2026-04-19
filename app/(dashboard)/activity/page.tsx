@@ -37,9 +37,9 @@ export default async function ActivityLogPage() {
       <div className="space-y-1">
         <div className="flex items-center gap-2 mb-1">
           <ShieldCheck className="h-4 w-4 text-primary" />
-          <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">DPDPA Sovereign Ledger</span>
+          <span className="text-[10px] font-semibold text-primary uppercase tracking-[0.2em]">DPDPA Sovereign Ledger</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white lowercase italic">
+        <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight tracking-tight text-slate-900 dark:text-white lowercase ">
           /activity.logs
         </h2>
         <p className="text-sm font-medium text-slate-500">
@@ -47,28 +47,28 @@ export default async function ActivityLogPage() {
         </p>
       </div>
 
-      <div className="relative pl-6 sm:pl-8 border-l-2 border-slate-200 dark:border-white/10 space-y-8 mt-10">
+      <div className="relative pl-6 sm:pl-8 border-l-2 border-border/50 dark:border-white/10 space-y-8 mt-10">
         {logs.length === 0 ? (
-           <div className="text-sm font-bold text-slate-400">No activity recorded yet in this node.</div>
+           <div className="text-sm font-semibold text-slate-400">No activity recorded yet in this node.</div>
         ) : (
            logs.map((log) => (
              <div key={log.id} className="relative group">
                {/* Timeline Dot */}
-               <div className="absolute -left-[35px] sm:-left-[43px] p-1.5 bg-white dark:bg-slate-950 rounded-full border-2 border-slate-200 dark:border-white/10 group-hover:border-primary transition-colors">
+               <div className="absolute -left-[35px] sm:-left-[43px] p-1.5 bg-white dark:bg-slate-950 rounded-full border-2 border-border/50 dark:border-white/10 group-hover:border-primary transition-colors">
                  {getActionIcon(log.action)}
                </div>
 
-               <div className="bg-white dark:bg-white/5 rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200/60 dark:border-white/10 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20 transition-all">
+               <div className="bg-white dark:bg-white/5 rounded-xl p-5 sm:p-6 shadow-sm border border-border/50 dark:border-white/10 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20 transition-all">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                      <div className="flex items-center gap-2">
-                         <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">{log.action.replace(/_/g, ' ')}</span>
+                         <span className="text-xs font-semibold tracking-tight uppercase tracking-widest text-slate-900 dark:text-white">{log.action.replace(/_/g, ' ')}</span>
                          {log.lead && (
-                             <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-bold">
+                             <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-semibold">
                                Target: {log.lead.name}
                              </span>
                          )}
                      </div>
-                     <span className="text-[10px] font-bold text-slate-400 tracking-tighter uppercase">
+                     <span className="text-[10px] font-semibold text-slate-400 tracking-tighter uppercase">
                          {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
                      </span>
                   </div>
@@ -77,7 +77,7 @@ export default async function ActivityLogPage() {
                      {log.description || "System action processed seamlessly."}
                   </p>
 
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                      <User className="h-3 w-3" />
                      {log.user ? log.user.name || log.user.email : "Automated System Node"}
                   </div>

@@ -17,27 +17,27 @@ import { useDashboardStore } from "@/lib/store/use-dashboard-store";
 import { toast } from "sonner";
 
 const INTENT_STYLES: Record<string, string> = {
-  HOT:    "bg-rose-500/10 text-rose-600 ring-rose-500/20",
-  WARM:   "bg-amber-500/10 text-amber-600 ring-amber-500/20",
-  COLD:   "bg-blue-500/10 text-blue-600 ring-blue-500/20",
-  UNSCORED: "bg-slate-100 text-slate-500 ring-slate-200/50",
+  HOT:    "bg-rose-50 text-rose-600 border border-rose-200/50",
+  WARM:   "bg-amber-50 text-amber-600 border border-amber-200/50",
+  COLD:   "bg-slate-50 text-slate-500 border border-slate-200/50",
+  UNSCORED: "bg-slate-50 text-slate-400 border border-slate-200/50",
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  RAW:               "bg-slate-100 text-slate-600 ring-slate-200/50",
-  QUALIFIED:         "bg-indigo-50 text-indigo-600 ring-indigo-500/20",
-  CONTACTED:         "bg-blue-50 text-blue-600 ring-blue-500/20",
-  APPOINTMENT_FIXED: "bg-amber-50 text-amber-600 ring-amber-500/20",
-  VISITED:           "bg-violet-50 text-violet-600 ring-violet-500/20",
-  WON:               "bg-emerald-100 text-emerald-700 ring-emerald-500/30",
-  LOST:              "bg-rose-50 text-rose-600 ring-rose-500/20"
+  RAW:               "bg-slate-50 text-slate-500 border border-slate-200/50",
+  QUALIFIED:         "bg-indigo-50 text-indigo-600 border border-indigo-200/50",
+  CONTACTED:         "bg-blue-50 text-blue-600 border border-blue-200/50",
+  APPOINTMENT_FIXED: "bg-amber-50 text-amber-600 border border-amber-200/50",
+  VISITED:           "bg-violet-50 text-violet-600 border border-violet-200/50",
+  WON:               "bg-emerald-50 text-emerald-700 border border-emerald-200/50",
+  LOST:              "bg-rose-50 text-rose-600 border border-rose-200/50"
 };
 
 const CATEGORY_STYLES: Record<string, string> = {
-  INFERTILITY: "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20",
-  MATERNITY:   "bg-indigo-500/10 text-indigo-600 ring-indigo-500/20",
-  GYNECOLOGY:  "bg-rose-500/10 text-rose-600 ring-rose-500/20",
-  OTHER:       "bg-slate-500/10 text-slate-600 ring-slate-500/20"
+  INFERTILITY: "bg-emerald-50 text-emerald-600 border border-emerald-200/50",
+  MATERNITY:   "bg-indigo-50 text-indigo-600 border border-indigo-200/50",
+  GYNECOLOGY:  "bg-rose-50 text-rose-600 border border-rose-200/50",
+  OTHER:       "bg-slate-50 text-slate-500 border border-slate-200/50"
 };
 
 const maskPhone = (num?: string | null) => {
@@ -52,24 +52,24 @@ function FilterChip({ label, value, options, onChange }: { label: string; value:
     <Popover>
       <PopoverTrigger>
         <Button className={cn(
-          "flex items-center gap-1.5 h-9 px-3 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer hover:border-primary/50",
+          "flex items-center gap-1.5 h-9 px-3 rounded-full text-xs font-semibold tracking-tight uppercase border transition-all cursor-pointer hover:border-primary/50",
           isActive
             ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-            : "bg-white dark:bg-white/5 text-slate-500 border-slate-200/60 dark:border-white/10 hover:border-primary/30 hover:text-primary"
+            : "bg-white dark:bg-white/5 text-slate-500 border-border/50 dark:border-white/10 hover:border-primary/30 hover:text-primary"
         )}>
           <Filter className="h-3 w-3" />
           {isActive ? value : label}
           <ChevronDown className="h-3 w-3 opacity-60" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-44 rounded-2xl p-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 shadow-xl" align="start">
+      <PopoverContent className="w-44 rounded-xl p-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-border/50 shadow-xl" align="start">
         <div className="space-y-0.5">
           {options.map(opt => (
             <button
               key={opt}
               onClick={() => onChange(opt)}
               className={cn(
-                "w-full text-left px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors",
+                "w-full text-left px-3 py-2 rounded-xl text-[10px] font-semibold tracking-tight uppercase tracking-widest transition-colors",
                 value === opt ? "bg-primary/10 text-primary" : "text-slate-600 hover:bg-slate-50 dark:hover:bg-white/5"
               )}
             >
@@ -212,7 +212,7 @@ export function LeadsDataView({
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
-            className="pl-11 h-11 rounded-2xl bg-white dark:bg-white/5 border-slate-200/60 dark:border-white/5 ring-1 ring-slate-200/50 dark:ring-white/5 font-medium focus-visible:ring-primary/30"
+            className="pl-11 h-11 rounded-xl bg-white dark:bg-white/5 border-border/50 dark:border-white/5 ring-1 ring-slate-200/50 dark:ring-white/5 font-medium focus-visible:ring-primary/30"
             placeholder="Search leads..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -244,7 +244,7 @@ export function LeadsDataView({
             />
           )}
           {activeFilters > 0 && (
-            <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase text-rose-500 rounded-full h-8 px-3"
+            <Button variant="ghost" size="sm" className="text-[10px] font-semibold tracking-tight uppercase text-rose-500 rounded-full h-8 px-3"
               onClick={() => { setFilterSource("ALL"); setFilterStatus("ALL"); setFilterCategory("ALL"); setFilterIntent("ALL"); }}>
               <X className="h-3 w-3 mr-1" /> Clear ({activeFilters})
             </Button>
@@ -253,25 +253,25 @@ export function LeadsDataView({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+        <p className="text-[11px] font-semibold tracking-tight text-slate-400 uppercase tracking-widest">
           Showing <span className="text-slate-900 dark:text-white">{filtered.length}</span> Matrix Nodes
         </p>
         <div className="flex items-center gap-3">
           {["SUPER_ADMIN", "SALES_ADMIN", "MANAGER"].includes(userRole) && (
-            <Button onClick={handleExportCSV} size="sm" variant="outline" className="h-8 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 border-emerald-500/30 text-emerald-600">
+            <Button onClick={handleExportCSV} size="sm" variant="outline" className="h-8 px-3 rounded-xl text-[10px] font-semibold tracking-tight uppercase tracking-widest gap-1.5 border-emerald-500/30 text-emerald-600">
               <Download className="h-3.5 w-3.5" /> Export CSV
             </Button>
           )}
         </div>
       </div>
 
-      <div className="bg-white dark:bg-black/20 rounded-[2rem] ring-1 ring-slate-200/60 dark:ring-white/5 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-black/20 rounded-xl ring-1 ring-slate-200/60 dark:ring-white/5 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-white/5">
+              <tr className="border-b border-border/50 dark:border-white/5">
                 {["Patient", "Origin", "Status", "Speciality", "Center", "Owner", "Heat", "AI Score", "Captured"].map(label => (
-                  <th key={label} className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-widest text-slate-400">{label}</th>
+                  <th key={label} className="px-5 py-4 text-left text-[9px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">{label}</th>
                 ))}
                 <th className="px-5 py-4 w-10"></th>
               </tr>
@@ -281,9 +281,9 @@ export function LeadsDataView({
                 <tr key={lead.id} onClick={() => openLead(lead.id)} className="hover:bg-slate-50/70 cursor-pointer transition-colors group">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">{(lead.name || "?")[0].toUpperCase()}</div>
+                      <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-semibold tracking-tight text-primary">{(lead.name || "?")[0].toUpperCase()}</div>
                       <div>
-                        <p className="text-sm font-black text-slate-900 leading-tight">{lead.name || "Anonymous"}</p>
+                        <p className="text-sm font-semibold tracking-tight text-slate-900 leading-tight">{lead.name || "Anonymous"}</p>
                         <p className="text-[10px] text-slate-400 font-medium">{maskPhone(lead.phone || lead.whatsappNumber)}</p>
                       </div>
                     </div>
@@ -291,23 +291,23 @@ export function LeadsDataView({
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       {lead.source === 'WHATSAPP' && <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />}
-                      <span className="text-[10px] font-black uppercase">{lead.source?.replace(/_/g, " ")}</span>
+                      <span className="text-[10px] font-semibold tracking-tight uppercase">{lead.source?.replace(/_/g, " ")}</span>
                     </div>
                   </td>
                   <td className="px-5 py-4">
-                    <Badge className={cn("text-[8px] font-black uppercase", STATUS_STYLES[lead.status])}>{lead.status?.replace(/_/g, " ")}</Badge>
+                    <Badge className={cn("text-[8px] font-semibold tracking-tight uppercase", STATUS_STYLES[lead.status])}>{lead.status?.replace(/_/g, " ")}</Badge>
                   </td>
                   <td className="px-5 py-4">
-                    <Badge className={cn("text-[8px] font-black uppercase", CATEGORY_STYLES[lead.category] || CATEGORY_STYLES.OTHER)}>{lead.category || "OTHER"}</Badge>
+                    <Badge className={cn("text-[8px] font-semibold tracking-tight uppercase", CATEGORY_STYLES[lead.category] || CATEGORY_STYLES.OTHER)}>{lead.category || "OTHER"}</Badge>
                   </td>
-                  <td className="px-5 py-4 text-[10px] font-black uppercase opacity-60">{lead.branch?.name || "Global"}</td>
+                  <td className="px-5 py-4 text-[10px] font-semibold tracking-tight uppercase opacity-60">{lead.branch?.name || "Global"}</td>
                   <td className="px-5 py-4">
-                    <span className="text-[10px] font-black uppercase text-slate-400">{lead.owner?.name || "Unassigned"}</span>
+                    <span className="text-[10px] font-semibold tracking-tight uppercase text-slate-400">{lead.owner?.name || "Unassigned"}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <Badge className={cn("text-[8px] font-black uppercase", INTENT_STYLES[lead.metadata?.intentLevel] || INTENT_STYLES.UNSCORED)}>{lead.metadata?.intentLevel || "UNSCORED"}</Badge>
+                    <Badge className={cn("text-[8px] font-semibold tracking-tight uppercase", INTENT_STYLES[lead.metadata?.intentLevel] || INTENT_STYLES.UNSCORED)}>{lead.metadata?.intentLevel || "UNSCORED"}</Badge>
                   </td>
-                  <td className="px-5 py-4 text-[10px] font-black">{lead.metadata?.intentScore ?? "—"}</td>
+                  <td className="px-5 py-4 text-[10px] font-semibold tracking-tight">{lead.metadata?.intentScore ?? "—"}</td>
                   <td className="px-5 py-4 text-[10px] text-slate-400 whitespace-nowrap">{new Date(lead.createdAt).toLocaleDateString()}</td>
                   <td className="px-5 py-4"><ExternalLink className="h-4 w-4 text-slate-300 group-hover:text-primary" /></td>
                 </tr>
