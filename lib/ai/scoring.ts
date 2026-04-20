@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-export type AILeadScore = "HOT" | "WARM" | "COLD" | "UNQUALIFIED";
+export type AILeadScore = "HOT" | "WARM" | "COLD";
 
 /**
  * AGENTX STRATEGIC SCORING ENGINE

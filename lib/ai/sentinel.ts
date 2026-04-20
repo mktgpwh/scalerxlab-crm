@@ -11,7 +11,7 @@ export interface SentinelResult {
   suggestedReply: string;
   reasoning: string;
   // Legacy mappings for backward compatibility
-  legacyScore: "HOT" | "WARM" | "COLD" | "UNQUALIFIED";
+  legacyScore: "HOT" | "WARM" | "COLD";
   legacyReasoning: string;
 }
 
