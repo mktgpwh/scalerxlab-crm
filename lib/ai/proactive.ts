@@ -55,12 +55,17 @@ export async function generateProactiveDraft({ leadId, messageText, category, pa
         console.log(`📊 [SENTINEL_INSIGHT] Intent: ${analysis.intentLevel} | Score: ${analysis.intentScore}%`);
 
         // 2. Auto-Triage: Categorize Lead (Autonomous)
-        // Note: We only update if it was unknown or changed significantly
+        // Sync both Legacy and Metadata fields in one transaction
         await prisma.lead.update({
             where: { id: leadId },
             data: {
                 category: analysis.category,
-                // AI signals (Metadata only, NO STATUS CHANGE as per instruction)
+                aiLeadScore: analysis.legacyScore,
+                aiNotes: analysis.legacyReasoning,
+                aiScoredAt: new Date(),
+                intent: analysis.legacyScore,
+                // If it's HOT or WARM, we consider it "QUALIFIED"
+                status: (analysis.legacyScore === "HOT" || analysis.legacyScore === "WARM") ? "QUALIFIED" : "RAW",
                 metadata: {
                     ...(lead.metadata as any || {}),
                     sentiment: analysis.sentiment,

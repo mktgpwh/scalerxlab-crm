@@ -71,11 +71,17 @@ export async function POST(req: Request) {
       });
     }
 
-    // 1b. Strategic AI Scoring (24/7 Gatekeeper)
-    if (lead && !isOutgoing) {
-        await evaluateLead(lead.id, processedMessageText);
-        // Refresh lead state to get the new aiLeadScore
-        lead = await prisma.lead.findUnique({ where: { id: lead.id } }) as any;
+    // 1b. Strategic AI Pipeline (Consolidated 24/7 Gatekeeper)
+    // We now run a single unified pass for Scoring, Heat Mapping, and Speciality
+    if (lead && !isOutgoing && !isMedia) {
+        try {
+            await generateProactiveDraft({ leadId: lead.id, messageText: processedMessageText });
+            // Refresh lead state to get the new AI-driven signals
+            lead = await prisma.lead.findUnique({ where: { id: lead.id } }) as any;
+        } catch (aiError: any) {
+            console.error("⚠️ [WATI_WEBHOOK] AI Analysis delayed or rate-limited:", aiError.message);
+            // Non-blocking: continue with lead creation even if AI fails
+        }
     }
 
     // 1c. Trigger Quality-Gated Assignment for Ownerless Leads
@@ -84,8 +90,6 @@ export async function POST(req: Request) {
       // Refresh lead state after potential routing update
       lead = await prisma.lead.findUnique({ where: { id: lead.id } }) as any;
     }
-
-    if (!lead) return NextResponse.json({ error: "Lead processing failure" }, { status: 500 });
 
     if (!lead) return NextResponse.json({ error: "Lead processing failure" }, { status: 500 });
 
@@ -136,15 +140,13 @@ export async function POST(req: Request) {
 
     // 4. AgentX Handoff (Only for incoming messages)
     if (!isOutgoing && !isMedia) {
-      // Run Proactive Scoring (Heat Mapping)
-      await generateProactiveDraft({ leadId: lead.id, messageText: processedMessageText });
-
       if (lead.aiChatStatus === "AGENTX_ACTIVE") {
           console.log(`[AGENTX_HANDOFF] Processing message for Lead ${lead.id}: "${processedMessageText}"`);
           // Awaiting here is usually safe for short AI calls, Next.js serverless limits allow up to 10s or 60s
           await processWithAgentX(lead.id, processedMessageText, cleanWaId);
       }
-    } else if (!isOutgoing && isMedia) {
+    }
+ else if (!isOutgoing && isMedia) {
       console.log(`[WATI_WEBHOOK] Media captured for Lead ${lead.id}. Skipping AI processing.`);
     }
 

@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
 if (!connectionString) {
@@ -20,12 +22,12 @@ async function recoverKusum() {
     console.log("🚀 Starting password recovery for Kusum...");
     
     try {
-        // Locate Kusum by name or email patterns
+        // Locate Kusum by name or specific email
         const user = await prisma.user.findFirst({
             where: {
                 OR: [
-                    { name: { contains: "Kusum", mode: "insensitive" } },
-                    { email: { contains: "kusum", mode: "insensitive" } }
+                    { email: "teleservice.crm@gmail.com" },
+                    { name: { contains: "Kusum", mode: "insensitive" } }
                 ]
             }
         });

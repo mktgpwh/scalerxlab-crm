@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
-  Search, Filter, ChevronDown, X, ArrowUpDown, ExternalLink, Download, ShieldAlert, Flame
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from "@/components/ui/select";
+import { 
+  Search, Filter, ChevronDown, X, ArrowUpDown, ExternalLink, Download, ShieldAlert, Flame,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import { FacebookIcon, WhatsAppIcon } from "@/components/icons";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -105,6 +109,24 @@ export function LeadsDataView({
   const [sortField, setSortField] = useState<string>("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
+  const [pageSize, setPageSize] = useState<number>(50);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  useEffect(() => {
+    const savedSize = localStorage.getItem("leads_page_size");
+    if (savedSize) {
+      setPageSize(parseInt(savedSize, 10));
+    }
+  }, []);
+
+  const handlePageSizeChange = (newSize: string | null) => {
+    if (!newSize) return;
+    const size = parseInt(newSize, 10);
+    setPageSize(size);
+    setCurrentPage(1);
+    localStorage.setItem("leads_page_size", newSize);
+  };
+
   const sources   = useMemo(() => ["ALL", ...Array.from(new Set(leads.map(l => l.source).filter(Boolean)))], [leads]);
   const statuses  = useMemo(() => ["ALL", "RAW","QUALIFIED","CONTACTED","APPOINTMENT_FIXED","VISITED","WON","LOST"], []);
   const categories = ["ALL","INFERTILITY","MATERNITY","GYNECOLOGY","OTHER"];
@@ -119,6 +141,7 @@ export function LeadsDataView({
   const toggleSort = (field: string) => {
     if (sortField === field) setSortDir(d => d === "asc" ? "desc" : "asc");
     else { setSortField(field); setSortDir("desc"); }
+    setCurrentPage(1);
   };
 
   const handleExportCSV = () => {
@@ -204,6 +227,19 @@ export function LeadsDataView({
     return result;
   }, [leads, search, filterSource, filterStatus, filterCategory, filterIntent, sortField, sortDir, ownerId, userRole]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterSource, filterStatus, filterCategory, filterIntent, ownerId]);
+
+  const totalResults = filtered.length;
+  const pageCount = Math.ceil(totalResults / pageSize);
+  const paginatedFiltered = useMemo(() => {
+    return filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [filtered, currentPage, pageSize]);
+
+  const rangeStart = (currentPage - 1) * pageSize + 1;
+  const rangeEnd = Math.min(currentPage * pageSize, totalResults);
+
   const activeFilters = [filterSource, filterStatus, filterCategory, filterIntent].filter(f => f !== "ALL").length;
 
   return (
@@ -253,9 +289,26 @@ export function LeadsDataView({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold tracking-tight text-slate-400 uppercase tracking-widest">
-          Showing <span className="text-slate-900 dark:text-white">{filtered.length}</span> Matrix Nodes
-        </p>
+        <div className="flex items-center gap-4">
+            <p className="text-[11px] font-semibold tracking-tight text-slate-400 uppercase tracking-widest">
+                Showing <span className="text-slate-900 dark:text-white">{totalResults > 0 ? `${rangeStart}-${rangeEnd}` : "0"}</span> of <span className="text-slate-900 dark:text-white">{totalResults}</span> Matrix Nodes
+            </p>
+            <div className="flex items-center gap-2 border-l border-border/50 pl-4">
+                <span className="text-[10px] font-semibold tracking-tight uppercase text-slate-400">Rows:</span>
+                <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                    <SelectTrigger className="h-7 w-20 text-[10px] rounded-xl font-semibold border-none bg-slate-100 dark:bg-white/5 ring-1 ring-slate-200/50">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="min-w-20 rounded-xl">
+                        {[10, 25, 50, 100].map(size => (
+                            <SelectItem key={size} value={size.toString()} className="text-[10px] font-semibold">
+                                {size}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
         <div className="flex items-center gap-3">
           {["SUPER_ADMIN", "SALES_ADMIN", "MANAGER"].includes(userRole) && (
             <Button onClick={handleExportCSV} size="sm" variant="outline" className="h-8 px-3 rounded-xl text-[10px] font-semibold tracking-tight uppercase tracking-widest gap-1.5 border-emerald-500/30 text-emerald-600">
@@ -271,13 +324,21 @@ export function LeadsDataView({
             <thead>
               <tr className="border-b border-border/50 dark:border-white/5">
                 {["Patient", "Origin", "Status", "Speciality", "Center", "Owner", "Heat", "AI Score", "Captured"].map(label => (
-                  <th key={label} className="px-5 py-4 text-left text-[9px] font-semibold tracking-tight uppercase tracking-widest text-slate-400">{label}</th>
+                  <th key={label} className="px-5 py-4 text-left text-[9px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 cursor-pointer hover:text-primary transition-colors" onClick={() => {
+                        const fieldMap: Record<string, string> = {
+                            "Patient": "name",
+                            "Captured": "createdAt",
+                            "AI Score": "aiScore"
+                        };
+                        const field = fieldMap[label];
+                        if (field) toggleSort(field);
+                  }}>{label}</th>
                 ))}
                 <th className="px-5 py-4 w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-white/5">
-              {filtered.map(lead => (
+              {paginatedFiltered.map(lead => (
                 <tr key={lead.id} onClick={() => openLead(lead.id)} className="hover:bg-slate-50/70 cursor-pointer transition-colors group">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
@@ -315,6 +376,70 @@ export function LeadsDataView({
             </tbody>
           </table>
         </div>
+
+        {pageCount > 1 && (
+            <div className="flex items-center justify-center gap-2 py-4 border-t border-border/50 bg-slate-50/50 dark:bg-white/5">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-xl hover:bg-white hover:shadow-sm disabled:opacity-30"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+
+                <div className="flex items-center gap-1">
+                    {Array.from({ length: pageCount }).map((_, i) => {
+                        const p = i + 1;
+                        if (pageCount > 7) {
+                            if (p === 1 || p === pageCount || (p >= currentPage - 1 && p <= currentPage + 1)) {
+                                return (
+                                    <Button
+                                        key={p}
+                                        variant={currentPage === p ? "default" : "ghost"}
+                                        className={cn(
+                                            "h-8 w-8 p-0 rounded-xl text-[10px] font-semibold transition-all",
+                                            currentPage === p ? "bg-primary text-white shadow-lg shadow-primary/20" : "hover:bg-white hover:shadow-sm"
+                                        )}
+                                        onClick={() => setCurrentPage(p)}
+                                    >
+                                        {p}
+                                    </Button>
+                                );
+                            }
+                            if (p === 2 && currentPage > 3) return <span key="e1" className="text-slate-400 px-1 select-none">...</span>;
+                            if (p === pageCount - 1 && currentPage < pageCount - 2) return <span key="e2" className="text-slate-400 px-1 select-none">...</span>;
+                            return null;
+                        }
+
+                        return (
+                            <Button
+                                key={p}
+                                variant={currentPage === p ? "default" : "ghost"}
+                                className={cn(
+                                    "h-8 w-8 p-0 rounded-xl text-[10px] font-semibold transition-all",
+                                    currentPage === p ? "bg-primary text-white shadow-lg shadow-primary/20" : "hover:bg-white hover:shadow-sm"
+                                )}
+                                onClick={() => setCurrentPage(p)}
+                            >
+                                {p}
+                            </Button>
+                        );
+                    })}
+                </div>
+
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-xl hover:bg-white hover:shadow-sm disabled:opacity-30"
+                    onClick={() => setCurrentPage(p => Math.min(pageCount, p + 1))}
+                    disabled={currentPage === pageCount}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+        )}
       </div>
     </div>
   );
