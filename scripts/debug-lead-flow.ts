@@ -38,14 +38,15 @@ async function debugLeadProcessing() {
 
         // 4. Final Verification
         const finalLead = await prisma.lead.findUnique({ where: { id: lead.id } });
+        const metadata = finalLead?.metadata as any;
         console.log("\n🏆 Final State Verification:");
         console.log(`- LEGACY Status: ${finalLead?.status}`);
         console.log(`- LEGACY Intent: ${finalLead?.intent}`);
         console.log(`- LEGACY Category: ${finalLead?.category}`);
         console.log(`- LEGACY AI Score: ${finalLead?.aiLeadScore}`);
-        console.log(`- METADATA Heat Level: ${finalLead?.metadata?.intentLevel}`);
-        console.log(`- METADATA Score: ${finalLead?.metadata?.intentScore}`);
-        console.log(`- METADATA Reasoning: ${finalLead?.metadata?.sentinelReasoning?.slice(0, 60)}...`);
+        console.log(`- METADATA Heat Level: ${metadata?.intentLevel}`);
+        console.log(`- METADATA Score: ${metadata?.intentScore}`);
+        console.log(`- METADATA Reasoning: ${metadata?.sentinelReasoning?.slice(0, 60)}...`);
 
     } catch (error) {
         console.error("\n💥 FATAL DEBUG ERROR:", error);
