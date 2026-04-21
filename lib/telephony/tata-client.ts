@@ -13,74 +13,83 @@ export interface TataCallPayload {
 }
 
 export class TataSmartfloClient {
-  private apiKey: string;
-  private apiSecret: string;
+  private apiToken: string;
   private baseUrl: string;
 
   constructor() {
-    this.apiKey = process.env.TATA_API_KEY || "PLACEHOLDER_KEY";
-    this.apiSecret = process.env.TATA_API_SECRET || "PLACEHOLDER_SECRET";
+    this.apiToken = process.env.TATA_API_TOKEN || "PLACEHOLDER_TOKEN";
     this.baseUrl = "https://api.smartflo.tata-tele.com/v1";
   }
 
   /**
    * Triggers an outbound call using Click-to-Call (C2C)
+   * Tata Smartflo Logic: Leg A (Agent) is dialed first. Upon answer, Leg B (Lead) is dialed.
    */
   async makeCall(payload: TataCallPayload) {
-    console.log(`[TATA_SMARTFLO] Initiating call from ${payload.from} to ${payload.to}`);
+    console.log(`[TATA_SMARTFLO] Initiating Bridge: ${payload.agentId} (Leg A) -> ${payload.to} (Leg B)`);
     
     try {
-      // Mocking the Tata Smartflo C2C API call
-      // In reality, this would be a POST to /click-to-call
       const response = await fetch(`${this.baseUrl}/click-to-call`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${this.apiKey}`,
+          "Authorization": `Bearer ${this.apiToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          agent_number: payload.agentId || "DEFAULT_AGENT",
-          destination_number: payload.to,
-          virtual_number: payload.from,
-          custom_identifier: payload.organizationId
+          agent_number: payload.agentId, // The physical mobile/desk phone of the agent
+          destination_number: payload.to, // The lead's phone number
+          virtual_number: payload.from,    // The tracking VNS number from Tata
+          custom_identifier: payload.organizationId,
+          uui: payload.uui
         }),
       });
 
-      // For demonstration, we'll simulate a success
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Tata API returned an error");
+      }
+
       return {
         success: true,
-        callId: `tata_${Math.random().toString(36).substr(2, 9)}`,
-        message: "Call initiated successfully"
+        callId: data.call_id || `tata_${Math.random().toString(36).substr(2, 9)}`,
+        message: "Call bridge initiated successfully"
       };
-    } catch (error) {
-      console.error("[TATA_SMARTFLO_ERROR]", error);
-      throw new Error("Failed to connect to Tata Smartflo infrastructure.");
+    } catch (error: any) {
+      console.error("[TATA_SMARTFLO_ERROR]", error.message);
+      throw new Error(`Telephony Bridge Failure: ${error.message}`);
     }
   }
 
   /**
-   * Processes incoming webhook payloads from Tata Smartflo
+   * Processes incoming webhook payloads (CDR) from Tata Smartflo
    */
   parseWebhook(payload: any) {
-    // Standard Tata Smartflo webhook keys: call_id, direction, caller_number, etc.
+    // CDR attributes: call_id, direction, caller_number, destination_number, duration, recording_url, status
     return {
       callId: payload.call_id,
-      direction: payload.direction === "inbound" ? "INBOUND" : "OUTBOUND",
+      tataCallId: payload.call_id,
+      direction: payload.direction?.toUpperCase() === "INBOUND" ? "INBOUND" : "OUTBOUND",
       from: payload.caller_number,
       to: payload.destination_number,
-      status: this.mapStatus(payload.status),
+      status: this.mapStatus(payload.status || payload.disposition),
       duration: parseInt(payload.duration || "0"),
-      recordingUrl: payload.recording_url,
+      recordingUrl: payload.recording_url || payload.recording_path,
+      startTime: payload.start_time,
+      endTime: payload.end_time,
+      metadata: payload // Store raw payload for audit
     };
   }
 
-  private mapStatus(tataStatus: string) {
-    switch (tataStatus.toLowerCase()) {
-      case "answered": return "CONNECTED";
-      case "missed": return "MISSED";
-      case "busy": return "BUSY";
-      default: return "MISSED";
-    }
+  private mapStatus(tataStatus: string = ""): any {
+    const s = tataStatus.toLowerCase();
+    if (s.includes("answered") || s.includes("success")) return "CONNECTED";
+    if (s.includes("missed") || s.includes("no-answer")) return "MISSED";
+    if (s.includes("busy")) return "BUSY";
+    if (s.includes("rejected") || s.includes("declined")) return "REJECTED";
+    if (s.includes("failed")) return "FAILED";
+    if (s.includes("cancel")) return "CANCELLED";
+    return "MISSED";
   }
 }
 
