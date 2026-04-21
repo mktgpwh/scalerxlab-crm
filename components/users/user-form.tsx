@@ -12,7 +12,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, ShieldCheck, Mail, User, Lock, GitBranch, X, Trash2 } from "lucide-react";
+import { Loader2, ShieldCheck, Mail, User, Lock, GitBranch, X, Trash2, Phone } from "lucide-react";
 
 interface UserFormProps {
   branches: Array<{ id: string; name: string; city: string }>;
@@ -26,6 +26,7 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     role: "SALES_USER",
     password: "",
     branchId: "",
@@ -37,6 +38,7 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
       setFormData({
         name: selectedUser.name || "",
         email: selectedUser.email || "",
+        phone: selectedUser.phone || "",
         role: selectedUser.role || "SALES_USER",
         password: "", // Don't pre-fill password
         branchId: selectedUser.branchId || "",
@@ -46,6 +48,7 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
       setFormData({
         name: "",
         email: "",
+        phone: "",
         role: "SALES_USER",
         password: "",
         branchId: "",
@@ -165,6 +168,20 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="h-14 pl-14 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold focus:ring-primary/20 transition-all text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2.5">
+            <Label className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 ml-1">Tactical Comms (Phone Number)</Label>
+            <div className="relative group">
+              <Phone className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-primary transition-colors" />
+              <Input
+                type="tel"
+                placeholder="+91 99999 88888"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="h-14 pl-14 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold focus:ring-primary/20 transition-all text-sm"
               />
             </div>

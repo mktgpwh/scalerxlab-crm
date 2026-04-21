@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Payload Extraction & Validation
     const body = await req.json();
-    const { name, email, password, role, branchId } = body;
+    const { name, email, password, role, branchId, phone } = body;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json(
@@ -40,6 +40,13 @@ export async function POST(req: NextRequest) {
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Access Key must be at least 8 characters long." },
+        { status: 400 }
+      );
+    }
+
+    if (phone && phone.length > 15) {
+      return NextResponse.json(
+        { error: "Tactical Comms (Phone) must not exceed 15 characters." },
         { status: 400 }
       );
     }
@@ -76,6 +83,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         role: role as UserRole,
         branchId: branchId || null,
+        phone: phone || null,
         // Since we are moving to Credentials provider with hashed passwords,
         // we might want to store the password in a field if we are using custom auth
         // However, PrismaAdapter standard model doesn't have a 'password' field.
@@ -115,7 +123,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, name, email, password, role, branchId, isActive } = body;
+    const { id, name, email, password, role, branchId, isActive, phone } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing Target ID" }, { status: 400 });
@@ -126,6 +134,7 @@ export async function PATCH(req: NextRequest) {
       email,
       role: role as UserRole,
       branchId: branchId || null,
+      phone: phone || null,
       isActive,
       updatedAt: new Date(),
     };
