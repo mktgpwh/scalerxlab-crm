@@ -169,3 +169,40 @@ export async function bulkImportLeadsAction(leads: any[], globalBranchId?: strin
         return { error: error.message || "Bulk ingestion failed." };
     }
 }
+
+export async function updateLeadConsentAction(leadId: string, consentFlag: boolean) {
+  try {
+    const session = await auth();
+    if (!session?.user) throw new Error("Unauthorized");
+
+    const lead = await prisma.lead.update({
+      where: { id: leadId },
+      data: { 
+        consentFlag,
+        consentTimestamp: consentFlag ? new Date() : null,
+        consentMethod: consentFlag ? "MANUAL_AGENT_OVERRIDE" : null,
+      }
+    });
+
+    // Create Audit Entry for DPDPA traceability
+    await prisma.activityLog.create({
+      data: {
+        leadId,
+        userId: session.user.id,
+        action: "CONSENT_UPDATED",
+        description: `DPDPA Outreach Consent ${consentFlag ? "GRANTED" : "REVOKED"} by agent.`,
+        metadata: { 
+          timestamp: new Date().toISOString(),
+          method: "MANUAL_OVERRIDE",
+          status: consentFlag
+        }
+      }
+    });
+
+    revalidatePath("/leads");
+    return { success: true, lead };
+  } catch (error: any) {
+    console.error("Consent Update Fatal:", error);
+    return { error: "Failed to sync compliance state." };
+  }
+}

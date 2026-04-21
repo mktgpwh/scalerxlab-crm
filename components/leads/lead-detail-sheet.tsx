@@ -28,9 +28,12 @@ import {
   Activity,
   PenLine,
   Save,
-  Lock
+  Lock,
+  ShieldCheck
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons";
+import { Switch } from "@/components/ui/switch";
+import { updateLeadConsentAction } from "@/app/(dashboard)/leads/actions";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { Lead } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
@@ -135,6 +138,21 @@ export function LeadDetailSheet() {
         success: (data) => data.message,
         error: (err) => err.message
     });
+  };
+
+  const handleToggleConsent = async (checked: boolean) => {
+    if (!lead) return;
+    try {
+        const res = await updateLeadConsentAction(lead.id, checked);
+        if (res.success) {
+            setLead({ ...lead, consentFlag: checked });
+            toast.success("Compliance Matrix Synchronized", {
+                description: checked ? "Outreach consent granted." : "Outreach consent revoked."
+            });
+        }
+    } catch (err) {
+        toast.error("Compliance Sync Error");
+    }
   };
 
   const generateDraft = async () => {
@@ -374,17 +392,36 @@ export function LeadDetailSheet() {
                 </TabsContent>
 
                 <TabsContent value="engagement" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                  {/* DPDPA Compliance Sentinel */}
+                  <div className="p-6 rounded-xl bg-slate-50 dark:bg-white/5 border border-border/50 dark:border-white/5 flex items-center justify-between group transition-all hover:bg-slate-100/50">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className={cn("h-4 w-4", lead.consentFlag ? "text-emerald-500" : "text-rose-500")} />
+                        <h4 className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-900 dark:text-white">DPDPA Compliance Status</h4>
+                      </div>
+                      <p className="text-[10px] font-medium text-slate-400">Outreach permitted via verified tactical nodes.</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                       <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">{lead.consentFlag ? "Permitted" : "Blocked"}</span>
+                       <Switch 
+                         checked={lead.consentFlag} 
+                         onCheckedChange={handleToggleConsent}
+                         className="data-[state=checked]:bg-emerald-500"
+                       />
+                    </div>
+                  </div>
+
                   {/* High Intensity Actions */}
                   <div className="grid grid-cols-2 gap-4">
                      <Button 
                         variant="outline" 
                         className={cn(
-                            "h-20 rounded-xl border-border/50 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group cursor-pointer hover:bg-primary hover:text-white hover:border-primary"
+                            "h-20 rounded-xl border-border/50 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all duration-300 shadow-sm group cursor-pointer hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:shadow-indigo-600/20"
                         )}
                         onClick={handleCall}
                      >
                         <div className="flex flex-col items-center gap-1">
-                           <Phone className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                           <Phone className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
                            <span className="text-[10px] font-semibold tracking-tight uppercase tracking-widest">Execute Call</span>
                         </div>
                      </Button>

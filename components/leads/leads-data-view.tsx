@@ -366,17 +366,17 @@ export function LeadsDataView({
                           <p className="text-[10px] text-slate-400 font-medium">{maskPhone(lead.phone || lead.whatsappNumber)}</p>
                         </div>
                       </div>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-8 w-8 rounded-xl opacity-0 group-hover/row:opacity-100 transition-all hover:bg-primary hover:text-white"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleQuickCall(lead.id);
-                        }}
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                      </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-8 w-8 rounded-xl opacity-0 group-hover/row:opacity-100 transition-all duration-300 hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-600/20"
+                          onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuickCall(lead.id);
+                          }}
+                        >
+                          <Phone className="h-3.5 w-3.5" />
+                        </Button>
                     </div>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
