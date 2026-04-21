@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { updateLeadConsentAction } from "@/app/(dashboard)/leads/actions";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { Lead } from "@/lib/types";
@@ -426,13 +427,15 @@ export function LeadDetailSheet() {
                       <p className="text-[10px] font-medium text-slate-400">Outreach permitted via verified tactical nodes.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                       <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">{lead.consentFlag ? "Permitted" : "Blocked"}</span>
-                       <Switch 
-                         checked={lead.consentFlag} 
-                         onCheckedChange={handleToggleConsent}
-                         disabled={isSyncing}
-                         className="data-[state=checked]:bg-emerald-500"
-                       />
+                       <Label className="flex items-center gap-3 cursor-pointer">
+                          <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">Outreach Consent</span>
+                          <Switch 
+                            checked={lead.consentFlag} 
+                            onCheckedChange={handleToggleConsent}
+                            disabled={isSyncing}
+                            className="cursor-pointer data-checked:bg-emerald-500"
+                          />
+                       </Label>
                     </div>
                   </div>
 
