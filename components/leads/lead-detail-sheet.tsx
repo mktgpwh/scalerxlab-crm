@@ -57,6 +57,7 @@ export function LeadDetailSheet() {
   const [note, setNote] = useState<string>("");
   const [noteSaved, setNoteSaved] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Fetch lead data and user role
   useEffect(() => {
@@ -142,16 +143,39 @@ export function LeadDetailSheet() {
 
   const handleToggleConsent = async (checked: boolean) => {
     if (!lead) return;
+    
+    // Save original state for rollback
+    const originalState = lead.consentFlag;
+    
+    // 1. Optimistic UI Update
+    setLead({ ...lead, consentFlag: checked });
+    setIsSyncing(true);
+
     try {
         const res = await updateLeadConsentAction(lead.id, checked);
-        if (res.success) {
-            setLead({ ...lead, consentFlag: checked });
+        
+        if (!res.success) {
+            // 2. Server rejected: Rollback and show specific error
+            setLead({ ...lead, consentFlag: originalState });
+            toast.error("Compliance Sync Failed", {
+                description: res.error || "Database rejected the transition.",
+                icon: <ShieldAlert className="h-4 w-4 text-rose-500" />
+            });
+        } else {
+            // 3. Success: Finalize
             toast.success("Compliance Matrix Synchronized", {
-                description: checked ? "Outreach consent granted." : "Outreach consent revoked."
+                description: checked ? "Outreach consent granted." : "Outreach consent revoked.",
+                icon: <ShieldCheck className="h-4 w-4 text-emerald-500" />
             });
         }
-    } catch (err) {
-        toast.error("Compliance Sync Error");
+    } catch (err: any) {
+        // 4. Fatal Error: Rollback
+        setLead({ ...lead, consentFlag: originalState });
+        toast.error("Network / Execution Error", {
+            description: "Check matrix connectivity or session status."
+        });
+    } finally {
+        setIsSyncing(false);
     }
   };
 
@@ -406,6 +430,7 @@ export function LeadDetailSheet() {
                        <Switch 
                          checked={lead.consentFlag} 
                          onCheckedChange={handleToggleConsent}
+                         disabled={isSyncing}
                          className="data-[state=checked]:bg-emerald-500"
                        />
                     </div>
@@ -416,9 +441,10 @@ export function LeadDetailSheet() {
                      <Button 
                         variant="outline" 
                         className={cn(
-                            "h-20 rounded-xl border-border/50 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all duration-300 shadow-sm group cursor-pointer hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:shadow-indigo-600/20"
+                            "h-20 rounded-xl border-border/50 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all duration-300 shadow-sm group cursor-pointer hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:shadow-indigo-600/20 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                         )}
                         onClick={handleCall}
+                        disabled={isSyncing}
                      >
                         <div className="flex flex-col items-center gap-1">
                            <Phone className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />

@@ -173,36 +173,52 @@ export async function bulkImportLeadsAction(leads: any[], globalBranchId?: strin
 export async function updateLeadConsentAction(leadId: string, consentFlag: boolean) {
   try {
     const session = await auth();
-    if (!session?.user) throw new Error("Unauthorized");
+    
+    // Explicit session validation for production debugging
+    if (!session?.user?.id) {
+      console.warn("[COMPLIANCE_SYNC] Unauthorized access attempt", { leadId });
+      return { error: "Authentication required. Please refresh your session." };
+    }
 
-    const lead = await prisma.lead.update({
-      where: { id: leadId },
-      data: { 
-        consentFlag,
-        consentTimestamp: consentFlag ? new Date() : null,
-        consentMethod: consentFlag ? "MANUAL_AGENT_OVERRIDE" : null,
-      }
-    });
-
-    // Create Audit Entry for DPDPA traceability
-    await prisma.activityLog.create({
-      data: {
-        leadId,
-        userId: session.user.id,
-        action: "CONSENT_UPDATED",
-        description: `DPDPA Outreach Consent ${consentFlag ? "GRANTED" : "REVOKED"} by agent.`,
-        metadata: { 
-          timestamp: new Date().toISOString(),
-          method: "MANUAL_OVERRIDE",
-          status: consentFlag
+    // Step 1: Update Lead record
+    try {
+      await prisma.lead.update({
+        where: { id: leadId },
+        data: { 
+          consentFlag,
+          consentTimestamp: consentFlag ? new Date() : null,
+          consentMethod: consentFlag ? "MANUAL_AGENT_OVERRIDE" : null,
         }
-      }
-    });
+      });
+    } catch (dbError: any) {
+      console.error("[COMPLIANCE_SYNC] Lead Table Update Failed:", dbError);
+      return { error: "Database rejected the compliance update. Schema mismatch or record missing." };
+    }
+
+    // Step 2: Audit Logging
+    try {
+      await prisma.activityLog.create({
+        data: {
+          leadId,
+          userId: session.user.id,
+          action: "CONSENT_UPDATED",
+          description: `DPDPA Outreach Consent ${consentFlag ? "GRANTED" : "REVOKED"} by agent.`,
+          metadata: { 
+            timestamp: new Date().toISOString(),
+            method: "MANUAL_OVERRIDE",
+            status: consentFlag
+          }
+        }
+      });
+    } catch (auditError: any) {
+      // We don't block the UI for audit failures, but we log them heavily
+      console.error("[COMPLIANCE_SYNC] Audit Log Creation Failed:", auditError);
+    }
 
     revalidatePath("/leads");
-    return { success: true, lead };
+    return { success: true };
   } catch (error: any) {
-    console.error("Consent Update Fatal:", error);
-    return { error: "Failed to sync compliance state." };
+    console.error("[COMPLIANCE_SYNC] Fatal Execution Error:", error);
+    return { error: error.message || "An unexpected system error occurred." };
   }
 }
