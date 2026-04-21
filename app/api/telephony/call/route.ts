@@ -25,33 +25,49 @@ export async function POST(req: NextRequest) {
     // 1. Session & Auth Check
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+      console.error("[TELEPHONY_SECURITY_BLOCK] No session found");
+      return NextResponse.json({ 
+        error: "Access Denied", 
+        description: "Your session node is inactive. Please re-authenticate." 
+      }, { status: 401 });
     }
 
     const { leadId } = await req.json();
     if (!leadId) {
-      return NextResponse.json({ error: "Lead identifier required" }, { status: 400 });
+      return NextResponse.json({ 
+        error: "Target Missing", 
+        description: "Lead ID is required for bridge initiation." 
+      }, { status: 400 });
     }
 
     // 2. Data Retrieval (Lead & Agent)
     const [lead, agent] = await Promise.all([
-      prisma.lead.findUnique({ where: { id: leadId } }),
+      prisma.lead.findUnique({ where: { id: leadId }, include: { branch: true } }),
       prisma.user.findUnique({ where: { id: session.user.id } })
     ]);
 
-    if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
-    if (!agent) return NextResponse.json({ error: "Agent profile unreachable" }, { status: 404 });
+    if (!lead) {
+      console.error(`[TELEPHONY_DATA_ERROR] Lead ${leadId} not found`);
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    }
+    if (!agent) {
+      console.error(`[TELEPHONY_DATA_ERROR] Agent ${session.user.id} profile unreachable`);
+      return NextResponse.json({ error: "Agent profile unreachable" }, { status: 404 });
+    }
 
     // 3. Validation & Sanitization
     const rawTarget = lead.phone || lead.whatsappNumber;
     if (!rawTarget) {
-      return NextResponse.json({ error: "Customer has no registered phone number" }, { status: 400 });
+      return NextResponse.json({ 
+        error: "Target Offline", 
+        description: "Lead has no registered phone or backup WhatsApp node." 
+      }, { status: 400 });
     }
 
     if (!agent.phone) {
       return NextResponse.json({ 
-        error: "Hardware missing", 
-        description: "Your physical phone number is not registered in the system. Update your profile first." 
+        error: "Hardware Missing", 
+        description: "Your physical phone number is not registered. Update your identity matrix profile." 
       }, { status: 403 });
     }
 
@@ -60,27 +76,26 @@ export async function POST(req: NextRequest) {
 
     if (!lead.consentFlag) {
       return NextResponse.json({ 
-        error: "Compliance Block", 
-        description: "No DPDPA consent found for this record." 
+        error: "Compliance Lock", 
+        description: "DPDPA Sovereignty Protocol is ACTIVE. Override required." 
       }, { status: 403 });
     }
 
     // 4. Initiate Tata Bridge
     const virtualNumber = process.env.TATA_SMARTFLO_VIRTUAL_NUMBER || "DEFAULT_VNS";
     
-    // Log the sanitized handshake attempt (Internal)
-    console.log(`[HANDSHAKE_START] ${agentPhone} -> ${targetPhone} via ${virtualNumber}`);
+    console.log(`[TELEPHONY_HANDSHAKE_INIT] Agent:${agentPhone} -> Lead:${targetPhone} via VNS:${virtualNumber}`);
 
     try {
       const tataResponse = await tataClient.makeCall({
         to: targetPhone,
         from: virtualNumber,
-        agentId: agentPhone, // Leg A (Sanitized)
-        organizationId: lead.tenantId,
-        uui: `lead_${lead.id}` // Pass lead ID as context
+        agentId: agentPhone, 
+        organizationId: lead.tenantId || "default",
+        uui: `lead_${lead.id}`
       });
 
-      // 5. Persist Call Log (State: PENDING CDR)
+      // 5. Persist Call Log
       const callLog = await prisma.callLog.create({
         data: {
           leadId: lead.id,
@@ -89,10 +104,11 @@ export async function POST(req: NextRequest) {
           callerId: virtualNumber,
           receiverId: targetPhone,
           direction: "OUTBOUND",
-          status: "CONNECTED", // Initial state until webhook updates
+          status: "CONNECTED",
           metadata: {
               initiatedAt: new Date().toISOString(),
-              provider: "TATA_SMARTFLO"
+              provider: "TATA_SMARTFLO",
+              branch: lead.branch?.name || "Global"
           }
         }
       });
@@ -100,24 +116,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         callId: callLog.id,
-        message: "Dialing Leg A (Your Phone)... Please answer to connect to Lead."
+        message: "Handshake Successful. Dialing your device (Leg A)..."
       });
     } catch (tataError: any) {
-        // Log the specific Tata API failure to activity log for transparency
+        console.error(`[TELEPHONY_HANDSHAKE_FAILED] ${tataError.message}`);
+        
         await prisma.activityLog.create({
             data: {
                 leadId: lead.id,
                 userId: agent.id,
                 action: "TELEPHONY_FAILURE",
-                description: `Handshake failed: ${tataError.message}`,
-                metadata: {
-                    error: tataError.message,
-                    agentPhone,
-                    targetPhone
-                }
+                description: `Handshake rejected by provider: ${tataError.message}`,
+                metadata: { error: tataError.message }
             }
         });
-        throw tataError; // Let outer catch format it
+
+        return NextResponse.json({ 
+          error: "Protocol Bridge Failure", 
+          description: tataError.message 
+        }, { status: 502 });
     }
 
   } catch (error: any) {

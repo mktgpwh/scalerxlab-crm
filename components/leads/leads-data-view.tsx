@@ -128,20 +128,35 @@ export function LeadsDataView({
   };
 
   const handleQuickCall = async (leadId: string) => {
-      const promise = fetch("/api/telephony/call", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ leadId })
-      }).then(async res => {
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.description || data.error || "Bridge Failed");
-          return data;
-      });
+      const promise = (async () => {
+          try {
+              const res = await fetch("/api/telephony/call", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ leadId })
+              });
+
+              if (!res.ok) {
+                  const text = await res.text();
+                  let errorMsg = `Server Response ${res.status}`;
+                  try {
+                      const json = JSON.parse(text);
+                      errorMsg = json.description || json.error || errorMsg;
+                  } catch {
+                      errorMsg = `Gateway Failure (${res.status})`;
+                  }
+                  throw new Error(errorMsg);
+              }
+              return await res.json();
+          } catch (err: any) {
+              throw new Error(err.message === "Failed to fetch" ? "Network Timeout / DNS Failure" : err.message);
+          }
+      })();
 
       toast.promise(promise, {
           loading: "Initiating Telephony Bridge...",
           success: (data) => data.message,
-          error: (err: any) => err.message || "Fetch Failed"
+          error: (err: any) => err.message
       });
   };
 
@@ -188,14 +203,15 @@ export function LeadsDataView({
   const handleCall = async (e: React.MouseEvent, lead: any) => {
     e.stopPropagation();
     if (!lead.consentFlag) {
-      toast.error("BLOCKED", { description: "DPDPA consent not verified.", icon: <ShieldAlert className="h-4 w-4 text-rose-500" /> });
+      toast.error("Compliance Blocked", { 
+        description: "DPDPA consent protocol not verified for this record.", 
+        icon: <ShieldAlert className="h-4 w-4 text-rose-500" /> 
+      });
       return;
     }
-    try {
-      const res = await fetch(`/api/telephony/tata/make-call`, { method: "POST", body: JSON.stringify({ leadId: lead.id }) });
-      const data = await res.json();
-      res.ok ? toast.success("Call Initiated", { description: "Connecting via Tata Smartflo..." }) : toast.error(data.error || "Telephony failure");
-    } catch { toast.error("Connection failed"); }
+    
+    // Redirect all call actions to the hardened canonical endpoint
+    handleQuickCall(lead.id);
   };
 
   const { ownerId, setOwnerId } = useDashboardStore();

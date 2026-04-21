@@ -122,24 +122,42 @@ export function LeadDetailSheet() {
   const handleCall = async () => {
     if (!lead) return;
     if (!lead.consentFlag) {
-        toast.error("CONSENT REQUIRED", { description: "DPDPA compliance prevents outreach to this record." });
+        toast.error("Compliance Blocked", {
+            description: "DPDPA consent required before initiating outbound bridge.",
+            icon: <ShieldAlert className="h-4 w-4 text-rose-500" />
+        });
         return;
     }
 
-    const promise = fetch("/api/telephony/call", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadId: lead.id })
-    }).then(async res => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.description || data.error || "Bridge Failed");
-        return data;
-    });
+    const promise = (async () => {
+        try {
+            const res = await fetch("/api/telephony/call", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ leadId: lead.id })
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                let errorMsg = `Server Response ${res.status}`;
+                try {
+                    const json = JSON.parse(text);
+                    errorMsg = json.description || json.error || errorMsg;
+                } catch {
+                    errorMsg = `Gateway Failure (${res.status})`;
+                }
+                throw new Error(errorMsg);
+            }
+            return await res.json();
+        } catch (err: any) {
+            throw new Error(err.message === "Failed to fetch" ? "Network Timeout / DNS Failure" : err.message);
+        }
+    })();
 
     toast.promise(promise, {
         loading: "Initiating Telephony Bridge...",
         success: (data) => data.message,
-        error: (err: any) => err.message || "Fetch Failed"
+        error: (err: any) => err.message
     });
   };
 
@@ -418,36 +436,48 @@ export function LeadDetailSheet() {
                 </TabsContent>
 
                 <TabsContent value="engagement" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-4">
-                   {/* DPDPA Premium Sovereignty Card */}
-                   <Card className="overflow-hidden border-none bg-indigo-50/50 dark:bg-indigo-500/5 ring-1 ring-indigo-500/20 shadow-sm transition-all hover:shadow-md">
-                     <div className="p-4 flex items-start gap-4">
+                   {/* DPDPA Premium Sovereignty Card v2 */}
+                   <Card className="overflow-hidden border-none ai-glass ring-2 ring-indigo-500/20 shadow-2xl transition-all hover:shadow-indigo-500/10">
+                     <div className="p-5 flex items-start gap-4">
                         <div className={cn(
-                           "mt-1 h-9 w-9 rounded-xl flex items-center justify-center transition-colors duration-300",
-                           lead.consentFlag ? "bg-emerald-500/10" : "bg-indigo-500/10"
+                           "mt-1 h-10 w-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-inner",
+                           lead.consentFlag ? "bg-emerald-500/20 glow-primary" : "bg-indigo-500/10"
                         )}>
-                           <ShieldCheck className={cn(
-                              "h-5 w-5",
-                              lead.consentFlag ? "text-emerald-600" : "text-indigo-600"
-                           )} />
+                           {lead.consentFlag ? (
+                             <ShieldCheck className="h-6 w-6 text-emerald-500 animate-in zoom-in duration-500" />
+                           ) : (
+                             <ShieldAlert className="h-6 w-6 text-indigo-400" />
+                           )}
                         </div>
-                        <div className="flex-1 space-y-1">
+                        <div className="flex-1 space-y-1.5">
                            <div className="flex items-center justify-between">
-                              <h4 className="text-[11px] font-bold uppercase tracking-widest text-indigo-950 dark:text-indigo-200">
-                                 Privacy Protocol / DPDPA
-                              </h4>
-                              <Label className="cursor-pointer">
+                              <div className="space-y-0.5">
+                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-900 dark:text-indigo-200 opacity-80 font-heading">
+                                   Compliance Matrix
+                                </h4>
+                                <div className="flex items-center gap-2">
+                                  <span className={cn(
+                                    "h-1.5 w-1.5 rounded-full animate-pulse",
+                                    lead.consentFlag ? "bg-emerald-500" : "bg-indigo-400"
+                                  )} />
+                                  <span className="text-[9px] font-black uppercase tracking-tighter text-slate-900 dark:text-white">
+                                    DPDPA {lead.consentFlag ? "Sovereign" : "Restricted"}
+                                  </span>
+                                </div>
+                              </div>
+                              <Label className="cursor-pointer group">
                                  <Switch 
                                    checked={lead.consentFlag} 
                                    onCheckedChange={handleToggleConsent}
                                    disabled={isSyncing}
-                                   className="cursor-pointer h-[20px] w-[36px] data-checked:bg-emerald-500 ring-offset-background focus-visible:ring-2 focus-visible:ring-indigo-500 border-2 border-indigo-200 dark:border-indigo-900/50"
+                                   className="cursor-pointer h-[22px] w-[40px] data-checked:bg-emerald-500 transition-all duration-300 ring-offset-background focus-visible:ring-2 focus-visible:ring-indigo-500 border-[2.5px] border-indigo-500/40 dark:border-indigo-400/30 shadow-lg"
                                  />
                               </Label>
                            </div>
-                           <p className="text-[10px] font-medium text-indigo-700/70 dark:text-indigo-400/70 leading-relaxed max-w-[220px]">
+                           <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 leading-relaxed font-sans">
                               {lead.consentFlag 
-                                ? "Record is fully authorized for tactical outreach. Protocols synchronized." 
-                                : "Outreach currently restricted. Manual override required for bridge initiation."}
+                                ? "Handshake authorized. Tactical outreach protocols active for this record node." 
+                                : "Encryption lock active. Manual protocol override required to initiate telephony bridge."}
                            </p>
                         </div>
                      </div>
