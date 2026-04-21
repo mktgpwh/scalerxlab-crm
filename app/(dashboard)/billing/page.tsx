@@ -12,8 +12,13 @@ import {
     ChevronRight,
     Search,
     IndianRupee,
-    Info
+    Info,
+    ArrowUpRight,
+    TrendingUp
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PatientLookup } from "@/components/billing/patient-lookup";
 import { BillingForm } from "@/components/billing/billing-form";
 import { PaymentModal } from "@/components/billing/payment-modal";
@@ -33,6 +38,10 @@ const DEPARTMENTS = [
 ] as const;
 
 export default function BillingTerminal() {
+    const { data: session } = useSession();
+    const router = useRouter();
+    const userRole = (session?.user as any)?.role;
+
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
     const [activeInvoice, setActiveInvoice] = useState<any>(null);
 
@@ -60,6 +69,18 @@ export default function BillingTerminal() {
                     <Badge variant="outline" className="h-10 px-4 rounded-xl bg-primary/5 text-primary border-primary/20 font-semibold tracking-tight uppercase tracking-widest text-[9px]">
                         <IndianRupee className="h-3 w-3 mr-2" /> UPI Dynamic QR Enabled
                     </Badge>
+                    
+                    {userRole === "SUPER_ADMIN" && (
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => router.push("/billing/reporting")}
+                            className="h-10 px-4 rounded-xl text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 font-semibold tracking-tight uppercase tracking-widest text-[9px] gap-2 cursor-pointer shadow-sm"
+                        >
+                            <TrendingUp className="h-3.5 w-3.5" />
+                            Analytics Hub
+                            <ArrowUpRight className="h-3 w-3 opacity-50" />
+                        </Button>
+                    )}
                 </div>
             </div>
 

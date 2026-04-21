@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   Radio,
   PowerOff,
-  Receipt
+  Receipt,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IntegrationIcon } from "@/components/ui/integration-icon";
@@ -47,6 +48,7 @@ const items = [
   { title: "Sovereign Intelligence", url: "/intelligence", icon: Sparkles, label: "AgentX" },
   { title: "Lead Funnels", url: "/pipeline", icon: LayoutDashboard, label: "Pipelines" },
   { title: "Billing Terminal", url: "/billing", icon: Receipt, label: "Revenue Node" },
+  { title: "Revenue Command", url: "/billing/reporting", icon: TrendingUp, label: "Financial BI" },
   { title: "Intelligence Matrix", url: "/matrix", icon: BarChart3, label: "MIS Insights" },
   { title: "Shared Inbox", url: "/inbox", icon: (props: any) => <IntegrationIcon slug="whatsapp" {...props} />, label: "WhatsApp" },
   { title: "Call Management", url: "/calls", icon: Phone, label: "Telephony" },
@@ -96,6 +98,11 @@ export function AppSidebar() {
   // Filter items based on role
   // Filter items based on new strict strict roles
   const filteredItems = items.filter((item) => {
+    // 0. Revenue Command is restricted to SUPER_ADMIN only
+    if (item.title === "Revenue Command") {
+      return role === "SUPER_ADMIN";
+    }
+
     // 1. Super Admin / Sales Admin see everything
     if (role === "SUPER_ADMIN" || role === "SALES_ADMIN") return true;
 

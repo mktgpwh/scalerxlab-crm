@@ -10,8 +10,12 @@ import {
     ChevronRight, 
     MessageSquare, 
     Calendar,
-    Download
+    Download,
+    ShieldAlert
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { 
     Area, 
     AreaChart, 
@@ -75,7 +79,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function BillingReporting() {
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [invFilter, setInvFilter] = useState("ALL");
+
+    useEffect(() => {
+        if (status === "authenticated" && (session?.user as any)?.role !== "SUPER_ADMIN") {
+            toast.error("Access Prohibited", {
+                description: "This command node is restricted to Super Administrators."
+            });
+            router.push("/billing");
+        }
+    }, [session, status, router]);
+
+    if (status === "loading") {
+        return <div className="h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>;
+    }
+
+    if ((session?.user as any)?.role !== "SUPER_ADMIN") {
+        return null;
+    }
 
     const handleSendReminder = (id: string) => {
         toast.promise(new Promise(resolve => setTimeout(resolve, 1000)), {
