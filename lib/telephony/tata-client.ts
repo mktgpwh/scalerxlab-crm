@@ -47,7 +47,9 @@ export class TataSmartfloClient {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Tata API returned an error");
+        const errorDetail = data.message || data.error || JSON.stringify(data);
+        console.error(`[TATA_SMARTFLO_API_ERROR] ${response.status}: ${errorDetail}`);
+        throw new Error(errorDetail);
       }
 
       return {
@@ -56,8 +58,8 @@ export class TataSmartfloClient {
         message: "Call bridge initiated successfully"
       };
     } catch (error: any) {
-      console.error("[TATA_SMARTFLO_ERROR]", error.message);
-      throw new Error(`Telephony Bridge Failure: ${error.message}`);
+      console.error("[TATA_SMARTFLO_FATAL]", error.message);
+      throw error; // Rethrow to let the API route handle the specific message
     }
   }
 

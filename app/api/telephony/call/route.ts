@@ -6,10 +6,20 @@ import { tataClient } from "@/lib/telephony/tata-client";
 export const dynamic = "force-dynamic";
 
 /**
- * POST /api/telephony/call
- * Triggers a Bridge Call via Tata Smartflo
- * Payload: { leadId: string }
+ * Sanitizes phone numbers for Tata Smartflo (Strict 91 prefix, no +, no spaces)
  */
+function sanitizePhoneNumber(phone: string): string {
+  // Strip all non-numeric characters
+  const clean = phone.replace(/\D/g, "");
+  
+  // If exactly 10 digits, assume India and prefix with 91
+  if (clean.length === 10) {
+    return `91${clean}`;
+  }
+  
+  return clean;
+}
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Session & Auth Check
@@ -32,9 +42,11 @@ export async function POST(req: NextRequest) {
     if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     if (!agent) return NextResponse.json({ error: "Agent profile unreachable" }, { status: 404 });
 
-    // 3. Validation
-    const targetPhone = lead.phone || lead.whatsappNumber;
-    if (!targetPhone) return NextResponse.json({ error: "Customer has no registered phone number" }, { status: 400 });
+    // 3. Validation & Sanitization
+    const rawTarget = lead.phone || lead.whatsappNumber;
+    if (!rawTarget) {
+      return NextResponse.json({ error: "Customer has no registered phone number" }, { status: 400 });
+    }
 
     if (!agent.phone) {
       return NextResponse.json({ 
@@ -42,6 +54,9 @@ export async function POST(req: NextRequest) {
         description: "Your physical phone number is not registered in the system. Update your profile first." 
       }, { status: 403 });
     }
+
+    const targetPhone = sanitizePhoneNumber(rawTarget);
+    const agentPhone = sanitizePhoneNumber(agent.phone);
 
     if (!lead.consentFlag) {
       return NextResponse.json({ 
@@ -53,42 +68,63 @@ export async function POST(req: NextRequest) {
     // 4. Initiate Tata Bridge
     const virtualNumber = process.env.TATA_SMARTFLO_VIRTUAL_NUMBER || "DEFAULT_VNS";
     
-    const tataResponse = await tataClient.makeCall({
-      to: targetPhone,
-      from: virtualNumber,
-      agentId: agent.phone, // Leg A
-      organizationId: lead.tenantId,
-      uui: `lead_${lead.id}` // Pass lead ID as context
-    });
+    // Log the sanitized handshake attempt (Internal)
+    console.log(`[HANDSHAKE_START] ${agentPhone} -> ${targetPhone} via ${virtualNumber}`);
 
-    // 5. Persist Call Log (State: PENDING CDR)
-    const callLog = await prisma.callLog.create({
-      data: {
-        leadId: lead.id,
-        agentId: agent.id,
-        tataCallId: tataResponse.callId,
-        callerId: virtualNumber,
-        receiverId: targetPhone,
-        direction: "OUTBOUND",
-        status: "CONNECTED", // Initial state until webhook updates
-        metadata: {
-            initiatedAt: new Date().toISOString(),
-            provider: "TATA_SMARTFLO"
+    try {
+      const tataResponse = await tataClient.makeCall({
+        to: targetPhone,
+        from: virtualNumber,
+        agentId: agentPhone, // Leg A (Sanitized)
+        organizationId: lead.tenantId,
+        uui: `lead_${lead.id}` // Pass lead ID as context
+      });
+
+      // 5. Persist Call Log (State: PENDING CDR)
+      const callLog = await prisma.callLog.create({
+        data: {
+          leadId: lead.id,
+          agentId: agent.id,
+          tataCallId: tataResponse.callId,
+          callerId: virtualNumber,
+          receiverId: targetPhone,
+          direction: "OUTBOUND",
+          status: "CONNECTED", // Initial state until webhook updates
+          metadata: {
+              initiatedAt: new Date().toISOString(),
+              provider: "TATA_SMARTFLO"
+          }
         }
-      }
-    });
+      });
 
-    return NextResponse.json({
-      success: true,
-      callId: callLog.id,
-      message: "Dialing Leg A (Your Phone)... Please answer to connect to Lead."
-    });
+      return NextResponse.json({
+        success: true,
+        callId: callLog.id,
+        message: "Dialing Leg A (Your Phone)... Please answer to connect to Lead."
+      });
+    } catch (tataError: any) {
+        // Log the specific Tata API failure to activity log for transparency
+        await prisma.activityLog.create({
+            data: {
+                leadId: lead.id,
+                userId: agent.id,
+                action: "TELEPHONY_FAILURE",
+                description: `Handshake failed: ${tataError.message}`,
+                metadata: {
+                    error: tataError.message,
+                    agentPhone,
+                    targetPhone
+                }
+            }
+        });
+        throw tataError; // Let outer catch format it
+    }
 
   } catch (error: any) {
-    console.error("[TELEPHONY_CALL_ERROR]", error.message);
+    console.error("[TELEPHONY_HANDSHAKE_FATAL]", error.message);
     return NextResponse.json({ 
       error: "Telephony Handshake Failed", 
-      details: error.message 
+      description: error.message 
     }, { status: 500 });
   }
 }
