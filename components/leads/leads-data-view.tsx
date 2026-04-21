@@ -369,7 +369,7 @@ export function LeadsDataView({
                         <Button 
                           size="sm" 
                           variant="ghost" 
-                          className="h-8 w-8 rounded-xl opacity-0 group-hover/row:opacity-100 transition-all duration-300 hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-600/20"
+                          className="h-8 w-8 rounded-xl text-slate-400 transition-all duration-300 hover:bg-indigo-50 hover:text-indigo-600"
                           onClick={(e) => {
                               e.stopPropagation();
                               handleQuickCall(lead.id);
