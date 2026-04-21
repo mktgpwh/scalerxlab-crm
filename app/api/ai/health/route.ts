@@ -5,6 +5,14 @@ import Groq from "groq-sdk";
 
 export async function GET() {
   try {
+    if (!process.env.GROQ_API_KEY) {
+      console.error("[AI_HEALTH_ERROR] Missing GROQ_API_KEY");
+      return NextResponse.json({ 
+        error: "Configuration Incomplete", 
+        description: "The GROQ_API_KEY is missing from the environment nodes." 
+      }, { status: 500 });
+    }
+
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const [totalLeads, hotLeads, convertedLeads, callStats] = await Promise.all([
@@ -37,8 +45,11 @@ export async function GET() {
       status: hotLeads > totalLeads * 0.2 ? "GOOD" : "MODERATE"
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("[AI_HEALTH_ERROR]", error);
-    return NextResponse.json({ error: "Failed to sync intelligence" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Synaptic Failure", 
+      description: error.message || "Unknown error during intelligence stream aggregation."
+    }, { status: 500 });
   }
 }

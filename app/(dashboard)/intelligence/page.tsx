@@ -52,10 +52,18 @@ export default function IntelligenceHubPage() {
         try {
             const res = await fetch("/api/ai/health");
             const data = await res.json();
+            
+            if (!res.ok) {
+                setNarrative(`**Diagnostic Error**: ${data.error || "Failed to sync intelligence pulse."}\n\n${data.description || "The intelligence stream is currently offline. Please check your AI provider configuration."}`);
+                setStatus("CRITICAL");
+                return;
+            }
+
             setNarrative(data.narrative);
             setStatus(data.status || "MODERATE");
         } catch (err) {
-            setNarrative("Matrix connection failed. Intelligence stream offline.");
+            setNarrative("**Matrix Connection Fault**: Intelligence stream hardware is unresponsive. Verify backend node connectivity.");
+            setStatus("CRITICAL");
         } finally {
             setLoadingHealth(false);
         }
