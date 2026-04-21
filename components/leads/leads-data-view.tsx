@@ -130,6 +130,7 @@ export function LeadsDataView({
   const handleQuickCall = async (leadId: string) => {
       const promise = fetch("/api/telephony/call", {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ leadId })
       }).then(async res => {
           const data = await res.json();
@@ -140,7 +141,7 @@ export function LeadsDataView({
       toast.promise(promise, {
           loading: "Initiating Telephony Bridge...",
           success: (data) => data.message,
-          error: (err) => err.message
+          error: (err: any) => err.message || "Fetch Failed"
       });
   };
 

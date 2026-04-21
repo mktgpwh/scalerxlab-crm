@@ -128,6 +128,7 @@ export function LeadDetailSheet() {
 
     const promise = fetch("/api/telephony/call", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leadId: lead.id })
     }).then(async res => {
         const data = await res.json();
@@ -138,7 +139,7 @@ export function LeadDetailSheet() {
     toast.promise(promise, {
         loading: "Initiating Telephony Bridge...",
         success: (data) => data.message,
-        error: (err) => err.message
+        error: (err: any) => err.message || "Fetch Failed"
     });
   };
 
@@ -417,27 +418,40 @@ export function LeadDetailSheet() {
                 </TabsContent>
 
                 <TabsContent value="engagement" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-4">
-                  {/* DPDPA Compliance Sentinel */}
-                  <div className="p-6 rounded-xl bg-slate-50 dark:bg-white/5 border border-border/50 dark:border-white/5 flex items-center justify-between group transition-all hover:bg-slate-100/50">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className={cn("h-4 w-4", lead.consentFlag ? "text-emerald-500" : "text-rose-500")} />
-                        <h4 className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-900 dark:text-white">DPDPA Compliance Status</h4>
-                      </div>
-                      <p className="text-[10px] font-medium text-slate-400">Outreach permitted via verified tactical nodes.</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                       <Label className="flex items-center gap-3 cursor-pointer">
-                          <span className="text-[9px] font-bold uppercase tracking-tight text-slate-400">Outreach Consent</span>
-                          <Switch 
-                            checked={lead.consentFlag} 
-                            onCheckedChange={handleToggleConsent}
-                            disabled={isSyncing}
-                            className="cursor-pointer data-checked:bg-emerald-500"
-                          />
-                       </Label>
-                    </div>
-                  </div>
+                   {/* DPDPA Premium Sovereignty Card */}
+                   <Card className="overflow-hidden border-none bg-indigo-50/50 dark:bg-indigo-500/5 ring-1 ring-indigo-500/20 shadow-sm transition-all hover:shadow-md">
+                     <div className="p-4 flex items-start gap-4">
+                        <div className={cn(
+                           "mt-1 h-9 w-9 rounded-xl flex items-center justify-center transition-colors duration-300",
+                           lead.consentFlag ? "bg-emerald-500/10" : "bg-indigo-500/10"
+                        )}>
+                           <ShieldCheck className={cn(
+                              "h-5 w-5",
+                              lead.consentFlag ? "text-emerald-600" : "text-indigo-600"
+                           )} />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                           <div className="flex items-center justify-between">
+                              <h4 className="text-[11px] font-bold uppercase tracking-widest text-indigo-950 dark:text-indigo-200">
+                                 Privacy Protocol / DPDPA
+                              </h4>
+                              <Label className="cursor-pointer">
+                                 <Switch 
+                                   checked={lead.consentFlag} 
+                                   onCheckedChange={handleToggleConsent}
+                                   disabled={isSyncing}
+                                   className="cursor-pointer h-[20px] w-[36px] data-checked:bg-emerald-500 ring-offset-background focus-visible:ring-2 focus-visible:ring-indigo-500 border-2 border-indigo-200 dark:border-indigo-900/50"
+                                 />
+                              </Label>
+                           </div>
+                           <p className="text-[10px] font-medium text-indigo-700/70 dark:text-indigo-400/70 leading-relaxed max-w-[220px]">
+                              {lead.consentFlag 
+                                ? "Record is fully authorized for tactical outreach. Protocols synchronized." 
+                                : "Outreach currently restricted. Manual override required for bridge initiation."}
+                           </p>
+                        </div>
+                     </div>
+                   </Card>
 
                   {/* High Intensity Actions */}
                   <div className="grid grid-cols-2 gap-4">
