@@ -51,11 +51,13 @@ model User {
   image                    String?
   tenantId                 String          @default("org_pahlajani_001")
   branchId                 String?
+  phone                    String?
   password                 String?
   accounts                 Account[]
   activityLogs             ActivityLog[]
   Authenticator            Authenticator[]
   ownedLeads               Lead[]          @relation("LeadOwner")
+  calls                    CallLog[]       @relation("AgentCalls")
   sessions                 Session[]
   branch                   Branch?         @relation(fields: [branchId], references: [id])
 
@@ -198,20 +200,25 @@ model ActivityLog {
 model CallLog {
   id           String        @id @default(cuid())
   leadId       String?
+  agentId      String?       @db.Uuid
+  tataCallId   String?       @unique
   direction    CallDirection
   status       CallStatus    @default(CONNECTED)
   duration     Int           @default(0)
   recordingUrl String?
   isQualified  Boolean       @default(false)
   isAiHandled  Boolean       @default(false)
+  metadata     Json?
   callerId     String
   receiverId   String
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   tenantId     String        @default("org_pahlajani_001")
   lead         Lead?         @relation(fields: [leadId], references: [id])
+  agent        User?         @relation("AgentCalls", fields: [agentId], references: [id])
 
   @@index([leadId])
+  @@index([agentId])
   @@map("call_logs")
 }
 
@@ -375,6 +382,9 @@ enum CallStatus {
   BUSY
   VOICEMAIL
   AI_HANDLED
+  REJECTED
+  FAILED
+  CANCELLED
 }
 
 enum AiChatStatus {

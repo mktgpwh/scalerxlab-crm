@@ -9,7 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -50,6 +50,7 @@ export function LeadDetailSheet() {
   const [isDrafting, setIsDrafting] = useState(false);
   const [draft, setDraft] = useState<string | null>(null);
   const [activities, setActivities] = useState<any[]>([]);
+  const [callLogs, setCallLogs] = useState<any[]>([]);
   const [note, setNote] = useState<string>("");
   const [noteSaved, setNoteSaved] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -80,10 +81,20 @@ export function LeadDetailSheet() {
       const response = await fetch(`/api/leads/${id}`);
       const data = await response.json();
       setLead(data);
-      // Fetch activities too
-      const actRes = await fetch(`/api/leads/${id}/activities`);
-      const actData = await actRes.json();
+      
+      // Fetch activities & call logs in parallel
+      const [actRes, callRes] = await Promise.all([
+          fetch(`/api/leads/${id}/activities`),
+          fetch(`/api/leads/${id}/calls`)
+      ]);
+      
+      const [actData, callData] = await Promise.all([
+          actRes.json(),
+          callRes.json()
+      ]);
+      
       setActivities(actData);
+      setCallLogs(callData);
       
       // Load draft if exists in metadata
       if (data.metadata?.latestDraft) {
@@ -110,21 +121,20 @@ export function LeadDetailSheet() {
         return;
     }
 
-    try {
-      const res = await fetch(`/api/telephony/tata/make-call`, {
+    const promise = fetch("/api/telephony/call", {
         method: "POST",
         body: JSON.stringify({ leadId: lead.id })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success("Dialing...", { description: "Connecting via Tata Smartflo." });
-        logEngagement("CALL");
-      } else {
-        toast.error(data.error || "Bridge failed");
-      }
-    } catch (err) {
-      toast.error("Telephony server unreachable");
-    }
+    }).then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.description || data.error || "Bridge Failed");
+        return data;
+    });
+
+    toast.promise(promise, {
+        loading: "Initiating Telephony Bridge...",
+        success: (data) => data.message,
+        error: (err) => err.message
+    });
   };
 
   const generateDraft = async () => {
@@ -369,7 +379,7 @@ export function LeadDetailSheet() {
                      <Button 
                         variant="outline" 
                         className={cn(
-                            "h-20 rounded-xl border-border/50 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group cursor-pointer hover:bg-blue-600 hover:text-white"
+                            "h-20 rounded-xl border-border/50 dark:border-white/5 bg-white dark:bg-slate-900/50 transition-all shadow-sm group cursor-pointer hover:bg-primary hover:text-white hover:border-primary"
                         )}
                         onClick={handleCall}
                      >
@@ -446,48 +456,78 @@ export function LeadDetailSheet() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="timeline" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                   <div className="flex items-center gap-3 mb-8">
-                      <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
-                         <History className="h-6 w-6" />
-                      </div>
-                      <div>
-                         <h4 className="text-sm font-semibold tracking-tight ">Lead Journey Log</h4>
-                         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">DPDPA Audit Trail</p>
-                      </div>
-                   </div>
-
-                   <div className="space-y-8 relative before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-px before:bg-slate-100 dark:before:bg-white/5">
-                      {activities.length > 0 ? activities.map((activity, idx) => (
-                         <div key={activity.id} className="relative pl-10">
-                            <div className="absolute left-0 top-1 h-9 w-9 bg-white dark:bg-slate-900 rounded-xl border border-border/50 dark:border-white/10 flex items-center justify-center z-10">
-                               <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                            </div>
-                            <div className="space-y-1 pt-1">
-                               <div className="flex items-center justify-between">
-                                  <span className="text-xs font-semibold tracking-tight uppercase tracking-tight  text-slate-900 dark:text-white">
-                                     {activity.action.replace('_', ' ')}
-                                  </span>
-                                  <span className="text-[10px] font-semibold text-slate-400">
-                                     {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                </div>
-                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                                   {activity.description}
-                                </p>
-                                <p className="text-[9px] font-semibold text-slate-300 uppercase tracking-tighter">
-                                   {new Date(activity.createdAt).toLocaleDateString()}
-                                </p>
-                            </div>
-                         </div>
-                      )) : (
+                 <TabsContent value="timeline" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="flex items-center gap-3 mb-8">
+                       <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <History className="h-6 w-6" />
+                       </div>
+                       <div>
+                          <h4 className="text-sm font-semibold tracking-tight ">Lead Journey Log</h4>
+                          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Clinical & Telephony Audit</p>
+                       </div>
+                    </div>
+ 
+                    <div className="space-y-8 relative before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-px before:bg-slate-100 dark:before:bg-white/5">
+                       {/* Merge and Sort Activities and Calls */}
+                       {[...activities, ...callLogs.map(c => ({ ...c, isCall: true }))]
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .map((item, idx) => (
+                          <div key={item.id} className="relative pl-10">
+                             <div className="absolute left-0 top-1 h-9 w-9 bg-white dark:bg-slate-900 rounded-xl border border-border/50 dark:border-white/10 flex items-center justify-center z-10">
+                                {item.isCall ? (
+                                    <Phone className={cn("h-3.5 w-3.5", item.direction === 'INBOUND' ? 'text-emerald-500' : 'text-primary')} />
+                                ) : (
+                                    <div className="h-2 w-2 rounded-full bg-slate-300" />
+                                )}
+                             </div>
+                             <div className="space-y-1 pt-1">
+                                <div className="flex items-center justify-between">
+                                   <span className="text-xs font-semibold tracking-tight uppercase tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                                      {item.isCall ? `${item.direction} CALL` : item.action.replace(/_/g, ' ')}
+                                      {item.isCall && (
+                                          <Badge variant="outline" className={cn(
+                                              "text-[8px] h-4 px-1 border-none ring-1",
+                                              item.status === 'CONNECTED' ? "bg-emerald-50 text-emerald-600 ring-emerald-200" : "bg-rose-50 text-rose-600 ring-rose-200"
+                                          )}>
+                                              {item.status} ({item.duration}s)
+                                          </Badge>
+                                      )}
+                                   </span>
+                                   <span className="text-[10px] font-semibold text-slate-400">
+                                      {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                   </span>
+                                 </div>
+                                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                    {item.isCall ? `Communication via ${item.callerId}` : item.description}
+                                 </p>
+                                 {item.recordingUrl && (
+                                     <a 
+                                         href={item.recordingUrl} 
+                                         target="_blank" 
+                                         rel="noopener noreferrer"
+                                         className={cn(
+                                             buttonVariants({ variant: "outline", size: "sm" }),
+                                             "h-7 px-2 rounded-lg text-[9px] font-bold uppercase tracking-widest bg-slate-100/50 border-none ring-1 ring-slate-200 mt-2"
+                                         )}
+                                     >
+                                         <Activity className="h-3 w-3 mr-1.5 text-primary" /> Play Recording
+                                     </a>
+                                 )}
+                                 <p className="text-[9px] font-semibold text-slate-300 uppercase tracking-tighter">
+                                    {new Date(item.createdAt).toLocaleDateString()}
+                                 </p>
+                             </div>
+                          </div>
+                      ))}
+                      
+                      {activities.length === 0 && callLogs.length === 0 && (
                         <div className="py-20 text-center">
                            <History className="h-12 w-12 mx-auto text-slate-200 mb-4" />
                            <p className="text-[10px] font-semibold tracking-tight text-slate-400 uppercase tracking-widest">No signals recorded yet.</p>
                         </div>
                       )}
-                   </div>
-                </TabsContent>
+                    </div>
+                 </TabsContent>
 
                 <TabsContent value="notes" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-4">
                    <div className="flex items-center gap-3 mb-4">

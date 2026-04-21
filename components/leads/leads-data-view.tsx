@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { 
   Search, Filter, ChevronDown, X, ArrowUpDown, ExternalLink, Download, ShieldAlert, Flame,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Phone
 } from "lucide-react";
 import { FacebookIcon, WhatsAppIcon } from "@/components/icons";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -119,12 +119,29 @@ export function LeadsDataView({
     }
   }, []);
 
-  const handlePageSizeChange = (newSize: string | null) => {
-    if (!newSize) return;
-    const size = parseInt(newSize, 10);
+  const handlePageSizeChange = (val: string | null) => {
+    if (!val) return;
+    const size = parseInt(val);
     setPageSize(size);
     setCurrentPage(1);
-    localStorage.setItem("leads_page_size", newSize);
+    localStorage.setItem("leads_page_size", val);
+  };
+
+  const handleQuickCall = async (leadId: string) => {
+      const promise = fetch("/api/telephony/call", {
+          method: "POST",
+          body: JSON.stringify({ leadId })
+      }).then(async res => {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.description || data.error || "Bridge Failed");
+          return data;
+      });
+
+      toast.promise(promise, {
+          loading: "Initiating Telephony Bridge...",
+          success: (data) => data.message,
+          error: (err) => err.message
+      });
   };
 
   const sources   = useMemo(() => ["ALL", ...Array.from(new Set(leads.map(l => l.source).filter(Boolean)))], [leads]);
@@ -341,12 +358,25 @@ export function LeadsDataView({
               {paginatedFiltered.map(lead => (
                 <tr key={lead.id} onClick={() => openLead(lead.id)} className="hover:bg-slate-50/70 cursor-pointer transition-colors group">
                   <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-semibold tracking-tight text-primary">{(lead.name || "?")[0].toUpperCase()}</div>
-                      <div>
-                        <p className="text-sm font-semibold tracking-tight text-slate-900 leading-tight">{lead.name || "Anonymous"}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">{maskPhone(lead.phone || lead.whatsappNumber)}</p>
+                    <div className="flex items-center justify-between group/row">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-semibold tracking-tight text-primary">{(lead.name || "?")[0].toUpperCase()}</div>
+                        <div>
+                          <p className="text-sm font-semibold tracking-tight text-slate-900 leading-tight">{lead.name || "Anonymous"}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">{maskPhone(lead.phone || lead.whatsappNumber)}</p>
+                        </div>
                       </div>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-8 w-8 rounded-xl opacity-0 group-hover/row:opacity-100 transition-all hover:bg-primary hover:text-white"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleQuickCall(lead.id);
+                        }}
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
