@@ -18,7 +18,7 @@ export class TataSmartfloClient {
 
   constructor() {
     this.apiToken = process.env.TATA_API_TOKEN || "PLACEHOLDER_TOKEN";
-    this.baseUrl = "https://api.smartflo.tata-tele.com/v1";
+    this.baseUrl = "https://api-smartflo.tatateleservices.com/v1";
   }
 
   /**
@@ -26,7 +26,7 @@ export class TataSmartfloClient {
    * Tata Smartflo Logic: Leg A (Agent) is dialed first. Upon answer, Leg B (Lead) is dialed.
    */
   async makeCall(payload: TataCallPayload) {
-    const targetUrl = `${this.baseUrl}/click-to-call`;
+    const targetUrl = `${this.baseUrl}/click_to_call`;
     console.log(`[TATA_SMARTFLO] Dialing Tata URL: ${targetUrl}`);
     console.log(`[TATA_SMARTFLO] Payload: ${JSON.stringify({ agent: payload.agentId, to: payload.to })}`);
     
@@ -40,9 +40,10 @@ export class TataSmartfloClient {
         body: JSON.stringify({
           agent_number: payload.agentId,
           destination_number: payload.to,
-          virtual_number: payload.from,
+          caller_id: payload.from,
           custom_identifier: payload.organizationId,
-          uui: payload.uui
+          uui: payload.uui,
+          async: 1
         }),
       });
 
