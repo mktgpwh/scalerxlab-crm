@@ -26,58 +26,77 @@ export class TataSmartfloClient {
    * Tata Smartflo Logic: Leg A (Agent) is dialed first. Upon answer, Leg B (Lead) is dialed.
    */
   async makeCall(payload: TataCallPayload) {
-    const targetUrl = `${this.baseUrl}/click_to_call`;
-    console.log(`[TATA_SMARTFLO] Dialing Tata URL: ${targetUrl}`);
-    console.log(`[TATA_SMARTFLO] Payload: ${JSON.stringify({ agent: payload.agentId, to: payload.to })}`);
+    const primaryUrl = `https://api-smartflo.tatateleservices.com/v1/click_to_call`;
+    const secondaryUrl = `https://api.smartflo.tata-tele.com/v1/click-to-call`;
     
-    try {
-      const response = await fetch(targetUrl, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${this.apiToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          agent_number: payload.agentId,
-          destination_number: payload.to,
-          caller_id: payload.from,
-          custom_identifier: payload.organizationId,
-          uui: payload.uui,
-          async: 1
-        }),
-      });
-
-      // Handle the case where the response might not be JSON
-      const text = await response.text();
-      let data;
+    const attemptFetch = async (targetUrl: string, isFallback: boolean = false) => {
+      console.log(`[TATA_SMARTFLO] Dialing Tata URL (${isFallback ? 'FALLBACK' : 'PRIMARY'}): ${targetUrl}`);
+      
       try {
-        data = JSON.parse(text);
-      } catch (pErr) {
-        throw new Error(`Non-JSON Response: ${text.slice(0, 100)}`);
-      }
+        const response = await fetch(targetUrl, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${this.apiToken}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+          },
+          body: JSON.stringify({
+            agent_number: payload.agentId,
+            destination_number: payload.to,
+            caller_id: payload.from,
+            virtual_number: payload.from, // Include both for cross-domain compatibility
+            custom_identifier: payload.organizationId,
+            uui: payload.uui,
+            async: 1
+          }),
+        });
 
-      if (!response.ok) {
-        const errorDetail = data.message || data.error || data.status || "Unknown Provider Error";
-        console.error(`[TATA_SMARTFLO_API_ERROR] ${response.status}: ${errorDetail}`);
+        const text = await response.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (pErr) {
+          throw new Error(`Non-JSON Response: ${text.slice(0, 100)}`);
+        }
+
+        if (!response.ok) {
+          const errorDetail = data.message || data.error || data.status || "Unknown Provider Error";
+          return {
+            success: false,
+            error: "Tata API Rejection",
+            details: errorDetail
+          };
+        }
+
+        return {
+          success: true,
+          callId: data.call_id || `tata_${Math.random().toString(36).substr(2, 9)}`,
+          message: "Call bridge initiated successfully"
+        };
+      } catch (error: any) {
+        const socketError = error.cause ? (typeof error.cause === 'object' ? JSON.stringify(error.cause) : String(error.cause)) : null;
+        console.error(`[TATA_SMARTFLO_FETCH_ERROR] URL: ${targetUrl} | Message: ${error.message} | Cause: ${socketError}`);
+        throw error; // Rethrow to trigger fallback or final catch
+      }
+    };
+
+    try {
+      // Primary Attempt
+      return await attemptFetch(primaryUrl);
+    } catch (primaryError: any) {
+      console.warn(`[TATA_SMARTFLO_RETRY] Primary node failed, attempting fallback node...`);
+      try {
+        // Fallback Attempt
+        return await attemptFetch(secondaryUrl, true);
+      } catch (secondaryError: any) {
+        const finalCause = secondaryError.cause ? (typeof secondaryError.cause === 'object' ? JSON.stringify(secondaryError.cause) : String(secondaryError.cause)) : "N/A";
         return {
           success: false,
-          error: "Tata API Rejection",
-          details: errorDetail
+          error: "Tata API Network Failure",
+          details: `${secondaryError.message} (Cause: ${finalCause})`
         };
       }
-
-      return {
-        success: true,
-        callId: data.call_id || `tata_${Math.random().toString(36).substr(2, 9)}`,
-        message: "Call bridge initiated successfully"
-      };
-    } catch (error: any) {
-      console.error("[TATA_SMARTFLO_NETWORK_FATAL]", error.message);
-      return {
-        success: false,
-        error: "Tata API Network Failure",
-        details: error.message || "An unexpected error occurred during the handshake."
-      };
     }
   }
 
