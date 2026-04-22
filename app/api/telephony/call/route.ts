@@ -97,56 +97,56 @@ export async function POST(req: NextRequest) {
     
     console.log(`[TELEPHONY_HANDSHAKE_INIT] Agent:${agentPhone} -> Lead:${targetPhone} via VNS:${virtualNumber}`);
 
-    try {
-      const tataResponse = await tataClient.makeCall({
-        to: targetPhone,
-        from: virtualNumber,
-        agentId: agentPhone, 
-        organizationId: lead.tenantId || "default",
-        uui: `lead_${lead.id}`
-      });
+    const tataResponse = await tataClient.makeCall({
+      to: targetPhone,
+      from: virtualNumber,
+      agentId: agentPhone, 
+      organizationId: lead.tenantId || "default",
+      uui: `lead_${lead.id}`
+    });
 
-      // 5. Persist Call Log
-      const callLog = await prisma.callLog.create({
-        data: {
-          leadId: lead.id,
-          agentId: agent.id,
-          tataCallId: tataResponse.callId,
-          callerId: virtualNumber,
-          receiverId: targetPhone,
-          direction: "OUTBOUND",
-          status: "CONNECTED",
-          metadata: {
-              initiatedAt: new Date().toISOString(),
-              provider: "TATA_SMARTFLO",
-              branch: lead.branch?.name || "Global"
+    if (!tataResponse.success) {
+      console.error(`[TELEPHONY_HANDSHAKE_FAILED] ${tataResponse.error}: ${tataResponse.details}`);
+      
+      await prisma.activityLog.create({
+          data: {
+              leadId: lead.id,
+              userId: agent.id,
+              action: "TELEPHONY_FAILURE",
+              description: `Handshake rejection: ${tataResponse.error} (${tataResponse.details})`,
+              metadata: { error: tataResponse.error, details: tataResponse.details }
           }
-        }
       });
 
-      return NextResponse.json({
-        success: true,
-        callId: callLog.id,
-        message: "Handshake Successful. Dialing your device (Leg A)..."
-      });
-    } catch (tataError: any) {
-        console.error(`[TELEPHONY_HANDSHAKE_FAILED] ${tataError.message}`);
-        
-        await prisma.activityLog.create({
-            data: {
-                leadId: lead.id,
-                userId: agent.id,
-                action: "TELEPHONY_FAILURE",
-                description: `Handshake rejected by provider: ${tataError.message}`,
-                metadata: { error: tataError.message }
-            }
-        });
-
-        return NextResponse.json({ 
-          error: "Protocol Bridge Failure", 
-          description: tataError.message 
-        }, { status: 502 });
+      return NextResponse.json({ 
+        error: tataResponse.error, 
+        description: tataResponse.details 
+      }, { status: 502 });
     }
+
+    // 5. Persist Call Log on Success
+    const callLog = await prisma.callLog.create({
+      data: {
+        leadId: lead.id,
+        agentId: agent.id,
+        tataCallId: tataResponse.callId!,
+        callerId: virtualNumber,
+        receiverId: targetPhone,
+        direction: "OUTBOUND",
+        status: "CONNECTED",
+        metadata: {
+            initiatedAt: new Date().toISOString(),
+            provider: "TATA_SMARTFLO",
+            branch: lead.branch?.name || "Global"
+        }
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      callId: callLog.id,
+      message: "Handshake Successful. Dialing your device (Leg A)..."
+    });
 
   } catch (error: any) {
     console.error("[TELEPHONY_HANDSHAKE_FATAL]", error.message);

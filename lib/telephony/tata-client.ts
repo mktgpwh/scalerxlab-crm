@@ -26,30 +26,43 @@ export class TataSmartfloClient {
    * Tata Smartflo Logic: Leg A (Agent) is dialed first. Upon answer, Leg B (Lead) is dialed.
    */
   async makeCall(payload: TataCallPayload) {
-    console.log(`[TATA_SMARTFLO] Initiating Bridge: ${payload.agentId} (Leg A) -> ${payload.to} (Leg B)`);
+    const targetUrl = `${this.baseUrl}/click-to-call`;
+    console.log(`[TATA_SMARTFLO] Dialing Tata URL: ${targetUrl}`);
+    console.log(`[TATA_SMARTFLO] Payload: ${JSON.stringify({ agent: payload.agentId, to: payload.to })}`);
     
     try {
-      const response = await fetch(`${this.baseUrl}/click-to-call`, {
+      const response = await fetch(targetUrl, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${this.apiToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          agent_number: payload.agentId, // The physical mobile/desk phone of the agent
-          destination_number: payload.to, // The lead's phone number
-          virtual_number: payload.from,    // The tracking VNS number from Tata
+          agent_number: payload.agentId,
+          destination_number: payload.to,
+          virtual_number: payload.from,
           custom_identifier: payload.organizationId,
           uui: payload.uui
         }),
       });
 
-      const data = await response.json();
+      // Handle the case where the response might not be JSON
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (pErr) {
+        throw new Error(`Non-JSON Response: ${text.slice(0, 100)}`);
+      }
 
       if (!response.ok) {
-        const errorDetail = data.message || data.error || JSON.stringify(data);
+        const errorDetail = data.message || data.error || data.status || "Unknown Provider Error";
         console.error(`[TATA_SMARTFLO_API_ERROR] ${response.status}: ${errorDetail}`);
-        throw new Error(errorDetail);
+        return {
+          success: false,
+          error: "Tata API Rejection",
+          details: errorDetail
+        };
       }
 
       return {
@@ -58,8 +71,12 @@ export class TataSmartfloClient {
         message: "Call bridge initiated successfully"
       };
     } catch (error: any) {
-      console.error("[TATA_SMARTFLO_FATAL]", error.message);
-      throw error; // Rethrow to let the API route handle the specific message
+      console.error("[TATA_SMARTFLO_NETWORK_FATAL]", error.message);
+      return {
+        success: false,
+        error: "Tata API Network Failure",
+        details: error.message || "An unexpected error occurred during the handshake."
+      };
     }
   }
 
