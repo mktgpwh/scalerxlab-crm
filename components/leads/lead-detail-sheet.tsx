@@ -131,10 +131,13 @@ export function LeadDetailSheet() {
 
     const promise = (async () => {
         try {
+            const payload = { leadId: lead.id };
+            console.log("Dialing Payload:", payload);
+
             const res = await fetch("/api/telephony/call", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ leadId: lead.id })
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {

@@ -130,10 +130,13 @@ export function LeadsDataView({
   const handleQuickCall = async (leadId: string) => {
       const promise = (async () => {
           try {
+              const payload = { leadId };
+              console.log("Dialing Payload:", payload);
+
               const res = await fetch("/api/telephony/call", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ leadId })
+                  body: JSON.stringify(payload)
               });
 
               if (!res.ok) {
