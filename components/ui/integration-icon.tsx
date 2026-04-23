@@ -8,7 +8,7 @@ import {
     SiGoogleads, 
     SiRazorpay 
 } from "react-icons/si";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Phone, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WhatsAppIcon } from "@/components/icons";
 
@@ -47,22 +47,34 @@ export function IntegrationIcon({ slug, size = 40, className }: IntegrationIconP
             return <SiRazorpay {...iconProps} className={cn(iconProps.className, "text-[#1C2C5E]")} />;
 
         case "tata":
+        case "smartflo_call":
         case "tata-smartflo":
             return (
                 <div 
-                    className="relative overflow-hidden rounded-xl bg-white"
+                    className="relative overflow-hidden rounded-xl bg-white flex items-center justify-center p-1"
                     style={{ width: size, height: size }}
                 >
-                    <Image 
-                        src="/integrations/tata-smartflo.png" 
-                        alt="Tata SmartFlo"
-                        fill
-                        className="object-contain p-1"
-                        // Fallback handling in case of missing image
-                        onError={(e) => {
-                            (e.target as any).style.display = 'none';
-                        }}
-                    />
+                   <Phone className={cn("text-[#1B2F6E]", className)} size={size * 0.7} />
+                </div>
+            );
+
+        case "agent_x_website":
+            return (
+                <div 
+                    className="flex items-center justify-center rounded-xl bg-indigo-500/10"
+                    style={{ width: size, height: size }}
+                >
+                    <Sparkles className={cn("text-indigo-500", className)} size={size * 0.7} />
+                </div>
+            );
+
+        case "field_sourced":
+            return (
+                <div 
+                    className="flex items-center justify-center rounded-xl bg-emerald-500/10"
+                    style={{ width: size, height: size }}
+                >
+                    <Zap className={cn("text-emerald-500", className)} size={size * 0.7} />
                 </div>
             );
 

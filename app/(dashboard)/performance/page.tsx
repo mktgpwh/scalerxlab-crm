@@ -255,17 +255,18 @@ export default function PerformanceDashboard() {
 
                  <Card className="border-none bg-white dark:bg-zinc-900/50 ai-glass rounded-[40px] shadow-sm ring-1 ring-zinc-200/50 dark:ring-white/5 p-10">
                     <div className="flex items-center gap-3 mb-6">
-                       <PieChartIcon className="h-5 w-5 text-emerald-500" />
-                       <h4 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">Revenue Spread</h4>
+                       <PieChartIcon className="h-5 w-5 text-indigo-500" />
+                       <h4 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">Lead Origin Matrix</h4>
                     </div>
                     <div className="h-[200px] w-full">
                        <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                              <Pie 
                                 data={[
-                                   { name: 'IVF', value: 65 },
-                                   { name: 'Maternity', value: 25 },
-                                   { name: 'Gyn', value: 10 },
+                                   { name: 'Smartflo', value: 45, fill: '#6366f1' },
+                                   { name: 'AgentX', value: 30, fill: '#8b5cf6' },
+                                   { name: 'WhatsApp', value: 15, fill: '#10b981' },
+                                   { name: 'Field', value: 10, fill: '#f59e0b' },
                                 ]} 
                                 innerRadius={60} 
                                 outerRadius={80} 
@@ -273,6 +274,7 @@ export default function PerformanceDashboard() {
                                 dataKey="value"
                              >
                                 <Cell fill="#6366f1" />
+                                <Cell fill="#8b5cf6" />
                                 <Cell fill="#10b981" />
                                 <Cell fill="#f59e0b" />
                              </Pie>
@@ -280,21 +282,25 @@ export default function PerformanceDashboard() {
                           </PieChart>
                        </ResponsiveContainer>
                     </div>
-                    <div className="flex justify-between items-center px-4">
-                       <div className="flex flex-col items-center">
-                          <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 mb-2" />
-                          <span className="text-[9px] font-black uppercase text-zinc-400">IVF</span>
+                    <div className="grid grid-cols-2 gap-2 px-2">
+                       <div className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                          <span className="text-[9px] font-black uppercase text-zinc-400">Calls</span>
                        </div>
-                       <div className="flex flex-col items-center">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mb-2" />
-                          <span className="text-[9px] font-black uppercase text-zinc-400">MAT</span>
+                       <div className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-[#8b5cf6]" />
+                          <span className="text-[9px] font-black uppercase text-zinc-400">AgentX</span>
                        </div>
-                       <div className="flex flex-col items-center">
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mb-2" />
-                          <span className="text-[9px] font-black uppercase text-zinc-400">GYN</span>
+                       <div className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                          <span className="text-[9px] font-black uppercase text-zinc-400">WA</span>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-amber-500" />
+                          <span className="text-[9px] font-black uppercase text-zinc-400">Field</span>
                        </div>
                     </div>
-                 </Card>
+                  </Card>
               </div>
            </div>
         </TabsContent>

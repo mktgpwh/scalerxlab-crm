@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         data: {
           name: `Caller ${callerNumber.slice(-4)}`,
           phone: callerNumber,
-          source: "REFERRAL",
+          source: "SMARTFLO_CALL",
           status: "RAW"
         }
       });
