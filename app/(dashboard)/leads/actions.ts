@@ -48,8 +48,9 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
     let finalStatus: LeadStatus = "RAW";
     let finalSource: LeadSource = data.source as LeadSource;
 
-    // Operational Protocol: Front Desk Walk-In Capture
-    if (profile?.role === "FRONT_DESK") {
+    // Operational Protocol: Walk-In Capture Automation (Super-Admin Proof)
+    // If explicitly tagged as WALK_IN, force status and Super-Admin ownership
+    if (data.source === "WALK_IN") {
       finalStatus = "VISITED";
       finalSource = "WALK_IN";
       

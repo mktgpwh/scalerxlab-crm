@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { getLeadFilter } from "@/lib/security/rbac-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -11,30 +12,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { role, id } = session.user;
+    const { id } = session.user;
+    const rlsFilter = getLeadFilter(session.user as any);
 
-    // RLS Filter: Front Desk & Super Admin see everything scheduled for today.
-    // Sales Roles see only their own attributed leads.
-    let rlsFilter: any = {};
-    
-    if (role === "SUPER_ADMIN" || role === "FRONT_DESK") {
-      rlsFilter = {};
-    } else if (role === "TELE_SALES_ADMIN" || role === "FIELD_SALES_ADMIN") {
-      rlsFilter = {
-        OR: [
-          { ownerId: id },
-          { owner: { managerId: id } }
-        ]
-      };
-    } else if (role === "TELE_SALES" || role === "FIELD_SALES") {
-      rlsFilter = { ownerId: id };
-    } else {
-      // Other roles (Counsellor, etc.) don't see the scheduling queue by default
-      return NextResponse.json({ leads: [] });
-    }
-
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
@@ -42,8 +22,7 @@ export async function GET(req: NextRequest) {
       where: {
         status: "APPOINTMENT_SCHEDULED",
         appointmentDate: {
-          gte: todayStart,
-          lte: todayEnd,
+          lte: todayEnd, // Captures today AND all overdue (past) appointments
         },
         ...rlsFilter,
       },
