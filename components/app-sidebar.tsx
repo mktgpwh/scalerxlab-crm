@@ -57,6 +57,7 @@ const items = [
   { title: "Connections", url: "/integrations", icon: Puzzle, label: "Expansion Hub" },
   { title: "Activity Logs", url: "/activity", icon: History },
   { title: "Personnel Matrix", url: "/settings/users", icon: Users, label: "Command Roster" },
+  { title: "Performance Matrix", url: "/performance", icon: BarChart3, label: "Departmental BI" },
   { title: "Security & Compliance", url: "/security", icon: ShieldCheck, label: "Privacy Vault" },
 ];
 
