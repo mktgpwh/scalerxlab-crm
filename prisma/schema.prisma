@@ -249,6 +249,7 @@ model Invoice {
   items          InvoiceItem[]
   lead           Lead          @relation(fields: [leadId], references: [id])
   payments       Payment[]
+  metadata       Json?
 
   @@index([leadId])
   @@index([invoiceNumber])
@@ -260,8 +261,9 @@ model InvoiceItem {
   invoiceId String
   itemName  String
   quantity  Int     @default(1)
-  unitPrice Float
-  tax       Float   @default(0)
+  unitPrice     Float
+  originalPrice Float?
+  tax           Float   @default(0)
   total     Float
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 

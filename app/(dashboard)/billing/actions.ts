@@ -45,6 +45,7 @@ interface InvoiceItemInput {
     itemName: string;
     quantity: number;
     unitPrice: number;
+    originalPrice?: number;
     tax: number;
 }
 
@@ -74,6 +75,9 @@ export async function createInvoiceAction(params: {
 
         // 3. Create Records Atomically
         const invoice = await prisma.$transaction(async (tx) => {
+            // Track overrides for audit
+            const priceOverrides = items.filter(i => i.originalPrice && i.originalPrice !== i.unitPrice);
+            
             const inv = await (tx.invoice.create as any)({
                 data: {
                     leadId,
@@ -84,6 +88,15 @@ export async function createInvoiceAction(params: {
                     totalAmount,
                     status: "UNPAID",
                     createdBy: userId,
+                    metadata: priceOverrides.length > 0 ? {
+                        hasPriceOverrides: true,
+                        overrideCount: priceOverrides.length,
+                        overrides: priceOverrides.map(o => ({
+                            item: o.itemName,
+                            original: o.originalPrice,
+                            final: o.unitPrice
+                        }))
+                    } : null
                 },
                 include: {
                     lead: true
@@ -96,19 +109,24 @@ export async function createInvoiceAction(params: {
                     itemName: item.itemName,
                     quantity: item.quantity,
                     unitPrice: item.unitPrice,
+                    originalPrice: item.originalPrice,
                     tax: item.tax,
                     total: (item.unitPrice * item.quantity) + (item.unitPrice * item.quantity * (item.tax / 100))
                 }))
             });
 
-            // Log activity
+            // Log activity with override notice if applicable
             await tx.activityLog.create({
                 data: {
                     leadId,
                     userId,
                     action: "INVOICE_GENERATED",
-                    description: `Generated ${department} invoice ${invoiceNumber} for ₹${totalAmount.toFixed(2)}`,
-                    metadata: { invoiceId: inv.id, department }
+                    description: `Generated ${department} invoice ${invoiceNumber} for ₹${totalAmount.toFixed(2)}${priceOverrides.length > 0 ? " (contains price overrides)" : ""}`,
+                    metadata: { 
+                        invoiceId: inv.id, 
+                        department,
+                        hasOverrides: priceOverrides.length > 0
+                    }
                 }
             });
 
