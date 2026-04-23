@@ -59,6 +59,7 @@ const items = [
   { title: "Personnel Matrix", url: "/settings/users", icon: Users, label: "Command Roster" },
   { title: "Performance Matrix", url: "/performance", icon: BarChart3, label: "Departmental BI" },
   { title: "Security & Compliance", url: "/security", icon: ShieldCheck, label: "Privacy Vault" },
+  { title: "OPD Queue", url: "/counsellor/queue", icon: Users, label: "Live Queue" },
 ];
 
 export function AppSidebar() {
@@ -116,7 +117,7 @@ export function AppSidebar() {
 
     // 3. Counsellor (restricted from high-level, telephony, and command center)
     if (role === "COUNSELLOR") {
-      return ["Lead Funnels", "Billing Terminal", "Shared Inbox", "Activity Logs"].includes(item.title);
+      return ["Lead Funnels", "OPD Queue", "Billing Terminal", "Shared Inbox", "Activity Logs"].includes(item.title);
     }
 
     // 4. Sales Nodes (General operational view)

@@ -42,6 +42,12 @@ export const proxy = auth((req) => {
         return NextResponse.redirect(new URL("/", nextUrl));
       }
     }
+    // 3. Counsellor (Admin & Counsellor Only)
+    if (nextUrl.pathname.startsWith("/counsellor")) {
+      if (userRole !== "SUPER_ADMIN" && userRole !== "COUNSELLOR") {
+        return NextResponse.redirect(new URL("/", nextUrl));
+      }
+    }
   }
 
   return NextResponse.next();
