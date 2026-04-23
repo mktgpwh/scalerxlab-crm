@@ -38,13 +38,21 @@ export const proxy = auth((req) => {
 
     // 2. Billing (Super Admin & Front Desk Only)
     if (nextUrl.pathname.startsWith("/billing")) {
-      if (userRole !== "SUPER_ADMIN" && userRole !== "FRONT_DESK") {
+      if (userRole !== "SUPER_ADMIN" && userRole !== "FRONT_DESK" && userRole !== "BILLING") {
         return NextResponse.redirect(new URL("/", nextUrl));
       }
     }
     // 3. Counsellor (Admin & Counsellor Only)
     if (nextUrl.pathname.startsWith("/counsellor")) {
       if (userRole !== "SUPER_ADMIN" && userRole !== "COUNSELLOR") {
+        return NextResponse.redirect(new URL("/", nextUrl));
+      }
+    }
+
+    // 4. Front Desk (Admins, Front Desk, and Sales Tracking)
+    if (nextUrl.pathname.startsWith("/front-desk")) {
+      const allowedRoles = ["SUPER_ADMIN", "FRONT_DESK", "TELE_SALES_ADMIN", "FIELD_SALES_ADMIN", "TELE_SALES", "FIELD_SALES"];
+      if (!allowedRoles.includes(userRole as string)) {
         return NextResponse.redirect(new URL("/", nextUrl));
       }
     }

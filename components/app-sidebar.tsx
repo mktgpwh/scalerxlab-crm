@@ -107,28 +107,45 @@ export function AppSidebar() {
       return role === "SUPER_ADMIN";
     }
 
-    // 1. Super Admin / Admins see almost everything
-    if (role === "SUPER_ADMIN" || role === "TELE_SALES_ADMIN" || role === "FIELD_SALES_ADMIN") return true;
+    // 1. Super Admin sees everything
+    if (role === "SUPER_ADMIN") return true;
 
-    // 2. Front Desk restrictive view
+    // 2. Specialized Personnel Matrix excludes
+    if (role === "TELE_SALES_ADMIN" || role === "FIELD_SALES_ADMIN") {
+      // Exclude Billing (Reserved for Billing Node & Super Admin)
+      if (item.title === "Billing Terminal" || item.title === "Revenue Command" || item.title === "OPD Queue") return false;
+      return true;
+    }
+
+    // 3. Front Desk restrictive view
     if (role === "FRONT_DESK") {
       return ["Command Center", "Lead Funnels", "Front Desk Console", "Billing Terminal"].includes(item.title);
     }
 
-    // 3. Counsellor (restricted from high-level, telephony, and command center)
+    // 4. Counsellor view
     if (role === "COUNSELLOR") {
       return ["Lead Funnels", "OPD Queue", "Billing Terminal", "Shared Inbox", "Activity Logs"].includes(item.title);
     }
 
-    // 4. Sales Nodes (General operational view)
+    // 5. Sales Nodes (General operational view)
     if (role === "TELE_SALES" || role === "FIELD_SALES") {
-      if (["Connections", "Sovereign Intelligence", "Security & Compliance", "Intelligence Matrix", "Personnel Matrix"].includes(item.title)) {
+      // Explicitly EXCLUDE restricted nodes
+      if ([
+        "Connections", 
+        "Sovereign Intelligence", 
+        "Security & Compliance", 
+        "Intelligence Matrix", 
+        "Personnel Matrix",
+        "Billing Terminal",
+        "Revenue Command",
+        "OPD Queue"
+      ].includes(item.title)) {
         return false;
       }
       return true;
     }
 
-    // 5. Billing Node
+    // 6. Billing Node
     if (role === "BILLING") {
        return ["Billing Terminal", "Revenue Command"].includes(item.title);
     }

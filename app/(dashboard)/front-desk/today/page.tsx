@@ -42,9 +42,9 @@ export default function FrontDeskTodayPage() {
   const [checkingIn, setCheckingIn] = useState<string | null>(null);
 
   const userRole = (session?.user as any)?.role;
-
+  const allowedRoles = ["FRONT_DESK", "SUPER_ADMIN", "TELE_SALES_ADMIN", "FIELD_SALES_ADMIN", "TELE_SALES", "FIELD_SALES"];
   useEffect(() => {
-    if (status === "authenticated" && (userRole !== "FRONT_DESK" && userRole !== "SUPER_ADMIN" && userRole !== "TELE_SALES_ADMIN" && userRole !== "FIELD_SALES_ADMIN")) {
+    if (status === "authenticated" && !allowedRoles.includes(userRole)) {
        toast.error("Access Prohibited", { description: "Front Desk clearance required." });
        router.push("/pipeline");
     }
@@ -53,24 +53,22 @@ export default function FrontDeskTodayPage() {
   // Initialize data
   useEffect(() => {
     const init = async () => {
-      const branchData = await getBranchesAction();
-      setBranches(branchData);
+      try {
+        const branchData = await getBranchesAction();
+        setBranches(branchData);
 
-      // In a real app, this would be a fetch to /api/front-desk/scheduled
-      const mockLeads: ScheduledLead[] = [
-        {
-          id: "1",
-          name: "Ananya Sharma",
-          appointmentDate: new Date().toISOString(),
-          appointmentCenter: "Pahlajani's Raipur (Main)",
-          assignedCounselor: "Rahul V.",
-          status: "APPOINTMENT_SCHEDULED"
-        },
-        // ... (rest omitted for brevity in search and replace)
-      ];
-      
-      setLeads(mockLeads);
-      setIsLoading(false);
+        const response = await fetch("/api/front-desk/scheduled");
+        if (response.ok) {
+          const data = await response.json();
+          setLeads(data.leads || []);
+        } else {
+          toast.error("Handshake Failed", { description: "Matrix synchronization failed." });
+        }
+      } catch (err) {
+        toast.error("Network Error", { description: "Interface failed to reach the scheduling node." });
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     init();
