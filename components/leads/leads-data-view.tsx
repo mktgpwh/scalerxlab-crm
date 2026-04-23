@@ -33,6 +33,7 @@ const STATUS_STYLES: Record<string, string> = {
   CONTACTED:         "bg-blue-50 text-blue-600 border border-blue-200/50",
   APPOINTMENT_FIXED: "bg-amber-50 text-amber-600 border border-amber-200/50",
   VISITED:           "bg-violet-50 text-violet-600 border border-violet-200/50",
+  CONVERTED:         "bg-amber-100 text-amber-800 border border-amber-300 font-bold",
   WON:               "bg-emerald-50 text-emerald-700 border border-emerald-200/50",
   LOST:              "bg-rose-50 text-rose-600 border border-rose-200/50"
 };

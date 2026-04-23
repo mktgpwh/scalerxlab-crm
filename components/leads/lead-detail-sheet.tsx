@@ -403,27 +403,27 @@ export function LeadDetailSheet() {
                       currentStatus={lead.status} 
                    />
 
-                   {lead.status === 'CHECKED_OUT' && (
-                     <Card className="bg-emerald-600 border-none rounded-2xl p-8 shadow-2xl shadow-emerald-500/20 text-white relative overflow-hidden group">
+                   {lead.status === 'CONVERTED' && (
+                     <Card className="bg-[#B8860B] border-none rounded-2xl p-8 shadow-2xl shadow-amber-500/20 text-white relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-1000">
                            <IndianRupee className="h-32 w-32" />
                         </div>
                         <div className="relative space-y-6">
                            <div className="flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full w-fit">
                               <Sparkles className="h-3 w-3 text-white" />
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-white">Milestone: Revenue Converted</span>
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-white">Milestone: Patient Converted</span>
                            </div>
                            <div className="space-y-2">
-                              <h3 className="text-3xl font-black tracking-tight tracking-tighter">Growth Loop Closed</h3>
-                              <p className="text-sm font-medium text-emerald-50 text-balance opacity-80">
-                                This patient journey has been fully attributed and converted. Clinical check-out and financial discharge nodes have been successfully synchronized.
+                              <h3 className="text-3xl font-black tracking-tight tracking-tighter uppercase">Revenue Realized</h3>
+                              <p className="text-sm font-medium text-amber-50 text-balance opacity-80">
+                                This record has achieved the terminal victory state. The bridge between clinical excellence and revenue realization is officially verified.
                               </p>
                            </div>
                            <div className="flex items-center gap-4 pt-4">
                               <div className="h-10 w-10 border border-white/20 rounded-xl bg-white/20 flex items-center justify-center">
                                  <CheckCircle2 className="h-5 w-5" />
                               </div>
-                              <span className="text-xs font-black uppercase tracking-widest text-white">Audit Verified</span>
+                              <span className="text-xs font-black uppercase tracking-widest text-white">Matrix Success</span>
                            </div>
                         </div>
                      </Card>

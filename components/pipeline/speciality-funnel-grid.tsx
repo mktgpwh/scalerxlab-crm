@@ -21,9 +21,9 @@ export function SpecialityFunnelGrid({ leads }: { leads: any[] }) {
       const specLeads = leads.filter(l => (l.category === spec.key) || (spec.key === "OTHER" && !l.category));
       acc[spec.key] = {
         total: specLeads.length,
-        qualified: specLeads.filter(l => ['QUALIFIED', 'CONTACTED', 'APPOINTMENT_FIXED', 'VISITED', 'WON'].includes(l.status)).length,
-        visited: specLeads.filter(l => ['VISITED', 'WON'].includes(l.status)).length,
-        won: specLeads.filter(l => l.status === 'WON').length,
+        qualified: specLeads.filter(l => ['QUALIFIED', 'CONTACTED', 'APPOINTMENT_FIXED', 'VISITED', 'CONVERTED', 'WON'].includes(l.status)).length,
+        visited: specLeads.filter(l => ['VISITED', 'CONVERTED', 'WON'].includes(l.status)).length,
+        won: specLeads.filter(l => ['CONVERTED', 'WON'].includes(l.status)).length,
       };
       return acc;
     }, {} as Record<string, FunnelData>);

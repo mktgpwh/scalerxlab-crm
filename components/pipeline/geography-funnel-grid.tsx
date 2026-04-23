@@ -30,9 +30,9 @@ export function GeographyFunnelGrid({ leads, branches }: { leads: any[], branche
 
       acc[city.key] = {
         total: cityLeads.length,
-        qualified: cityLeads.filter(l => ['QUALIFIED', 'CONTACTED', 'APPOINTMENT_FIXED', 'VISITED', 'WON'].includes(l.status)).length,
-        visited: cityLeads.filter(l => ['VISITED', 'WON'].includes(l.status)).length,
-        won: cityLeads.filter(l => l.status === 'WON').length,
+        qualified: cityLeads.filter(l => ['QUALIFIED', 'CONTACTED', 'APPOINTMENT_FIXED', 'VISITED', 'CONVERTED', 'WON'].includes(l.status)).length,
+        visited: cityLeads.filter(l => ['VISITED', 'CONVERTED', 'WON'].includes(l.status)).length,
+        won: cityLeads.filter(l => ['CONVERTED', 'WON'].includes(l.status)).length,
       };
       return acc;
     }, {} as Record<string, FunnelData>);

@@ -151,7 +151,7 @@ export async function createInvoiceAction(params: {
 
 /**
  * Marks an invoice as PAID and completes the Closed-Loop Attribution.
- * Transition: VISITED -> CHECKED_OUT
+ * Transition: VISITED -> CONVERTED
  */
 export async function markInvoiceAsPaidAction(invoiceId: string) {
     try {
@@ -167,10 +167,10 @@ export async function markInvoiceAsPaidAction(invoiceId: string) {
             });
 
             if (invoice.leadId) {
-                // 2. Transition Lead to final CHECKED_OUT state
+                // 2. Transition Lead to final CONVERTED state
                 await tx.lead.update({
                     where: { id: invoice.leadId },
-                    data: { status: "CHECKED_OUT" }
+                    data: { status: "CONVERTED" }
                 });
 
                 // 3. Log the final Revenue Conversion milestone
@@ -179,7 +179,7 @@ export async function markInvoiceAsPaidAction(invoiceId: string) {
                         leadId: invoice.leadId,
                         userId,
                         action: "REVENUE_CONVERTED",
-                        description: `Revenue Loop Closed. Invoice ${invoice.invoiceNumber} for ₹${invoice.totalAmount} marked as PAID.`,
+                        description: `Patient Check-Out Complete. Lead successfully CONVERTED via invoice ${invoice.invoiceNumber}.`,
                         tenantId: invoice.tenantId
                     }
                 });
