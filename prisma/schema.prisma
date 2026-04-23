@@ -150,6 +150,9 @@ model Lead {
   aiLeadScore           String?
   aiSuggestedDepartment String?
   isUnderAITriage       Boolean           @default(false)
+  appointmentDate       DateTime?
+  appointmentCenter     String?
+  assignedCounselor     String?
   activityLogs          ActivityLog[]
   autoNurtureQueue      AutoNurtureQueue?
   callLogs              CallLog[]
@@ -351,6 +354,7 @@ enum LeadStatus {
   QUALIFIED
   CONTACTED
   APPOINTMENT_FIXED
+  APPOINTMENT_SCHEDULED
   VISITED
   WON
   LOST

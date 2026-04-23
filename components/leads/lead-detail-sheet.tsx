@@ -29,8 +29,10 @@ import {
   PenLine,
   Save,
   Lock,
-  ShieldCheck
+  ShieldCheck,
+  Calendar as CalendarIcon
 } from "lucide-react";
+import { AppointmentScheduler } from "./appointment-scheduler";
 import { WhatsAppIcon } from "@/components/icons";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -392,6 +394,11 @@ export function LeadDetailSheet() {
                         </div>
                      </Card>
                   </div>
+
+                  <AppointmentScheduler 
+                      leadId={lead.id} 
+                      currentStatus={lead.status} 
+                   />
 
                   {/* Treatment Probability Chart (Exclusive to Pahlajani's) */}
                   <Card className="surface-layered border-none rounded-xl p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10 relative overflow-hidden">
