@@ -2,11 +2,13 @@ import type { NextAuthConfig } from "next-auth";
 
 export type EdgeUserRole = 
   | 'SUPER_ADMIN' 
-  | 'SALES_ADMIN' 
-  | 'SALES_USER' 
+  | 'TELE_SALES_ADMIN' 
+  | 'TELE_SALES' 
+  | 'FIELD_SALES_ADMIN' 
+  | 'FIELD_SALES' 
+  | 'BILLING' 
   | 'FRONT_DESK' 
-  | 'COUNSELLOR' 
-  | 'FIELD_SALES';
+  | 'COUNSELLOR';
 
 export default {
   providers: [], // Configured in auth.ts

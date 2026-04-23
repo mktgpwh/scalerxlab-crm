@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     const userRole = (session?.user as any)?.role;
 
-    if (!session?.user?.id || (userRole !== "FRONT_DESK" && userRole !== "SUPER_ADMIN" && userRole !== "SALES_ADMIN")) {
+    if (!session?.user?.id || (userRole !== "FRONT_DESK" && userRole !== "SUPER_ADMIN" && userRole !== "TELE_SALES_ADMIN" && userRole !== "FIELD_SALES_ADMIN")) {
       return NextResponse.json({ error: "Unauthorized: Front Desk clearance required" }, { status: 401 });
     }
 

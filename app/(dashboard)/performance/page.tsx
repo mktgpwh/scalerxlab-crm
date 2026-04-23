@@ -52,6 +52,7 @@ import {
   CartesianGrid
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 // High-Fidelity Mock Data Matrix
 const OVERALL_STATS = [
@@ -90,6 +91,37 @@ const CENTER_PERFORMANCE = [
 ];
 
 export default function PerformanceDashboard() {
+  const { data: session } = useSession();
+  const user = session?.user as any;
+  const role = user?.role as string;
+  const userId = user?.id;
+
+  // RLS Visibility Mapping
+  const visibilityConfig = useMemo(() => {
+    switch (role) {
+      case "SUPER_ADMIN":
+        return { scope: "GLOBAL", description: "All Center Sovereignty" };
+      case "TELE_SALES_ADMIN":
+        return { scope: "CENTRALIZED", description: "Cross-Center Digital Funnel" };
+      case "FIELD_SALES_ADMIN":
+        return { scope: "LOCALIZED", description: "My Assigned Field Matrix" };
+      case "TELE_SALES":
+      case "FIELD_SALES":
+        return { scope: "NODE_INDIVIDUAL", description: "Personal Performance Ledger" };
+      default:
+        return { scope: "RESTRICTED", description: "Limited View" };
+    }
+  }, [role]);
+
+  // Simulate RLS filtered data based on role
+  const filteredFieldReps = useMemo(() => {
+    if (role === "SUPER_ADMIN" || role === "TELE_SALES_ADMIN") return FIELD_REPS;
+    if (role === "FIELD_SALES_ADMIN") {
+      // In real DB, this would be `managerId === currentUserId`
+      return FIELD_REPS.slice(0, 2); 
+    }
+    return [];
+  }, [role]);
   return (
     <div className="p-8 space-y-10 min-h-screen bg-[#fafafa] dark:bg-[#03060b] max-w-[1600px] mx-auto">
       {/* Dynamic Command Header */}
@@ -100,9 +132,12 @@ export default function PerformanceDashboard() {
               <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Operational Intelligence Matrix</span>
            </div>
            <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white lowercase">/bi.performance</h1>
-           <p className="text-sm font-medium text-zinc-500 max-w-xl">
-             Holistic departmental telemetry across Field, Digital, and Clinical nodes. Analyzing the delta between intent and revenue realization.
-           </p>
+           <div className="flex items-center gap-2 mt-1">
+              <Badge variant="outline" className="text-[9px] font-black uppercase text-indigo-500 border-indigo-500/20">{visibilityConfig.scope} SCOPE</Badge>
+              <p className="text-xs font-medium text-zinc-500 max-w-xl">
+                {visibilityConfig.description}. Holistic telemetry across departmental nodes.
+              </p>
+           </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -278,7 +313,7 @@ export default function PerformanceDashboard() {
                 </div>
 
                 <div className="space-y-4">
-                   {FIELD_REPS.map((rep, i) => (
+                   {filteredFieldReps.length > 0 ? filteredFieldReps.map((rep, i) => (
                       <Card key={i} className="border-none bg-white dark:bg-zinc-900/50 ai-glass rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 ring-1 ring-zinc-200/50 p-6 group cursor-pointer">
                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -307,7 +342,11 @@ export default function PerformanceDashboard() {
                             </div>
                          </div>
                       </Card>
-                   ))}
+                   )) : (
+                      <div className="p-12 rounded-[40px] border-2 border-dashed border-zinc-100 flex items-center justify-center dark:border-white/5">
+                         <p className="text-sm font-bold text-zinc-400">RESTRICTED SCOPE: Field roster visibility unavailable at this node level.</p>
+                      </div>
+                   )}
                 </div>
               </div>
 

@@ -26,12 +26,12 @@ async function main() {
   });
   console.log(`Updated ${superAdmin.count} Super Admins.`);
 
-  // Update Kusum to SALES_USER
+  // Update Kusum to TELE_SALES
   const salesUser = await prisma.user.updateMany({
     where: { name: { contains: "Kusum", mode: "insensitive" } },
-    data: { role: "FIELD_SALES" } // The user said "SALES_USER", but the requested enum is strictly SALES_USER
+    data: { role: "TELE_SALES" } 
   });
-  console.log(`Updated ${salesUser.count} Sales Users.`);
+  console.log(`Updated ${salesUser.count} Tele-Sales Users.`);
 
   console.log("Cleanup complete.");
 }

@@ -34,7 +34,7 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
     redirect("/login");
   }
 
-  const isAdmin = profile.role === "SALES_ADMIN" || profile.role === "SUPER_ADMIN";
+  const isAdmin = profile.role === "TELE_SALES_ADMIN" || profile.role === "FIELD_SALES_ADMIN" || profile.role === "SUPER_ADMIN";
 
   // Build Prisma Filters
   const dateFilter = getPrismaDateFilter(params.from, params.to);
@@ -126,7 +126,7 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
 
   const dailyLeadsSeries = Object.entries(dailyCounts).map(([day, count]) => ({ day, count }));
 
-  const isOperationalRole = ["SALES_USER", "FIELD_SALES", "COUNSELLOR", "FRONT_DESK"].includes(profile.role);
+  const isOperationalRole = ["TELE_SALES", "FIELD_SALES", "COUNSELLOR", "FRONT_DESK"].includes(profile.role);
 
   if (isOperationalRole) {
     return (

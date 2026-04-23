@@ -18,25 +18,35 @@ export function getLeadFilter(user?: SessionUser): any {
     return { tenantId: "org_pahlajani_001" };
   }
 
-  // 2. SALES ADMIN ACCESS: See all SALES_USER leads + their own
-  if (user.role === UserRole.SALES_ADMIN) {
+  // 2. TELE SALES ADMIN ACCESS: See all TELE_SALES leads + their own
+  if (user.role === UserRole.TELE_SALES_ADMIN) {
     return {
       OR: [
-        { owner: { role: UserRole.SALES_USER } },
-        { ownerId: user.id }
+        { ownerId: user.id },
+        { owner: { role: UserRole.TELE_SALES } },
       ]
     };
   }
 
-  // 3. OWNER-LEVEL ISOLATION: Operational roles only see their own assigned leads
-  const operationalRoles: UserRole[] = [UserRole.FIELD_SALES, UserRole.SALES_USER, UserRole.COUNSELLOR];
+  // 3. FIELD SALES ADMIN ACCESS: See leads assigned to their subordinates
+  if (user.role === UserRole.FIELD_SALES_ADMIN) {
+    return {
+      OR: [
+        { ownerId: user.id },
+        { owner: { managerId: user.id } }
+      ]
+    };
+  }
+
+  // 4. OWNER-LEVEL ISOLATION: Operational roles only see their own assigned leads
+  const operationalRoles: UserRole[] = [UserRole.FIELD_SALES, UserRole.TELE_SALES, UserRole.COUNSELLOR];
   if (operationalRoles.includes(user.role)) {
     return {
       ownerId: user.id,
     };
   }
 
-  // 4. BRANCH ACCESS: Front Desk sees all branch leads
+  // 5. BRANCH ACCESS: Front Desk sees all branch leads
   if (user.role === UserRole.FRONT_DESK) {
     return {
       branchId: user.branchId || "HQ",
@@ -55,19 +65,31 @@ export function getRevenueFilter(user?: SessionUser): any {
   // 1. GLOBAL ACCESS
   if (user.role === UserRole.SUPER_ADMIN) return {};
 
-  // 2. SALES ADMIN: See revenue for all SALES_USERS + self
-  if (user.role === UserRole.SALES_ADMIN) {
+  // 2. TELE SALES ADMIN: See revenue for all TELE_SALES + self
+  if (user.role === UserRole.TELE_SALES_ADMIN) {
     return {
       lead: {
         OR: [
-          { owner: { role: UserRole.SALES_USER } },
-          { ownerId: user.id }
+          { ownerId: user.id },
+          { owner: { role: UserRole.TELE_SALES } },
         ]
       }
     };
   }
 
-  // 3. FIELD SALES: See only their own assigned lead revenue
+  // 3. FIELD SALES ADMIN: See revenue for subordinates
+  if (user.role === UserRole.FIELD_SALES_ADMIN) {
+    return {
+      lead: {
+        OR: [
+          { ownerId: user.id },
+          { owner: { managerId: user.id } }
+        ]
+      }
+    };
+  }
+
+  // 4. FIELD SALES: See only their own assigned lead revenue
   if (user.role === UserRole.FIELD_SALES) {
     return {
       lead: { ownerId: user.id }

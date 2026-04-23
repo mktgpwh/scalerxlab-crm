@@ -31,7 +31,7 @@ export default auth((req) => {
       nextUrl.pathname.startsWith("/matrix") || 
       nextUrl.pathname.startsWith("/settings")
     ) {
-      if (userRole !== "SUPER_ADMIN" && userRole !== "SALES_ADMIN") {
+      if (userRole !== "SUPER_ADMIN" && userRole !== "TELE_SALES_ADMIN" && userRole !== "FIELD_SALES_ADMIN") {
         return NextResponse.redirect(new URL("/", nextUrl));
       }
     }

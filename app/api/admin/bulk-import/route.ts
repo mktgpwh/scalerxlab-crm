@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     });
     if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const isAdmin = profile.role === "SUPER_ADMIN" || profile.role === "SALES_ADMIN";
+    const isAdmin = profile.role === "SUPER_ADMIN" || profile.role === "TELE_SALES_ADMIN" || profile.role === "FIELD_SALES_ADMIN";
 
     // ── Parse body ─────────────────────────────────────────────
     const { rows, defaultBranchId } = await req.json() as {

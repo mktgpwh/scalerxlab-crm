@@ -40,7 +40,7 @@ model User {
   id                       String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email                    String          @unique
   name                     String?
-  role                     UserRole        @default(SALES_USER)
+  role                     UserRole        @default(TELE_SALES)
   isActive                 Boolean         @default(true)
   platformConsentGiven     Boolean         @default(false)
   platformConsentTimestamp DateTime?
@@ -60,6 +60,12 @@ model User {
   calls                    CallLog[]       @relation("AgentCalls")
   sessions                 Session[]
   branch                   Branch?         @relation(fields: [branchId], references: [id])
+  
+  // Hierarchy Management
+  managerId                String?         @db.Uuid
+  manager                  User?           @relation("UserToManager", fields: [managerId], references: [id])
+  subordinates             User[]          @relation("UserToManager")
+  baseCenterId             String?         // Explicit home branch mapping for Field Sales/Admins
 
   @@index([branchId])
   @@map("users")
@@ -326,11 +332,13 @@ enum OrgPlan {
 
 enum UserRole {
   SUPER_ADMIN
-  SALES_ADMIN
-  SALES_USER
+  TELE_SALES_ADMIN
+  TELE_SALES
+  FIELD_SALES_ADMIN
+  FIELD_SALES
   FRONT_DESK
   COUNSELLOR
-  FIELD_SALES
+  BILLING
 }
 
 enum LeadSource {

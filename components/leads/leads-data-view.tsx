@@ -237,7 +237,7 @@ export function LeadsDataView({
 
   const filtered = useMemo(() => {
     let result = leads.filter(l => {
-      if (userRole === "SALES_ADMIN" || userRole === "SUPER_ADMIN") {
+      if (userRole === "TELE_SALES_ADMIN" || userRole === "FIELD_SALES_ADMIN" || userRole === "SUPER_ADMIN") {
         if (ownerId === "unassigned" && l.ownerId !== null) return false;
         if (ownerId !== "unassigned" && ownerId !== null && l.ownerId !== ownerId) return false;
       }
@@ -302,7 +302,7 @@ export function LeadsDataView({
           <FilterChip label="Status" value={filterStatus} options={statuses} onChange={setFilterStatus} />
           <FilterChip label="Treatment" value={filterCategory} options={categories} onChange={setFilterCategory} />
           <FilterChip label="Heat" value={filterIntent} options={intents} onChange={setFilterIntent} />
-          {(userRole === "SALES_ADMIN" || userRole === "SUPER_ADMIN") && (
+          {(userRole === "TELE_SALES_ADMIN" || userRole === "FIELD_SALES_ADMIN" || userRole === "SUPER_ADMIN") && (
             <FilterChip 
                label="Access" 
                value={ownerId === "unassigned" ? "UNASSIGNED" : (team.find(t => t.id === ownerId)?.name || "ALL OWNERS")} 
@@ -348,7 +348,7 @@ export function LeadsDataView({
             </div>
         </div>
         <div className="flex items-center gap-3">
-          {["SUPER_ADMIN", "SALES_ADMIN", "MANAGER"].includes(userRole) && (
+          {["SUPER_ADMIN", "TELE_SALES_ADMIN", "FIELD_SALES_ADMIN"].includes(userRole) && (
             <Button onClick={handleExportCSV} size="sm" variant="outline" className="h-8 px-3 rounded-xl text-[10px] font-semibold tracking-tight uppercase tracking-widest gap-1.5 border-emerald-500/30 text-emerald-600">
               <Download className="h-3.5 w-3.5" /> Export CSV
             </Button>

@@ -44,7 +44,7 @@ export default async function PipelinePage({ searchParams }: PageProps) {
     redirect("/login");
   }
 
-  const isAdmin = profile.role === "SALES_ADMIN" || profile.role === "SUPER_ADMIN";
+  const isAdmin = profile.role === "TELE_SALES_ADMIN" || profile.role === "FIELD_SALES_ADMIN" || profile.role === "SUPER_ADMIN";
 
   // localized filters for this page (independent of Command Center)
   const dateFilter = getPrismaDateFilter(params.from, params.to);

@@ -20,8 +20,8 @@ export async function toggleUserPresence(userId: string, isOnline: boolean) {
       data: { isOnline },
     });
 
-    // AUTO-HANDOFF TRIGGER: Process queue if a SALES_USER turns Online
-    if (isOnline && user?.role === "SALES_USER") {
+    // AUTO-HANDOFF TRIGGER: Process queue if a TELE_SALES turns Online
+    if (isOnline && user?.role === "TELE_SALES") {
       processTriageQueue(); 
     }
 

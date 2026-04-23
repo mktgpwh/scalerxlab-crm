@@ -23,10 +23,10 @@ export async function assignIncomingLead(leadId: string) {
         return null;
     }
 
-    // 3. Identify Target Pool: Online SALES_USER nodes
+    // 3. Identify Target Pool: Online TELE_SALES nodes
     const operationalPool = await prisma.user.findMany({
       where: {
-        role: "SALES_USER",
+        role: "TELE_SALES",
         isOnline: true,
         isActive: true,
       },
@@ -54,7 +54,7 @@ export async function assignIncomingLead(leadId: string) {
       
       // Random hash for distribution balance among equal candidates
       assignedUser = candidates[Math.floor(Math.random() * candidates.length)];
-      console.log(`✅ [ROUTING_ENGINE] Routed to SALES_USER: ${assignedUser.email} (Load: ${minLoad})`);
+      console.log(`✅ [ROUTING_ENGINE] Routed to TELE_SALES: ${assignedUser.email} (Load: ${minLoad})`);
     } else {
       // 3. Autonomous AI Fallback Layer
       console.warn(`🤖 [ROUTING_ENGINE] ALL HUMAN NODES OFFLINE. Initializing Autonomous AI Triage.`);
@@ -124,7 +124,7 @@ export async function assignIncomingLead(leadId: string) {
 
 /**
  * AUTO-HANDOFF PROTOCOL
- * Redistributes all leads under AI Triage as soon as a SALES_USER goes online.
+ * Redistributes all leads under AI Triage as soon as a TELE_SALES goes online.
  */
 export async function processTriageQueue() {
   try {

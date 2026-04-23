@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       select: { role: true }
     });
 
-    if (profile?.role !== "SUPER_ADMIN" && profile?.role !== "SALES_ADMIN") {
+    if (profile?.role !== "SUPER_ADMIN" && profile?.role !== "TELE_SALES_ADMIN" && profile?.role !== "FIELD_SALES_ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 

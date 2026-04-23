@@ -27,7 +27,7 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
     name: "",
     email: "",
     phone: "",
-    role: "SALES_USER",
+    role: "TELE_SALES",
     password: "",
     branchId: "",
     isActive: true,
@@ -39,7 +39,7 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
         name: selectedUser.name || "",
         email: selectedUser.email || "",
         phone: selectedUser.phone || "",
-        role: selectedUser.role || "SALES_USER",
+        role: selectedUser.role || "TELE_SALES",
         password: "", // Don't pre-fill password
         branchId: selectedUser.branchId || "",
         isActive: selectedUser.isActive ?? true,
@@ -49,7 +49,7 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
         name: "",
         email: "",
         phone: "",
-        role: "SALES_USER",
+        role: "TELE_SALES",
         password: "",
         branchId: "",
         isActive: true,
@@ -209,18 +209,20 @@ export function UserForm({ branches, selectedUser, onSuccess, onCancel }: UserFo
               <Label className="text-[10px] font-semibold tracking-tight uppercase tracking-widest text-slate-400 ml-1">System Role</Label>
               <Select 
                 value={formData.role} 
-                onValueChange={(value: string | null) => setFormData({ ...formData, role: value || "SALES_USER", branchId: "" })}
+                onValueChange={(value: string | null) => setFormData({ ...formData, role: value || "TELE_SALES", branchId: "" })}
               >
                 <SelectTrigger className="h-14 rounded-xl bg-slate-50 border-none ring-1 ring-slate-100 font-semibold text-sm">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-none shadow-2xl">
                   <SelectItem value="SUPER_ADMIN" className="rounded-xl font-semibold py-3">Super Admin</SelectItem>
-                  <SelectItem value="SALES_ADMIN" className="rounded-xl font-semibold py-3">Sales Admin</SelectItem>
-                  <SelectItem value="SALES_USER" className="rounded-xl font-semibold py-3">Sales User</SelectItem>
+                  <SelectItem value="TELE_SALES_ADMIN" className="rounded-xl font-semibold py-3">Tele Sales Admin</SelectItem>
+                  <SelectItem value="TELE_SALES" className="rounded-xl font-semibold py-3">Tele Sales User</SelectItem>
+                  <SelectItem value="FIELD_SALES_ADMIN" className="rounded-xl font-semibold py-3">Field Sales Admin</SelectItem>
+                  <SelectItem value="FIELD_SALES" className="rounded-xl font-semibold py-3">Field Sales User</SelectItem>
                   <SelectItem value="FRONT_DESK" className="rounded-xl font-semibold py-3">Front Desk</SelectItem>
                   <SelectItem value="COUNSELLOR" className="rounded-xl font-semibold py-3">Counsellor</SelectItem>
-                  <SelectItem value="FIELD_SALES" className="rounded-xl font-semibold py-3">Field Sales</SelectItem>
+                  <SelectItem value="BILLING" className="rounded-xl font-semibold py-3">Billing Professional</SelectItem>
                 </SelectContent>
               </Select>
             </div>

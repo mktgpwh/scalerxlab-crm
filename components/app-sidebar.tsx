@@ -106,8 +106,8 @@ export function AppSidebar() {
       return role === "SUPER_ADMIN";
     }
 
-    // 1. Super Admin / Sales Admin see everything
-    if (role === "SUPER_ADMIN" || role === "SALES_ADMIN") return true;
+    // 1. Super Admin / Admins see almost everything
+    if (role === "SUPER_ADMIN" || role === "TELE_SALES_ADMIN" || role === "FIELD_SALES_ADMIN") return true;
 
     // 2. Front Desk restrictive view
     if (role === "FRONT_DESK") {
@@ -119,12 +119,17 @@ export function AppSidebar() {
       return ["Lead Funnels", "Billing Terminal", "Shared Inbox", "Activity Logs"].includes(item.title);
     }
 
-    // 4. Sales Users & Field Sales (General operational view)
-    if (role === "SALES_USER" || role === "FIELD_SALES") {
+    // 4. Sales Nodes (General operational view)
+    if (role === "TELE_SALES" || role === "FIELD_SALES") {
       if (["Connections", "Sovereign Intelligence", "Security & Compliance", "Intelligence Matrix", "Personnel Matrix"].includes(item.title)) {
         return false;
       }
       return true;
+    }
+
+    // 5. Billing Node
+    if (role === "BILLING") {
+       return ["Billing Terminal", "Revenue Command"].includes(item.title);
     }
 
     return false; // Default: hide everything if role is unrecognized
