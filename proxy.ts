@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // Use lightweight config for Edge Middleware
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
   const userRole = req.auth?.user?.role as EdgeUserRole | undefined;
@@ -46,6 +46,8 @@ export default auth((req) => {
 
   return NextResponse.next();
 });
+
+export default proxy;
 
 // Optionally, don't invoke Middleware on some paths
 export const config = {

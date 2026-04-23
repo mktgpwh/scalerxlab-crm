@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -12,7 +12,7 @@ export async function POST(
       return NextResponse.json({ error: "Access Denied" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { appointmentDate, appointmentCenter, assignedCounselor, status } = await req.json();
 
     // 1. Fetch Lead to get tenantId
