@@ -30,7 +30,10 @@ import {
   Save,
   Lock,
   ShieldCheck,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  IndianRupee,
+  CheckCircle2,
+  UserCheck
 } from "lucide-react";
 import { AppointmentScheduler } from "./appointment-scheduler";
 import { WhatsAppIcon } from "@/components/icons";
@@ -400,6 +403,32 @@ export function LeadDetailSheet() {
                       currentStatus={lead.status} 
                    />
 
+                   {lead.status === 'CHECKED_OUT' && (
+                     <Card className="bg-emerald-600 border-none rounded-2xl p-8 shadow-2xl shadow-emerald-500/20 text-white relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-1000">
+                           <IndianRupee className="h-32 w-32" />
+                        </div>
+                        <div className="relative space-y-6">
+                           <div className="flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full w-fit">
+                              <Sparkles className="h-3 w-3 text-white" />
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-white">Milestone: Revenue Converted</span>
+                           </div>
+                           <div className="space-y-2">
+                              <h3 className="text-3xl font-black tracking-tight tracking-tighter">Growth Loop Closed</h3>
+                              <p className="text-sm font-medium text-emerald-50 text-balance opacity-80">
+                                This patient journey has been fully attributed and converted. Clinical check-out and financial discharge nodes have been successfully synchronized.
+                              </p>
+                           </div>
+                           <div className="flex items-center gap-4 pt-4">
+                              <div className="h-10 w-10 border border-white/20 rounded-xl bg-white/20 flex items-center justify-center">
+                                 <CheckCircle2 className="h-5 w-5" />
+                              </div>
+                              <span className="text-xs font-black uppercase tracking-widest text-white">Audit Verified</span>
+                           </div>
+                        </div>
+                     </Card>
+                   )}
+
                   {/* Treatment Probability Chart (Exclusive to Pahlajani's) */}
                   <Card className="surface-layered border-none rounded-xl p-6 shadow-sm ring-1 ring-slate-200/50 dark:ring-white/10 relative overflow-hidden">
                      <div className="flex items-center justify-between mb-6">
@@ -596,6 +625,12 @@ export function LeadDetailSheet() {
                              <div className="absolute left-0 top-1 h-9 w-9 bg-white dark:bg-slate-900 rounded-xl border border-border/50 dark:border-white/10 flex items-center justify-center z-10">
                                 {item.isCall ? (
                                     <Phone className={cn("h-3.5 w-3.5", item.direction === 'INBOUND' ? 'text-emerald-500' : 'text-primary')} />
+                                ) : item.action === "REVENUE_CONVERTED" ? (
+                                    <IndianRupee className="h-3.5 w-3.5 text-emerald-500" />
+                                ) : item.action === "CHECKED_IN" ? (
+                                    <UserCheck className="h-3.5 w-3.5 text-indigo-500" />
+                                ) : item.action === "APPOINTMENT_SCHEDULED" ? (
+                                    <CalendarIcon className="h-3.5 w-3.5 text-amber-500" />
                                 ) : (
                                     <div className="h-2 w-2 rounded-full bg-slate-300" />
                                 )}

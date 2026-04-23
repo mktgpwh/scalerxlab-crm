@@ -119,6 +119,13 @@ export default function BillingTerminal() {
                                             <Layers className="h-3 w-3 opacity-60" />
                                             Target: {selectedPatient.category} Office
                                         </div>
+                                        {selectedPatient.owner?.name && (
+                                           <div className="pt-2">
+                                              <Badge variant="outline" className="bg-white/10 text-white border-white/20 text-[8px] tracking-tight uppercase py-1">
+                                                Sourced by: {selectedPatient.owner.name}
+                                              </Badge>
+                                           </div>
+                                        )}
                                     </div>
                                 </div>
                             ) : (

@@ -27,7 +27,12 @@ export async function searchPatients(query: string) {
                 name: true,
                 phone: true,
                 whatsappNumber: true,
-                category: true
+                category: true,
+                owner: {
+                    select: {
+                        name: true
+                    }
+                }
             }
         });
     } catch (error) {
@@ -141,5 +146,53 @@ export async function createInvoiceAction(params: {
     } catch (error) {
         console.error("[CREATE_INVOICE_ERROR]", error);
         return { success: false, error: "Failed to generate invoice" };
+    }
+}
+
+/**
+ * Marks an invoice as PAID and completes the Closed-Loop Attribution.
+ * Transition: VISITED -> CHECKED_OUT
+ */
+export async function markInvoiceAsPaidAction(invoiceId: string) {
+    try {
+        const session = await auth();
+        const userId = session?.user?.id;
+
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Update Invoice Status
+            const invoice = await tx.invoice.update({
+                where: { id: invoiceId },
+                data: { status: "PAID" },
+                include: { lead: true }
+            });
+
+            if (invoice.leadId) {
+                // 2. Transition Lead to final CHECKED_OUT state
+                await tx.lead.update({
+                    where: { id: invoice.leadId },
+                    data: { status: "CHECKED_OUT" }
+                });
+
+                // 3. Log the final Revenue Conversion milestone
+                await tx.activityLog.create({
+                    data: {
+                        leadId: invoice.leadId,
+                        userId,
+                        action: "REVENUE_CONVERTED",
+                        description: `Revenue Loop Closed. Invoice ${invoice.invoiceNumber} for ₹${invoice.totalAmount} marked as PAID.`,
+                        tenantId: invoice.tenantId
+                    }
+                });
+            }
+
+            return invoice;
+        });
+
+        revalidatePath("/billing");
+        revalidatePath("/leads");
+        return { success: true, invoice: result };
+    } catch (error) {
+        console.error("[MARK_PAID_ERROR]", error);
+        return { success: false, error: "Failed to commit payment node" };
     }
 }
