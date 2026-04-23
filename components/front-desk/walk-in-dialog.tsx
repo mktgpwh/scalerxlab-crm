@@ -31,10 +31,17 @@ export function WalkInRegistrationDialog({ branches }: { branches: any[] }) {
     name: "",
     phone: "",
     category: "OTHER" as any,
-    branchId: branches[0]?.id || "",
+    branchId: "",
   });
 
   const router = useRouter();
+
+  // Sync branchId when branches load
+  useEffect(() => {
+    if (branches.length > 0 && !formData.branchId) {
+      setFormData(prev => ({ ...prev, branchId: branches[0]?.id || "" }));
+    }
+  }, [branches, formData.branchId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,7 +137,9 @@ export function WalkInRegistrationDialog({ branches }: { branches: any[] }) {
                 <Label className="text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Speciality</Label>
                 <Select value={formData.category} onValueChange={(val) => setFormData({ ...formData, category: val })}>
                   <SelectTrigger className="h-14 rounded-2xl border-none bg-zinc-50 focus:ring-emerald-500/20 font-bold text-xs">
-                    <SelectValue placeholder="Category" />
+                    <SelectValue>
+                      {formData.category || "General"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-none shadow-2xl py-2">
                     <SelectItem value="INFERTILITY" className="text-[10px] font-bold uppercase py-3">IVF/Infertility</SelectItem>
@@ -144,8 +153,10 @@ export function WalkInRegistrationDialog({ branches }: { branches: any[] }) {
               <div className="space-y-2">
                 <Label className="text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Arrival Center</Label>
                 <Select required value={formData.branchId} onValueChange={(val) => setFormData({ ...formData, branchId: val || "" })}>
-                  <SelectTrigger className="h-14 rounded-2xl border-none bg-zinc-50 focus:ring-emerald-500/20 font-bold text-xs overflow-hidden">
-                    <SelectValue placeholder="Branch" />
+                  <SelectTrigger className="h-14 rounded-2xl border-none bg-zinc-50 focus:ring-emerald-500/20 font-bold text-xs">
+                    <SelectValue>
+                      {branches.find(b => b.id === formData.branchId)?.name?.split(' ')[0] || "Branch"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-none shadow-2xl py-2">
                     {branches.map((branch) => (
@@ -158,6 +169,7 @@ export function WalkInRegistrationDialog({ branches }: { branches: any[] }) {
               </div>
             </div>
           </div>
+
 
           <div className="p-8 bg-zinc-50 border-t border-zinc-100">
             <Button 
