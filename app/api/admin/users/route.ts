@@ -184,14 +184,14 @@ export async function DELETE(req: NextRequest) {
       select: { id: true, role: true, managerId: true }
     });
 
-    if (userToDelete?.role === 'FIELD_SALES') {
-      const adminId = userToDelete.managerId; // The Field Sales Admin
-      if (adminId) {
+    if (userToDelete && ['FIELD_SALES', 'TELE_SALES'].includes(userToDelete.role)) {
+      const managerId = userToDelete.managerId; // The designated Admin for this node
+      if (managerId) {
         await prisma.lead.updateMany({ 
           where: { ownerId: userToDelete.id }, 
-          data: { ownerId: adminId } 
+          data: { ownerId: managerId } 
         });
-        console.log(`[OFFBOARDING] Reassigned leads from ${userToDelete.id} to manager ${adminId}`);
+        console.log(`[OFFBOARDING] Universal Reassignment: Secured leads from ${userToDelete.id} (Role: ${userToDelete.role}) and attributed to manager ${managerId}`);
       }
     }
 
