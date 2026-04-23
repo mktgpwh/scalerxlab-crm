@@ -18,6 +18,7 @@ import {
   PowerOff,
   Receipt,
   TrendingUp,
+  UserCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IntegrationIcon } from "@/components/ui/integration-icon";
@@ -47,6 +48,7 @@ const items = [
   { title: "Command Center", url: "/", icon: Home, label: "Overview" },
   { title: "Sovereign Intelligence", url: "/intelligence", icon: Sparkles, label: "AgentX" },
   { title: "Lead Funnels", url: "/pipeline", icon: LayoutDashboard, label: "Pipelines" },
+  { title: "Front Desk Console", url: "/front-desk/today", icon: UserCheck, label: "Reception" },
   { title: "Billing Terminal", url: "/billing", icon: Receipt, label: "Revenue Node" },
   { title: "Revenue Command", url: "/billing/reporting", icon: TrendingUp, label: "Financial BI" },
   { title: "Intelligence Matrix", url: "/matrix", icon: BarChart3, label: "MIS Insights" },
@@ -108,7 +110,7 @@ export function AppSidebar() {
 
     // 2. Front Desk restrictive view
     if (role === "FRONT_DESK") {
-      return ["Command Center", "Lead Funnels", "Billing Terminal"].includes(item.title);
+      return ["Command Center", "Lead Funnels", "Front Desk Console", "Billing Terminal"].includes(item.title);
     }
 
     // 3. Counsellor (restricted from high-level, telephony, and command center)

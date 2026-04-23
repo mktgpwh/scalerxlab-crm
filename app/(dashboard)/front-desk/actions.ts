@@ -15,7 +15,7 @@ import { revalidatePath } from "next/cache";
 
 export async function checkInLead(leadId: string) {
   try {
-    const res = await fetch(`/api/reception/check-in`, {
+    const res = await fetch(`/api/front-desk/check-in`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leadId })

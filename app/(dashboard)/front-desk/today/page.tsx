@@ -18,6 +18,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface ScheduledLead {
   id: string;
@@ -28,14 +30,25 @@ interface ScheduledLead {
   status: string;
 }
 
-export default function ReceptionTodayPage() {
+export default function FrontDeskTodayPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [leads, setLeads] = useState<ScheduledLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [checkingIn, setCheckingIn] = useState<string | null>(null);
 
+  const userRole = (session?.user as any)?.role;
+
+  useEffect(() => {
+    if (status === "authenticated" && (userRole !== "FRONT_DESK" && userRole !== "SUPER_ADMIN" && userRole !== "SALES_ADMIN")) {
+       toast.error("Access Prohibited", { description: "Front Desk clearance required." });
+       router.push("/pipeline");
+    }
+  }, [status, userRole, router]);
+
   // Initialize mock data for speed/preview, then we can fetch real
   useEffect(() => {
-    // In a real app, this would be a fetch to /api/reception/scheduled
+    // In a real app, this would be a fetch to /api/front-desk/scheduled
     const mockLeads: ScheduledLead[] = [
       {
         id: "1",
@@ -76,7 +89,7 @@ export default function ReceptionTodayPage() {
     const leadToCheckIn = leads.find(l => l.id === leadId);
     
     try {
-      const response = await fetch(`/api/reception/check-in`, {
+      const response = await fetch(`/api/front-desk/check-in`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leadId })
@@ -105,7 +118,7 @@ export default function ReceptionTodayPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
              <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-             <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Live Reception Node</span>
+             <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Live Front Desk Node</span>
           </div>
           <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white">Patient Arrival Control</h1>
           <p className="text-sm text-zinc-500 font-medium tracking-tight">Managing expected patient flows for today, {format(new Date(), "MMMM do, yyyy")}</p>

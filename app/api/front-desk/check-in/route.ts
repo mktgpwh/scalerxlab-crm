@@ -5,8 +5,10 @@ import { auth } from "@/auth";
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userRole = (session?.user as any)?.role;
+
+    if (!session?.user?.id || (userRole !== "FRONT_DESK" && userRole !== "SUPER_ADMIN" && userRole !== "SALES_ADMIN")) {
+      return NextResponse.json({ error: "Unauthorized: Front Desk clearance required" }, { status: 401 });
     }
 
     const { leadId } = await req.json();
@@ -25,7 +27,7 @@ export async function POST(req: NextRequest) {
           create: {
             userId: session.user.id,
             action: "CHECKED_IN",
-            description: "Patient arrived and check-in successfully nodes at reception console.",
+            description: "Patient arrived and check-in successfully nodes at front desk console.",
             tenantId: lead.tenantId
           }
         }
