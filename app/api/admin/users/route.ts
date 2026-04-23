@@ -178,6 +178,23 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Cannot decommission self" }, { status: 400 });
     }
 
+    // 3. OFFBOARDING HOOK: Reassign leads before decommissioning
+    const userToDelete = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, managerId: true }
+    });
+
+    if (userToDelete?.role === 'FIELD_SALES') {
+      const adminId = userToDelete.managerId; // The Field Sales Admin
+      if (adminId) {
+        await prisma.lead.updateMany({ 
+          where: { ownerId: userToDelete.id }, 
+          data: { ownerId: adminId } 
+        });
+        console.log(`[OFFBOARDING] Reassigned leads from ${userToDelete.id} to manager ${adminId}`);
+      }
+    }
+
     await prisma.user.delete({
       where: { id },
     });

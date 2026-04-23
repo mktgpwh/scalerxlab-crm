@@ -53,10 +53,33 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
     select: { id: true, name: true, role: true }
   }) : [];
 
-  // Enforce Visibility Architecture — strict select to minimise hydration payload
+  // Enforce Visibility Architecture — strict RLS for Sales Nodes and Admins
+  let visibilityFilter: any = {};
+  
+  if (profile.role === "SUPER_ADMIN") {
+    visibilityFilter = {};
+  } else if (profile.role === "TELE_SALES_ADMIN") {
+    // Sees all Tele-Sales leads
+    visibilityFilter = {
+      owner: { role: "TELE_SALES" }
+    };
+  } else if (profile.role === "FIELD_SALES_ADMIN") {
+    // Sees leads from their subordinates OR marked with FIELD_SALES roles
+    visibilityFilter = {
+      OR: [
+        { ownerId: profile.id },
+        { owner: { managerId: profile.id } },
+        { owner: { role: "FIELD_SALES" } }
+      ]
+    };
+  } else {
+    // Standard User Silo (TELE_SALES, FIELD_SALES, etc.)
+    visibilityFilter = { ownerId: profile.id };
+  }
+
   const leads = await prisma.lead.findMany({
     where: {
-      ...(isAdmin ? {} : { ownerId: profile.id }),
+      ...visibilityFilter,
       ...dateFilter,
       ...categoryFilter,
       ...branchFilter
@@ -105,7 +128,7 @@ export default async function CommandCenterPage({ searchParams }: PageProps) {
   const rawHistory = await prisma.lead.findMany({
       where: {
           createdAt: { gte: thirtyDaysAgo },
-          ...(isAdmin ? {} : { ownerId: profile.id })
+          ...visibilityFilter
       },
       select: { createdAt: true }
   });

@@ -40,6 +40,7 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
     }
 
     // RBAC: If not Admin, force ownership to current user
+    // FIELD_SALES explicitly own what they hunt
     const finalOwnerId = (profile?.role === "TELE_SALES_ADMIN" || profile?.role === "FIELD_SALES_ADMIN" || profile?.role === "SUPER_ADMIN") 
         ? data.ownerId 
         : profile?.id;
