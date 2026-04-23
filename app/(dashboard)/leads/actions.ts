@@ -41,9 +41,23 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
 
     // RBAC: If not Admin, force ownership to current user
     // FIELD_SALES explicitly own what they hunt
-    const finalOwnerId = (profile?.role === "TELE_SALES_ADMIN" || profile?.role === "FIELD_SALES_ADMIN" || profile?.role === "SUPER_ADMIN") 
+    let finalOwnerId = (profile?.role === "TELE_SALES_ADMIN" || profile?.role === "FIELD_SALES_ADMIN" || profile?.role === "SUPER_ADMIN") 
         ? data.ownerId 
         : profile?.id;
+
+    let finalStatus: LeadStatus = "RAW";
+    let finalSource: LeadSource = data.source as LeadSource;
+
+    // Operational Protocol: Front Desk Walk-In Capture
+    if (profile?.role === "FRONT_DESK") {
+      finalStatus = "VISITED";
+      finalSource = "WALK_IN";
+      
+      const admin = await prisma.user.findFirst({ 
+        where: { role: "SUPER_ADMIN" } 
+      });
+      if (admin) finalOwnerId = admin.id;
+    }
 
     const lead = await prisma.lead.create({
       data: {
@@ -51,10 +65,10 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
         phone: data.phone,
         email: data.email || null,
         category: data.category as TreatmentCategory,
-        source: data.source as LeadSource,
+        source: finalSource,
         ownerId: finalOwnerId,
         branchId: data.branchId,
-        status: "RAW" as LeadStatus,
+        status: finalStatus,
         intent: "UNSCORED" as LeadIntent,
       },
     });
@@ -221,5 +235,17 @@ export async function updateLeadConsentAction(leadId: string, consentFlag: boole
   } catch (error: any) {
     console.error("[COMPLIANCE_SYNC] Fatal Execution Error:", error);
     return { error: error.message || "An unexpected system error occurred." };
+  }
+}
+
+export async function getBranchesAction() {
+  try {
+    return await prisma.branch.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, city: true }
+    });
+  } catch (error) {
+    console.error("[GET_BRANCHES_ERROR]", error);
+    return [];
   }
 }
