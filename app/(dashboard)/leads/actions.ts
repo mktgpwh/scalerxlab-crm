@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { LeadStatus, LeadIntent, LeadSource, TreatmentCategory } from "@prisma/client";
+import { generateProactiveDraft } from "@/lib/ai/proactive";
 
 const leadSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -73,6 +74,18 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
         intent: "UNSCORED" as LeadIntent,
       },
     });
+
+    // 🚀 Strategic AI Pipeline: Initial Intelligence Sweep
+    // Even for manual leads, we trigger the sentinel to ensure heat-mapping and audit logs are generated.
+    try {
+        await generateProactiveDraft({ 
+            leadId: lead.id, 
+            messageText: `Manual entry for ${data.category} department.`,
+            category: data.category
+        });
+    } catch (aiError) {
+        console.error("⚠️ [AGENTX_SCORER] Delayed scoring for manual lead:", aiError);
+    }
 
     revalidatePath("/leads");
     return { success: true, lead };
@@ -171,6 +184,26 @@ export async function bulkImportLeadsAction(leads: any[], globalBranchId?: strin
                 );
                 updatedCount += chunk.length;
             }
+        }
+
+        // 🚀 Bulk Intelligence Sweep: Post-ingestion scoring
+        // We trigger AI scoring for newly created leads to populate the heat-map instantly.
+        // Limited to 20 most recent to prevent timeout, others will be picked up by the backfill sweep.
+        if (toCreate.length > 0) {
+            const newLeads = await prisma.lead.findMany({
+                where: { phone: { in: toCreate.map(l => l.phone) } },
+                take: 20,
+                orderBy: { createdAt: 'desc' }
+            });
+
+            // Parallel scoring execution
+            await Promise.allSettled(newLeads.map(l => 
+                generateProactiveDraft({ 
+                    leadId: l.id, 
+                    messageText: `Bulk imported lead for ${l.category}.`,
+                    category: l.category
+                })
+            ));
         }
 
         revalidatePath("/leads");

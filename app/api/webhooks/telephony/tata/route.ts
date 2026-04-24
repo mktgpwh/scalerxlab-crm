@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import { prisma } from "@/lib/prisma";
 import { assignIncomingLead } from "@/lib/routing/lead-assignment";
+import { generateProactiveDraft } from "@/lib/ai/proactive";
 import { createClient } from "@supabase/supabase-js";
 
 /**
@@ -35,10 +36,19 @@ export async function POST(req: Request) {
           phone: callerNumber,
           source: "SMARTFLO_CALL",
           status: "RAW"
-        }
       });
       // Auto-distribute the lead
       await assignIncomingLead(lead.id);
+
+      // 🚀 AI Intelligence Sweep: Score the incoming call signal
+      try {
+        await generateProactiveDraft({ 
+            leadId: lead.id, 
+            messageText: `Incoming clinical inquiry via Tata Smartflo from ${callerNumber}.` 
+        });
+      } catch (aiError) {
+        console.error("⚠️ [TATA_WEBHOOK] AI Scoring delayed:", aiError);
+      }
     }
 
     // AI Routing check
