@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
     const { id } = session.user;
     const rlsFilter = getLeadFilter(session.user as any);
 
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
@@ -22,12 +25,16 @@ export async function GET(req: NextRequest) {
       where: {
         status: "APPOINTMENT_SCHEDULED",
         appointmentDate: {
-          lte: todayEnd, // Captures today AND all overdue (past) appointments
+          gte: todayStart,
+          lte: todayEnd,
         },
         ...rlsFilter,
       },
       include: {
         owner: {
+          select: { name: true }
+        },
+        branch: {
           select: { name: true }
         }
       },
@@ -41,7 +48,7 @@ export async function GET(req: NextRequest) {
         id: l.id,
         name: l.name,
         appointmentDate: l.appointmentDate?.toISOString(),
-        appointmentCenter: l.appointmentCenter || "Main Center",
+        appointmentCenter: l.branch?.name || l.appointmentCenter || "Main Center",
         assignedCounselor: l.owner?.name || "Unassigned",
         status: l.status
       }))

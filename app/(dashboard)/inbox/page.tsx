@@ -124,6 +124,8 @@ export default function SharedInboxPage() {
           } else {
               toast.success("AI Draft Synthesized");
           }
+      } else {
+          toast.error("Draft Generation Failed", { description: result.error || "AgentX could not synthesize a reply." });
       }
   };
 

@@ -175,7 +175,7 @@ export default function FrontDeskTodayPage() {
                          <MapPin className="h-3 w-3 text-indigo-500" />
                          Point of Care
                       </div>
-                      <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{lead.appointmentCenter.split(' ')[1] || 'Raipur'}</p>
+                      <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{lead.appointmentCenter}</p>
                    </div>
                    <div className="space-y-1">
                       <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-400 uppercase tracking-widest">

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { LeadStatus, LeadIntent, LeadSource, TreatmentCategory } from "@prisma/client";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
+import { findLeadByContact } from "@/lib/leads/collision";
 
 const leadSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -31,13 +32,11 @@ export async function createLeadAction(data: z.infer<typeof leadSchema>) {
         select: { id: true, role: true }
     });
 
-    // Standard Collision Check: Phone Number
-    const existing = await prisma.lead.findFirst({
-        where: { phone: data.phone }
-    });
+    // Standard Tactical Collision Guard: Search across all contact nodes
+    const existing = await findLeadByContact({ phone: data.phone, email: data.email });
 
     if (existing) {
-        return { error: "A lead with this phone number already exists in the matrix." };
+        return { error: `Collision Detected: A lead with this identity already exists in the matrix (ID: ${existing.id.slice(-6)}).` };
     }
 
     // RBAC: If not Admin, force ownership to current user

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { assignIncomingLead } from "@/lib/routing/lead-assignment";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
 import { createClient } from "@supabase/supabase-js";
+import { findLeadByContact } from "@/lib/leads/collision";
 
 /**
  * Tata Smartflo Telephony Webhook — Single-Tenant
@@ -22,12 +23,8 @@ export async function POST(req: Request) {
     const callerNumber = body.caller_number;
     const virtualNumber = body.destination_number || process.env.TATA_SMARTFLO_VIRTUAL_NUMBER;
 
-    // Identify or auto-create the Lead
-    let lead = await prisma.lead.findFirst({
-      where: {
-        OR: [{ phone: callerNumber }, { whatsappNumber: callerNumber }]
-      }
-    });
+    // Identify or auto-create the Lead using Tactical Collision Guard
+    let lead = await findLeadByContact({ phone: callerNumber });
 
     if (!lead && body.direction === "inbound") {
       lead = await prisma.lead.create({
@@ -36,11 +33,14 @@ export async function POST(req: Request) {
           phone: callerNumber,
           source: "SMARTFLO_CALL",
           status: "RAW"
+        }
       });
+      console.log(`🌱 [TATA_NEW_LEAD] Created: ${lead.id}`);
+      
       // Auto-distribute the lead
       await assignIncomingLead(lead.id);
 
-      // 🚀 AI Intelligence Sweep: Score the incoming call signal
+      // AI Intelligence Sweep: Score the incoming call signal
       try {
         await generateProactiveDraft({ 
             leadId: lead.id, 
@@ -49,6 +49,13 @@ export async function POST(req: Request) {
       } catch (aiError) {
         console.error("⚠️ [TATA_WEBHOOK] AI Scoring delayed:", aiError);
       }
+    } else if (lead && !lead.phone && body.direction === "inbound") {
+        // Link Phone number to existing lead
+        lead = await prisma.lead.update({
+            where: { id: lead.id },
+            data: { phone: callerNumber }
+        });
+        console.log(`♻️ [TATA_LINKED] Linked Phone to Lead: ${lead.id}`);
     }
 
     // AI Routing check

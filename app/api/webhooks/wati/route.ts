@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { processWithAgentX } from "@/lib/ai/agentx";
 import { generateProactiveDraft } from "@/lib/ai/proactive";
 import { assignIncomingLead } from "@/lib/routing/lead-assignment";
-import { evaluateLead } from "@/lib/ai/scoring";
+import { findLeadByContact, cleanPhone } from "@/lib/leads/collision";
 
 export const dynamic = 'force-dynamic';
 
@@ -12,17 +12,10 @@ export async function POST(req: Request) {
     const payload = await req.json();
     console.log("[WATI_WEBHOOK] Incoming Payload:", JSON.stringify(payload, null, 2));
 
-    // WATI payload format: typically includes sender/waId and text/message
-    // Robust extraction strategy for waId
+    // WATI payload extraction
     const waId = payload.waId || payload.sender || payload.from || payload.senderNumber;
-    
-    // Robust extraction strategy for messageText
     const messageText = payload.text || payload.message || payload.body || payload.customText || payload.answer || "";
-    
-    // Detection for event type
     const eventType = payload.eventType || payload.event_type || payload.type || "message";
-
-    // WATI Direction detection
     const isOutgoing = eventType === "sentMessage" || eventType === "repliedMessage" || eventType === "sent" || payload.direction === "outbound";
     const actionType = isOutgoing ? "CLINIC_MESSAGE_SENT" : "MESSAGE_RECEIVED";
 
@@ -31,32 +24,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing identity identifier in payload" }, { status: 400 });
     }
 
-    // Special handling for media and status updates
     const isMedia = ["image", "video", "audio", "document", "sticker", "location", "contact", "voice"].includes(eventType);
     
-    // Status updates (read/delivered) should still be acknowledged silently
     if ((eventType === "read" || eventType === "delivered") && !isMedia) {
        return NextResponse.json({ success: true, detail: "Status update acknowledged" });
     }
 
-    // If it's a valid message but has no text (e.g. captionless image), assign a placeholder for database safety
     let processedMessageText = messageText;
     if (!processedMessageText && (eventType === "message" || isMedia)) {
        processedMessageText = `[Patient sent an ${eventType === "message" ? "attachment" : eventType}]`;
     }
 
-    // Final guard: If we still have no text and it's not a sentient event, return early
     if (!waId || (!processedMessageText && eventType !== "sentMessage")) {
       return NextResponse.json({ error: "No message context found" }, { status: 400 });
     }
 
-    // Ensure waId is numeric
-    const cleanWaId = waId.replace(/\D/g, ''); 
+    const cleanWaId = cleanPhone(waId)!; 
 
-    // 1. Find or create the lead by whatsappNumber
-    let lead = await prisma.lead.findFirst({
-      where: { whatsappNumber: cleanWaId },
-    });
+    // 1. Tactical Collision Guard: Search across all contact nodes
+    let lead = await findLeadByContact({ whatsappNumber: cleanWaId });
 
     if (!lead) {
       const extractedName = payload.senderName || payload.pushName || payload.contact?.name || payload.profileName || `WhatsApp User (${cleanWaId.slice(-4)})`;
@@ -67,8 +53,16 @@ export async function POST(req: Request) {
           whatsappNumber: cleanWaId,
           source: "WHATSAPP",
           status: "RAW",
-          },
+        },
       });
+      console.log(`🌱 [WATI_NEW_LEAD] Created: ${lead.id}`);
+    } else if (!lead.whatsappNumber) {
+        // Link WhatsApp identity to existing lead
+        lead = await prisma.lead.update({
+            where: { id: lead.id },
+            data: { whatsappNumber: cleanWaId }
+        });
+        console.log(`♻️ [WATI_LINKED] Linked WhatsApp ID to Lead: ${lead.id}`);
     }
 
     // 1b. Strategic AI Pipeline (Consolidated 24/7 Gatekeeper)

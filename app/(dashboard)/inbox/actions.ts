@@ -77,27 +77,51 @@ export async function fetchInboxThreads() {
  * Orchestrates Groq to create a context-aware clinical reply.
  */
 export async function generateDraftAction(leadId: string) {
+    console.log(`🤖 [AGENTX_DRAFT_START] Processing Lead: ${leadId}`);
     try {
-        // 1. Context Gathering: Lead Details + Recent History
+        // 1. Context Gathering: Full Bi-directional History
+        const RELEVANT_ACTIONS = [
+            "MESSAGE_RECEIVED", 
+            "WHATSAPP_MESSAGE_RECEIVED", 
+            "INSTAGRAM_DM_RECEIVED", 
+            "FACEBOOK_MSG_RECEIVED",
+            "CLINIC_MESSAGE_SENT",
+            "AGENTX_REPLY",
+            "WHATSAPP_MESSAGE_SENT"
+        ];
+
         const lead = await prisma.lead.findUnique({
             where: { id: leadId },
             include: {
                 activityLogs: {
-                    where: { action: { contains: 'RECEIVED' } },
+                    where: { 
+                        action: { in: RELEVANT_ACTIONS }
+                    },
                     orderBy: { createdAt: 'desc' },
-                    take: 5
+                    take: 15 
                 }
             }
         });
 
-        if (!lead) return { success: false, error: "Lead not found" };
+        if (!lead) {
+            console.error(`🛑 [AGENTX_DRAFT_ERROR] Lead ${leadId} not found`);
+            return { success: false, error: "Lead not found" };
+        }
 
+        // Map logs to a conversational format for the LLM
         const historyContext = lead.activityLogs
-            .map(log => `Patient: ${log.description}`)
+            .map(log => {
+                const isPatient = log.action.includes("RECEIVED");
+                return `${isPatient ? 'Patient' : 'Clinic'}: ${log.description}`;
+            })
             .reverse()
             .join("\n");
 
-        const lastMessage = lead.activityLogs[0]?.description || "";
+        // Identify the last patient message to reply to
+        const lastPatientLog = lead.activityLogs.find(log => log.action.includes("RECEIVED"));
+        const lastMessage = lastPatientLog?.description || "Hello";
+
+        console.log(`📝 [AGENTX_DRAFT_CONTEXT] History Size: ${lead.activityLogs.length} | Target: "${lastMessage.slice(0, 30)}..."`);
 
         // 2. System Prompt with Mirroring & Emergency Rules
         const systemPrompt = `You are AgentX, a highly empathetic clinical counseling assistant at Pahlajani's Women's Hospital & IVF Center.
@@ -112,20 +136,29 @@ export async function generateDraftAction(leadId: string) {
         You MUST generate the draft in the EXACT same language (English, Hindi, or Hinglish) and script.
         
         EMERGENCY PROTOCOL: If you detect severe medical urgency (e.g. intense pain, bleeding, emergency), your response must be an JSON object: { "isEmergency": true, "draft": "URGENT_DRAFT" }.
-        Otherwise, return: { "isEmergency": false, "draft": "YOUR_DRAFT" }.`;
+        Otherwise, return: { "isEmergency": false, "draft": "YOUR_DRAFT" }.
+        
+        IMPORTANT: Return ONLY the JSON object. No preamble.`;
 
         // 3. LLM Orchestration
         const completion = await groq.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: `Conversation Context:\n${historyContext}\n\nDraft a reply to the latest message.` }
+                { role: "user", content: `Conversation History:\n${historyContext || "No history yet."}\n\nDraft a reply to the latest patient message: "${lastMessage}"` }
             ],
             model: "llama-3.3-70b-versatile",
             response_format: { type: "json_object" }
         });
 
-        const result = JSON.parse(completion.choices[0]?.message?.content || "{}");
+        const rawContent = completion.choices[0]?.message?.content || "{}";
+        console.log(`✨ [AGENTX_DRAFT_AI_RESPONSE] Raw: ${rawContent}`);
+        
+        const result = JSON.parse(rawContent);
         const { isEmergency, draft } = result;
+
+        if (!draft) {
+             throw new Error("AI returned an empty draft. Please try again.");
+        }
 
         // 4. Autonomous Handoff Logic
         if (isEmergency) {
@@ -136,15 +169,15 @@ export async function generateDraftAction(leadId: string) {
                     isEscalated: true 
                 }
             });
-            console.log(`🚨 EMERGENCY_DETECTED for Lead ${leadId}. Escalating to Human Operator.`);
+            console.log(`🚨 [AGENTX_DRAFT_EMERGENCY] Escalated Lead ${leadId}`);
             revalidatePath("/inbox");
         }
 
         return { success: true, draft, isEmergency };
 
-    } catch (error) {
-        console.error("AgentX Draft Engine Failure:", error);
-        return { success: false, error: "AI processing failure" };
+    } catch (error: any) {
+        console.error("🛑 [AGENTX_DRAFT_FATAL] Error:", error.message);
+        return { success: false, error: error.message };
     }
 }
 

@@ -90,7 +90,7 @@ export function UserManagementClient({ initialUsers, branches, clinicName }: Use
 
       {/* Identity Provisioning Dialog */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden border-none bg-transparent shadow-none">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden border-none bg-white dark:bg-slate-900 shadow-2xl">
           <UserForm 
             branches={branches} 
             selectedUser={selectedUser}

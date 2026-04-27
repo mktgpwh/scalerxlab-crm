@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { scoreLead } from "@/lib/ai/intent-scorer";
-import { createClient } from "@supabase/supabase-js";
+import { generateProactiveDraft } from "@/lib/ai/proactive";
 import { assignIncomingLead } from "@/lib/routing/lead-assignment";
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+function cleanPhone(phone?: string) {
+    if (!phone) return null;
+    return phone.replace(/\D/g, "");
+}
 
+export async function POST(req: Request) {
   try {
     const payload = await req.json();
 
@@ -41,6 +40,20 @@ export async function POST(req: Request) {
       );
     }
 
+    const cPhone = cleanPhone(phone);
+    const cWhatsapp = cleanPhone(whatsappNumber);
+
+    // 🛡️ Collision Guard: Prevent Duplicate Lead Capture
+    let lead = await prisma.lead.findFirst({
+        where: {
+            OR: [
+                ...(cPhone ? [{ phone: cPhone }] : []),
+                ...(cWhatsapp ? [{ whatsappNumber: cWhatsapp }] : []),
+                ...(email ? [{ email }] : [])
+            ]
+        }
+    });
+
     const enrichedMetadata = {
       ...(typeof metadata === 'object' ? metadata : {}),
       utm: {
@@ -52,76 +65,55 @@ export async function POST(req: Request) {
       }
     };
 
-    // Create lead directly — no tenant lookup needed
-    const lead = await prisma.lead.create({
-      data: {
-        name,
-        email,
-        phone,
-        whatsappNumber,
-        source: safeSource,
-        metadata: enrichedMetadata,
-        consentFlag: Boolean(consentFlag),
-        consentTimestamp: consentFlag ? new Date() : null,
-        consentMethod: consentFlag ? consentMethod : null,
-        dataRetentionExpiry: new Date(new Date().setFullYear(new Date().getFullYear() + 3)),
-      },
-    });
-
-    // 🚀 Trigger Autonomous Distribution
-    await assignIncomingLead(lead.id);
-
-    // AI Scoring
-    try {
-      const scoringResult = await scoreLead({
-        name: lead.name,
-        source: lead.source,
-        metadata: lead.metadata,
-      });
-
-      if (scoringResult?.score !== undefined) {
-        let mappedIntent: "HOT" | "WARM" | "COLD" | "UNSCORED" = "UNSCORED";
-        if (scoringResult.intent === 'HIGH') mappedIntent = 'HOT';
-        else if (scoringResult.intent === 'MEDIUM') mappedIntent = 'WARM';
-        else if (scoringResult.intent === 'LOW') mappedIntent = 'COLD';
-        else mappedIntent = scoringResult.intent as "HOT" | "WARM" | "COLD";
-
-        const mappedCategory = ["MATERNITY", "GYNECOLOGY", "INFERTILITY", "OTHER"].includes(scoringResult.category)
-          ? scoringResult.category : "OTHER";
-
-        await prisma.lead.update({
-          where: { id: lead.id },
-          data: {
-            aiScore: scoringResult.score,
-            intent: mappedIntent,
-            category: mappedCategory,
-            aiNotes: scoringResult.reasoning,
-            aiScoredAt: new Date(),
-          }
-        });
-
-        if (mappedIntent === 'HOT') {
-          await supabase.channel('global_notifications').send({
-            type: 'broadcast',
-            event: 'HOT_LEAD',
-            payload: { name: lead.name, score: scoringResult.score },
-          });
-        }
-
-        if (mappedIntent === 'WARM') {
-          await prisma.autoNurtureQueue.create({
+    if (lead) {
+        // Update existing lead instead of creating duplicate
+        lead = await prisma.lead.update({
+            where: { id: lead.id },
             data: {
-              leadId: lead.id,
-              scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+                metadata: {
+                    ...(lead.metadata as any || {}),
+                    ...enrichedMetadata
+                },
+                source: lead.source === "OTHER" ? safeSource : lead.source
             }
-          });
-        }
-      }
-    } catch (scoringError) {
-      console.error("[GROQ_SCORING_ERROR]", scoringError);
+        });
+        console.log(`♻️ [COLLISION_HANDLED] Updated existing lead: ${lead.id}`);
+    } else {
+        // Create new lead signal
+        lead = await prisma.lead.create({
+            data: {
+                name,
+                email,
+                phone: cPhone,
+                whatsappNumber: cWhatsapp,
+                source: safeSource,
+                metadata: enrichedMetadata,
+                consentFlag: Boolean(consentFlag),
+                consentTimestamp: consentFlag ? new Date() : null,
+                consentMethod: consentFlag ? consentMethod : null,
+                dataRetentionExpiry: new Date(new Date().setFullYear(new Date().getFullYear() + 3)),
+            },
+        });
+        console.log(`🌱 [NEW_LEAD] Captured via ${safeSource}: ${lead.id}`);
+        
+        // 🚀 Trigger Autonomous Distribution for NEW leads
+        await assignIncomingLead(lead.id);
     }
 
-    return NextResponse.json({ success: true, leadId: lead.id }, { status: 201 });
+    // 🚀 Strategic AI Pipeline (Unified Gatekeeper)
+    // Extracts message context from metadata if available (e.g. from a form 'requirement' field)
+    const contextMessage = (payload.message || payload.requirement || payload.notes || "New inquiry via platform form.");
+    
+    try {
+        await generateProactiveDraft({ 
+            leadId: lead.id, 
+            messageText: contextMessage 
+        });
+    } catch (aiError) {
+        console.error("🛑 [LEAD_WEBHOOK_AI_ERROR]", aiError);
+    }
+
+    return NextResponse.json({ success: true, leadId: lead.id }, { status: lead ? 200 : 201 });
 
   } catch (error) {
     console.error("[WEBHOOK_LEADS_ERROR]", error instanceof Error ? error.message : error);
