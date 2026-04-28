@@ -94,18 +94,25 @@ export async function POST(req: Request) {
 
     if (!lead) return NextResponse.json({ error: "Lead processing failure" }, { status: 500 });
 
-    // Deduplication check: ignore if the exact same message was logged within the last 15 seconds
-    const timeThreshold = new Date(Date.now() - 15000);
+    const messageId = payload.id || payload.messageId || payload.msgId;
+
+    // Deduplication check: ignore if the exact same messageId exists OR exact same text was logged within the last 1 hour
+    const timeThreshold = new Date(Date.now() - 3600000); // 1 Hour Window
     const duplicate = await prisma.activityLog.findFirst({
       where: {
         leadId: lead.id,
-        description: processedMessageText,
-        createdAt: { gte: timeThreshold }
+        OR: [
+          ...(messageId ? [{ metadata: { path: ["messageId"], equals: messageId } }] : []),
+          { 
+            description: processedMessageText,
+            createdAt: { gte: timeThreshold }
+          }
+        ]
       }
     });
 
     if (duplicate) {
-      console.log(`[WATI_WEBHOOK] Suppressed duplicate message for lead ${lead.id}`);
+      console.log(`[WATI_WEBHOOK] Suppressed duplicate message for lead ${lead.id} (ID: ${messageId || 'N/A'})`);
       return NextResponse.json({ success: true, detail: "Duplicate suppressed" });
     }
 
@@ -117,6 +124,7 @@ export async function POST(req: Request) {
         description: processedMessageText,
         metadata: {
           messageText: processedMessageText,
+          messageId,
           rawPayload: payload,
           eventType,
           isOutgoing

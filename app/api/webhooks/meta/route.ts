@@ -117,13 +117,40 @@ async function processMetaMessage(
             await assignIncomingLead(lead.id);
         }
 
-        // 2. Log Activity
+        // 2. Tactical Deduplication: Prevent double-logging (e.g. if WATI also captured this)
+        const messageId = metadata.rawPayload?.message?.mid;
+        const timeThreshold = new Date(Date.now() - 3600000); // 1 Hour Window
+        
+        const duplicate = await prisma.activityLog.findFirst({
+            where: {
+                leadId: lead.id,
+                OR: [
+                    ...(messageId ? [{ metadata: { path: ["messageId"], equals: messageId } }] : []),
+                    { 
+                        description: text,
+                        createdAt: { gte: timeThreshold }
+                    }
+                ]
+            }
+        });
+
+        if (duplicate) {
+            console.log(`[META_WEBHOOK] Suppressed duplicate for lead ${lead.id} (ID: ${messageId || 'N/A'})`);
+            return;
+        }
+
+        // 2b. Log Activity
         await prisma.activityLog.create({
             data: {
                 leadId: lead.id,
                 action: actionLabel,
                 description: text,
-                metadata: { senderId, timestamp: new Date().toISOString() }
+                metadata: { 
+                    senderId, 
+                    messageId,
+                    platform: sourceLabel,
+                    timestamp: new Date().toISOString() 
+                }
             }
         });
 
