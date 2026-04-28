@@ -39,13 +39,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No message context found" }, { status: 400 });
     }
 
-    const cleanWaId = cleanPhone(waId)!; 
+    const cleanWaId = cleanPhone(waId); 
+
+    if (!cleanWaId) {
+        console.error("[WATI_WEBHOOK] FATAL: Could not resolve clinical identity from payload.", JSON.stringify(payload));
+        return NextResponse.json({ error: "Invalid identity identifier" }, { status: 400 });
+    }
 
     // 1. Tactical Collision Guard: Search across all contact nodes
     let lead = await findLeadByContact({ whatsappNumber: cleanWaId });
 
     if (!lead) {
-      const extractedName = payload.senderName || payload.pushName || payload.contact?.name || payload.profileName || `WhatsApp User (${cleanWaId.slice(-4)})`;
+      const extractedName = payload.senderName || payload.pushName || payload.contact?.name || payload.profileName || `WhatsApp User (${cleanWaId.slice(-10)})`;
       
       lead = await prisma.lead.create({
         data: {
@@ -53,42 +58,44 @@ export async function POST(req: Request) {
           whatsappNumber: cleanWaId,
           source: "WHATSAPP",
           status: "RAW",
+          aiChatStatus: "AGENTX_ACTIVE", // Ensure active by default for new leads
         },
       });
-      console.log(`🌱 [WATI_NEW_LEAD] Created: ${lead.id}`);
-    } else if (!lead.whatsappNumber) {
-        // Link WhatsApp identity to existing lead
-        lead = await prisma.lead.update({
-            where: { id: lead.id },
-            data: { whatsappNumber: cleanWaId }
-        });
-        console.log(`♻️ [WATI_LINKED] Linked WhatsApp ID to Lead: ${lead.id}`);
+      console.log(`🌱 [WATI_NEW_LEAD] Created: ${lead.id} | Name: ${extractedName}`);
+    } else {
+        // Self-healing: Update whatsappNumber if it was missing or incorrectly formatted
+        if (!lead.whatsappNumber || lead.whatsappNumber !== cleanWaId) {
+            lead = await prisma.lead.update({
+                where: { id: lead.id },
+                data: { whatsappNumber: cleanWaId }
+            });
+            console.log(`♻️ [WATI_LINKED] Synchronized WhatsApp ID for Lead: ${lead.id}`);
+        }
     }
 
     // 1b. Strategic AI Pipeline (Consolidated 24/7 Gatekeeper)
-    // We now run a single unified pass for Scoring, Heat Mapping, and Speciality
     if (lead && !isOutgoing && !isMedia) {
+        console.log(`🧠 [WATI_AI_GATEKEEPER] Initializing intelligence sweep for ${lead.id}...`);
         try {
             await generateProactiveDraft({ leadId: lead.id, messageText: processedMessageText });
-            // Refresh lead state to get the new AI-driven signals
+            // Refresh lead state to get the new AI-driven signals (Specialty, Score, Heat, Status)
             lead = await prisma.lead.findUnique({ where: { id: lead.id } }) as any;
         } catch (aiError: any) {
-            console.error("⚠️ [WATI_WEBHOOK] AI Analysis delayed or rate-limited:", aiError.message);
-            // Non-blocking: continue with lead creation even if AI fails
+            console.error("⚠️ [WATI_WEBHOOK] AI Analysis delayed:", aiError.message);
         }
     }
 
     // 1c. Trigger Quality-Gated Assignment for Ownerless Leads
     if (lead && !lead.ownerId) {
+      console.log(`📡 [WATI_ROUTING] Triggering assignment engine for ${lead.id}`);
       await assignIncomingLead(lead.id);
-      // Refresh lead state after potential routing update
       lead = await prisma.lead.findUnique({ where: { id: lead.id } }) as any;
     }
 
     if (!lead) return NextResponse.json({ error: "Lead processing failure" }, { status: 500 });
 
-    // Deduplication check: ignore if the exact same message was logged within the last 30 seconds
-    const timeThreshold = new Date(Date.now() - 30000);
+    // Deduplication check: ignore if the exact same message was logged within the last 15 seconds
+    const timeThreshold = new Date(Date.now() - 15000);
     const duplicate = await prisma.activityLog.findFirst({
       where: {
         leadId: lead.id,
@@ -120,7 +127,8 @@ export async function POST(req: Request) {
     // 3. Auto-manage AI Status & Bump updatedAt for Sorting
     let aiStatusToSet = lead.aiChatStatus;
     if (isOutgoing && aiStatusToSet === "AGENTX_ACTIVE") {
-        aiStatusToSet = "HUMAN_OVERRIDE"; // Pause AI naturally if human replies via WATI app
+        console.log(`[WATI_STATUS] Human intervention detected. Pausing AI for lead ${lead.id}`);
+        aiStatusToSet = "HUMAN_OVERRIDE"; 
     }
 
     await prisma.lead.update({
@@ -128,24 +136,23 @@ export async function POST(req: Request) {
         data: { 
             updatedAt: new Date(), 
             aiChatStatus: aiStatusToSet,
-            ...(isOutgoing ? { isEscalated: false } : {}) // Clear escalation if human responds
+            ...(isOutgoing ? { isEscalated: false } : {}) 
         }
     });
 
     // 4. AgentX Handoff (Only for incoming messages)
     if (!isOutgoing && !isMedia) {
       if (lead.aiChatStatus === "AGENTX_ACTIVE") {
-          console.log(`[AGENTX_HANDOFF] Processing message for Lead ${lead.id}: "${processedMessageText}"`);
-          // Awaiting here is usually safe for short AI calls, Next.js serverless limits allow up to 10s or 60s
+          console.log(`[AGENTX_HANDOFF] Executing autonomous response for ${lead.id}`);
           await processWithAgentX(lead.id, processedMessageText, cleanWaId);
+      } else {
+          console.log(`[AGENTX_SKIP] AI Response skipped for ${lead.id}. Status: ${lead.aiChatStatus}`);
       }
-    }
- else if (!isOutgoing && isMedia) {
-      console.log(`[WATI_WEBHOOK] Media captured for Lead ${lead.id}. Skipping AI processing.`);
+    } else if (!isOutgoing && isMedia) {
+      console.log(`[WATI_WEBHOOK] Media captured for Lead ${lead.id}. Skipping AI handoff.`);
     }
 
     return NextResponse.json({ success: true, leadId: lead.id });
-
   } catch (error) {
     console.error("[WATI_WEBHOOK_ERROR]", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

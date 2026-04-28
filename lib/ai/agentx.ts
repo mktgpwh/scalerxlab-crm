@@ -1,5 +1,6 @@
 import Groq from "groq-sdk";
 import { prisma } from "@/lib/prisma";
+import { sendWatiMessage } from "./dispatch";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -12,7 +13,12 @@ export async function processWithAgentX(leadId: string, messageText: string, wha
             where: { id: leadId }
         });
 
-        const isTriageMode = lead?.isUnderAITriage || false;
+        if (!lead) {
+            console.error(`[AGENTX_ERROR] Lead ${leadId} not found.`);
+            return;
+        }
+
+        const isTriageMode = lead.isUnderAITriage || false;
 
         // 2. Generate AI Reply with Context-Aware Persona
         const systemPrompt = isTriageMode 
@@ -55,22 +61,29 @@ export async function processWithAgentX(leadId: string, messageText: string, wha
             replyContent = "I apologize, but I am unable to process your request at this moment. Please call our clinic directly.";
         }
 
-        // 3. Send via WATI API
-        const watiEndpoint = process.env.WATI_API_ENDPOINT;
-        const watiToken = process.env.WATI_ACCESS_TOKEN;
+        // 3. Send via Unified Dispatcher
+        console.log(`[AGENTX_DISPATCH] Handoff to WATI for ${whatsappNumber}`);
+        const dispatchResult = await sendWatiMessage({
+            leadId,
+            platform: 'whatsapp',
+            recipientId: whatsappNumber,
+            text: replyContent
+        });
 
-        if (watiEndpoint && watiToken) {
-            const url = `${watiEndpoint}/api/v1/sendSessionMessage/${whatsappNumber}?messageText=${encodeURIComponent(replyContent)}`;
-            await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${watiToken}`,
-                    'Content-Type': 'application/json'
+        if (!dispatchResult.success) {
+            console.error(`[AGENTX_DISPATCH_FAILED] ${dispatchResult.error}`);
+            // Log failure to activity log
+            await prisma.activityLog.create({
+                data: {
+                    leadId,
+                    action: "AGENTX_DISPATCH_FAILURE",
+                    description: `Failed to send AI response: ${dispatchResult.error}`,
                 }
             });
+            return;
         }
 
-        // 4. Update Lead Intelligence
+        // 4. Update Lead Intelligence (Triage Sync)
         const updateData: any = { updatedAt: new Date() };
         if (isTriageMode && aiMetadata) {
             updateData.intent = aiMetadata.intent;
@@ -92,19 +105,19 @@ export async function processWithAgentX(leadId: string, messageText: string, wha
             data: updateData
         });
 
-        // 5. Log Action
+        // 5. Log Success
         await prisma.activityLog.create({
             data: {
                 leadId,
                 action: "AGENTX_REPLY_SENT",
                 description: replyContent,
-                metadata: { triage: isTriageMode }
+                metadata: { triage: isTriageMode, provider: "WATI" }
             }
         });
 
-        console.log(`[AGENTX_SUCCESS] Reply sent successfully to ${whatsappNumber}`);
+        console.log(`[AGENTX_SUCCESS] Autonomous response delivered to ${whatsappNumber}`);
 
-    } catch (error) {
-        console.error("[AGENTX_FATAL_ERROR] Failed to process message via AgentX:", error);
+    } catch (error: any) {
+        console.error("[AGENTX_FATAL_ERROR] Failed to process message via AgentX:", error.message);
     }
 }
