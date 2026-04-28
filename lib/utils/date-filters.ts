@@ -7,14 +7,18 @@ export function getPrismaDateFilter(from?: string, to?: string) {
   if (!from || from === "undefined" || from === "null" || from === "") return {};
 
   try {
-    const start = startOfDay(parseISO(from));
+    // 🛡️ [CLINICAL_PRECISION]: If the string contains 'T', it's a specific ISO timestamp from the client.
+    // We must NOT run startOfDay/endOfDay on it, as that will shift the timezone boundaries.
+    const hasTime = from.includes('T');
+    const start = hasTime ? parseISO(from) : startOfDay(parseISO(from));
     
     // Check if derived date is valid
     if (isNaN(start.getTime())) return {};
 
     let end: Date;
     if (to && to !== "undefined" && to !== "null" && to !== "") {
-      end = endOfDay(parseISO(to));
+      const toHasTime = to.includes('T');
+      end = toHasTime ? parseISO(to) : endOfDay(parseISO(to));
       if (isNaN(end.getTime())) end = endOfDay(start);
     } else {
       end = endOfDay(start);
