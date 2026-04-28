@@ -1,6 +1,5 @@
-
-import { prisma } from "./lib/prisma";
-import { generateDraftAction } from "./app/(dashboard)/inbox/actions";
+import { prisma } from "@/lib/prisma";
+import { generateDraftAction } from "@/app/(dashboard)/inbox/actions";
 
 async function debugDraft() {
     try {
